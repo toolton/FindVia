@@ -466,3 +466,19 @@ main {
     }
 
 }
+
+/* Active App Screen */
+
+main.screen-open .welcome,
+main.screen-open .location-box,
+main.screen-open .action-grid,
+main.screen-open .post-section {
+    display: none;
+}
+
+main.screen-open .app-screen.active {
+    display: block;
+}
+
+
+
