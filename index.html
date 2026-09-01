@@ -1,87 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>FindVia - Find Local Work & Services</title>
+    <title>FindVia - Find Work. Find Workers.</title>
 
-  <meta name="description" content="FindVia connects people with local workers and services quickly and easily.">
+    <meta name="description" content="FindVia helps people find local work and workers easily.">
+    <meta name="theme-color" content="#2563eb">
 
-  <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <header>
-    <div class="logo">FindVia</div>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">FindVia</div>
 
-    <div class="language-switcher">
-      <button>English</button>
-      <button>हिन्दी</button>
-    </div>
-  </header>
+        <button class="language-btn" onclick="toggleLanguage()">
+            हिंदी / EN
+        </button>
+    </header>
 
-  <main>
 
-    <section class="hero">
-      <h1>Find Local Work.<br>Get Work Done.</h1>
+    <!-- Main App -->
+    <main>
 
-      <p>
-        Find trusted local workers or get local jobs near you.
-      </p>
+        <!-- Welcome Section -->
+        <section class="welcome">
+            <h1 id="welcomeTitle">Find Work. Find Workers.</h1>
 
-      <div class="hero-buttons">
-        <button>Find a Worker</button>
-        <button>Post a Job</button>
-      </div>
-    </section>
+            <p id="welcomeText">
+                Find trusted local work and workers near you.
+            </p>
+        </section>
 
-    <section class="services">
 
-      <h2>Popular Services</h2>
+        <!-- Location -->
+        <section class="location-box">
+            <span>📍</span>
+            <div>
+                <small>Your Location</small>
+                <strong id="locationText">Select your location</strong>
+            </div>
 
-      <div class="service-grid">
+            <button onclick="selectLocation()">Change</button>
+        </section>
 
-        <div class="service-card">
-          <span>🧹</span>
-          <p>Cleaning</p>
-        </div>
 
-        <div class="service-card">
-          <span>🔧</span>
-          <p>Plumbing</p>
-        </div>
+        <!-- Main Actions -->
+        <section class="action-grid">
 
-        <div class="service-card">
-          <span>⚡</span>
-          <p>Electrician</p>
-        </div>
+            <button class="action-card" onclick="findWork()">
+                <span class="action-icon">🔎</span>
+                <h2 id="findWorkTitle">Find Work</h2>
+                <p id="findWorkText">
+                    Discover local jobs and work opportunities.
+                </p>
+            </button>
 
-        <div class="service-card">
-          <span>📦</span>
-          <p>Delivery</p>
-        </div>
 
-        <div class="service-card">
-          <span>🛠️</span>
-          <p>Repair</p>
-        </div>
+            <button class="action-card" onclick="findWorkers()">
+                <span class="action-icon">🧑‍🔧</span>
+                <h2 id="findWorkersTitle">Find Workers</h2>
+                <p id="findWorkersText">
+                    Find people for your work or service.
+                </p>
+            </button>
 
-        <div class="service-card">
-          <span>➕</span>
-          <p>Other</p>
-        </div>
+        </section>
 
-      </div>
 
-    </section>
+        <!-- Post Job -->
+        <section class="post-section">
 
-  </main>
+            <h2 id="postTitle">Need someone for a job?</h2>
 
-  <footer>
-    <p>© 2026 FindVia. All rights reserved.</p>
-  </footer>
-<script src="assets/js/app.js"></script>
+            <p id="postText">
+                Post your work requirement and find the right person.
+            </p>
+
+            <button class="primary-btn" onclick="postJob()" id="postButton">
+                + Post a Job
+            </button>
+
+        </section>
+
+    </main>
+
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+
+        <button onclick="goHome()">
+            <span>🏠</span>
+            <small id="homeNav">Home</small>
+        </button>
+
+        <button onclick="findWork()">
+            <span>🔎</span>
+            <small id="searchNav">Search</small>
+        </button>
+
+        <button onclick="postJob()" class="nav-post">
+            <span>＋</span>
+            <small id="postNav">Post</small>
+        </button>
+
+        <button onclick="showProfile()">
+            <span>👤</span>
+            <small id="profileNav">Profile</small>
+        </button>
+
+    </nav>
+
+
+    <script src="script.js"></script>
+
 </body>
 </html>
