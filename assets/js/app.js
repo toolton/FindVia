@@ -154,6 +154,8 @@ function closeScreens() {
 
     document.getElementById("findWorkersScreen").classList.remove("active");
 
+ document.getElementById("searchScreen").classList.remove("active");
+    
     document.getElementById("homeContent").style.display = "block";
 
     window.scrollTo({
@@ -205,3 +207,21 @@ function searchWorkers() {
     document.getElementById("workerResults").innerHTML =
         "<strong>Searching for:</strong><br>" + search;
 }
+
+
+function openSearch() {
+
+    document.getElementById("homeContent").style.display = "none";
+
+    document.getElementById("findWorkScreen").classList.remove("active");
+
+    document.getElementById("findWorkersScreen").classList.remove("active");
+
+    document.getElementById("searchScreen").classList.add("active");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
