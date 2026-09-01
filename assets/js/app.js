@@ -133,14 +133,22 @@ function postJob() {
     alert("Job posting feature will be available soon.");
 }
 
-
 function goHome() {
+
+    document.getElementById("findWorkScreen").classList.remove("active");
+
+    document.getElementById("findWorkersScreen").classList.remove("active");
+
+    document.getElementById("searchScreen").classList.remove("active");
+
+    document.getElementById("homeContent").style.display = "block";
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
 }
+
 
 
 function showProfile() {
