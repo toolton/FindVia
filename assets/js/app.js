@@ -99,11 +99,14 @@ function selectLocation() {
 }
 
 
+
+
 function findWork() {
 
-    document.querySelector("main").classList.add("screen-open");
+    document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen").classList.add("active");
+
     document.getElementById("findWorkersScreen").classList.remove("active");
 
     window.scrollTo({
@@ -112,12 +115,12 @@ function findWork() {
     });
 }
 
-
 function findWorkers() {
 
-    document.querySelector("main").classList.add("screen-open");
+    document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkersScreen").classList.add("active");
+
     document.getElementById("findWorkScreen").classList.remove("active");
 
     window.scrollTo({
@@ -125,7 +128,6 @@ function findWorkers() {
         behavior: "smooth"
     });
 }
-
 
 function postJob() {
     alert("Job posting feature will be available soon.");
@@ -149,9 +151,10 @@ function showProfile() {
 function closeScreens() {
 
     document.getElementById("findWorkScreen").classList.remove("active");
+
     document.getElementById("findWorkersScreen").classList.remove("active");
 
-    document.querySelector("main").classList.remove("screen-open");
+    document.getElementById("homeContent").style.display = "block";
 
     window.scrollTo({
         top: 0,
