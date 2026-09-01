@@ -480,5 +480,58 @@ main.screen-open .app-screen.active {
     display: block;
 }
 
+/* Common Search Screen */
+
+.search-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.search-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    border-radius: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.search-option:hover {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+.search-option:active {
+    transform: scale(0.98);
+}
+
+.search-option .action-icon {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.search-option div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.search-option strong {
+    font-size: 15px;
+    color: var(--text);
+}
+
+.search-option small {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
 
 
