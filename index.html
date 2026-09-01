@@ -87,6 +87,74 @@
 
         </section>
 
+
+<!-- Find Work Screen -->
+<section id="findWorkScreen" class="app-screen">
+
+    <button class="back-btn" onclick="closeScreens()">← Back</button>
+
+    <h2>Find Work</h2>
+    <p>Find local work opportunities near you.</p>
+
+    <div class="search-box">
+        <input
+            type="text"
+            id="workSearch"
+            placeholder="Search work..."
+        >
+        <button onclick="searchWork()">Search</button>
+    </div>
+
+    <div class="category-grid">
+        <button onclick="selectWorkCategory('Electrician')">⚡ Electrician</button>
+        <button onclick="selectWorkCategory('Plumber')">🔧 Plumber</button>
+        <button onclick="selectWorkCategory('AC Repair')">❄️ AC Repair</button>
+        <button onclick="selectWorkCategory('Contractor')">🏗️ Contractor</button>
+        <button onclick="selectWorkCategory('Painter')">🎨 Painter</button>
+        <button onclick="selectWorkCategory('Other')">📋 Other Work</button>
+    </div>
+
+    <div id="workResults" class="results-box">
+        <p>No work selected yet.</p>
+    </div>
+
+</section>
+
+
+<!-- Find Workers Screen -->
+<section id="findWorkersScreen" class="app-screen">
+
+    <button class="back-btn" onclick="closeScreens()">← Back</button>
+
+    <h2>Find Workers</h2>
+    <p>Find skilled workers near your location.</p>
+
+    <div class="search-box">
+        <input
+            type="text"
+            id="workerSearch"
+            placeholder="Search workers..."
+        >
+        <button onclick="searchWorkers()">Search</button>
+    </div>
+
+    <div class="category-grid">
+        <button onclick="selectWorkerCategory('Electrician')">⚡ Electrician</button>
+        <button onclick="selectWorkerCategory('Plumber')">🔧 Plumber</button>
+        <button onclick="selectWorkerCategory('AC Repair')">❄️ AC Repair</button>
+        <button onclick="selectWorkerCategory('Contractor')">🏗️ Contractor</button>
+        <button onclick="selectWorkerCategory('Painter')">🎨 Painter</button>
+        <button onclick="selectWorkerCategory('Other')">📋 Other Worker</button>
+    </div>
+
+    <div id="workerResults" class="results-box">
+        <p>No worker category selected yet.</p>
+    </div>
+
+</section>
+
+
+        
     </main>
 
 
