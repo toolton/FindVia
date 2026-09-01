@@ -100,12 +100,30 @@ function selectLocation() {
 
 
 function findWork() {
-    alert("Find Work section will be available soon.");
+
+    document.querySelector("main").classList.add("screen-open");
+
+    document.getElementById("findWorkScreen").classList.add("active");
+    document.getElementById("findWorkersScreen").classList.remove("active");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
 
 
 function findWorkers() {
-    alert("Find Workers section will be available soon.");
+
+    document.querySelector("main").classList.add("screen-open");
+
+    document.getElementById("findWorkersScreen").classList.add("active");
+    document.getElementById("findWorkScreen").classList.remove("active");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
 
 
@@ -125,4 +143,62 @@ function goHome() {
 
 function showProfile() {
     alert("Profile section will be available soon.");
+}
+
+
+function closeScreens() {
+
+    document.getElementById("findWorkScreen").classList.remove("active");
+    document.getElementById("findWorkersScreen").classList.remove("active");
+
+    document.querySelector("main").classList.remove("screen-open");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function selectWorkCategory(category) {
+
+    document.getElementById("workResults").innerHTML =
+        "<strong>" + category + "</strong><br>" +
+        "Work opportunities will appear here soon.";
+}
+
+
+function selectWorkerCategory(category) {
+
+    document.getElementById("workerResults").innerHTML =
+        "<strong>" + category + "</strong><br>" +
+        "Available workers will appear here soon.";
+}
+
+
+function searchWork() {
+
+    const search = document.getElementById("workSearch").value.trim();
+
+    if (search === "") {
+        alert("Please enter what type of work you are looking for.");
+        return;
+    }
+
+    document.getElementById("workResults").innerHTML =
+        "<strong>Searching for:</strong><br>" + search;
+}
+
+
+function searchWorkers() {
+
+    const search = document.getElementById("workerSearch").value.trim();
+
+    if (search === "") {
+        alert("Please enter the worker/service you need.");
+        return;
+    }
+
+    document.getElementById("workerResults").innerHTML =
+        "<strong>Searching for:</strong><br>" + search;
 }
