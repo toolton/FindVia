@@ -158,7 +158,73 @@
 
 </section>
 
+<!-- Common Search Screen -->
+<section id="searchScreen" class="app-screen">
 
+    <button class="back-btn" onclick="closeScreens()">← Back</button>
+
+    <h2>Search FindVia</h2>
+
+    <p>
+        Find local work opportunities and skilled workers near you.
+    </p>
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            id="globalSearch"
+            placeholder="Search work or workers..."
+        >
+
+        <button type="button" onclick="globalSearch()">Search</button>
+
+    </div>
+
+
+    <div class="search-options">
+
+        <button
+            type="button"
+            class="search-option"
+            onclick="findWork()"
+        >
+            <span class="action-icon">💼</span>
+
+            <div>
+                <strong>Find Work</strong>
+
+                <small>
+                    Find available work opportunities
+                </small>
+            </div>
+        </button>
+
+
+        <button
+            type="button"
+            class="search-option"
+            onclick="findWorkers()"
+        >
+            <span class="action-icon">🧑‍🔧</span>
+
+            <div>
+                <strong>Find Workers</strong>
+
+                <small>
+                    Find skilled workers near you
+                </small>
+            </div>
+        </button>
+
+    </div>
+
+
+    <div id="globalResults" class="results-box">
+        <p>Search results will appear here.</p>
+    </div>
+
+</section>
         
     </main>
 
