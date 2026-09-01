@@ -333,3 +333,136 @@ main {
         font-size: 12px;
     }
 }
+
+
+/* App Screens */
+
+.app-screen {
+    display: none;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px;
+    margin-top: 10px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+}
+
+.app-screen.active {
+    display: block;
+}
+
+.app-screen h2 {
+    font-size: 25px;
+    margin-bottom: 7px;
+}
+
+.app-screen > p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+/* Back Button */
+
+.back-btn {
+    border: none;
+    background: #eff6ff;
+    color: var(--primary);
+    padding: 9px 13px;
+    border-radius: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+/* Search */
+
+.search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.search-box input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-box input:focus {
+    border-color: var(--primary);
+}
+
+.search-box button {
+    border: none;
+    background: var(--primary);
+    color: var(--white);
+    padding: 0 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Categories */
+
+.category-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.category-grid button {
+    border: 1px solid var(--border);
+    background: var(--white);
+    padding: 14px 10px;
+    border-radius: 11px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.category-grid button:hover {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+/* Results */
+
+.results-box {
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* Mobile */
+
+@media (max-width: 430px) {
+
+    .app-screen {
+        padding: 17px;
+    }
+
+    .app-screen h2 {
+        font-size: 22px;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-box button {
+        padding: 12px;
+    }
+
+}
