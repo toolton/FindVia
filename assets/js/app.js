@@ -169,21 +169,124 @@ function closeScreens() {
     });
 }
 
-
-function selectWorkCategory(category) {
-
-    document.getElementById("workResults").innerHTML =
-        "<strong>" + category + "</strong><br>" +
-        "Work opportunities will appear here soon.";
-}
-
-
 function selectWorkerCategory(category) {
 
-    document.getElementById("workerResults").innerHTML =
-        "<strong>" + category + "</strong><br>" +
-        "Available workers will appear here soon.";
+    const workers = {
+        "Electrician": [
+            {
+                name: "Raj Electric Services",
+                area: "Nearby",
+                rating: "4.8",
+                experience: "5+ years"
+            },
+            {
+                name: "Sharma Electrical Works",
+                area: "Nearby",
+                rating: "4.6",
+                experience: "3+ years"
+            }
+        ],
+
+        "Plumber": [
+            {
+                name: "QuickFix Plumbing",
+                area: "Nearby",
+                rating: "4.7",
+                experience: "6+ years"
+            },
+            {
+                name: "Local Plumbing Service",
+                area: "Nearby",
+                rating: "4.5",
+                experience: "4+ years"
+            }
+        ],
+
+        "AC Repair": [
+            {
+                name: "CoolCare AC Service",
+                area: "Nearby",
+                rating: "4.8",
+                experience: "5+ years"
+            },
+            {
+                name: "Fast AC Repair",
+                area: "Nearby",
+                rating: "4.6",
+                experience: "3+ years"
+            }
+        ],
+
+        "Contractor": [
+            {
+                name: "Reliable Construction",
+                area: "Nearby",
+                rating: "4.7",
+                experience: "8+ years"
+            }
+        ],
+
+        "Painter": [
+            {
+                name: "Perfect Paint Works",
+                area: "Nearby",
+                rating: "4.6",
+                experience: "5+ years"
+            }
+        ],
+
+        "Other": [
+            {
+                name: "Local Service Professional",
+                area: "Nearby",
+                rating: "4.5",
+                experience: "3+ years"
+            }
+        ]
+    };
+
+    const selectedWorkers = workers[category] || [];
+
+    let html = "<h3>" + category + " Workers</h3>";
+
+    selectedWorkers.forEach(function(worker) {
+
+        html += `
+            <div class="worker-card">
+
+                <div class="worker-info">
+
+                    <h4>${worker.name}</h4>
+
+                    <p>📍 ${worker.area}</p>
+
+                    <p>⭐ ${worker.rating} · ${worker.experience}</p>
+
+                </div>
+
+                <button
+                    class="primary-btn"
+                    onclick="requestWorker('${worker.name}')"
+                >
+                    Request
+                </button>
+
+            </div>
+        `;
+    });
+
+    document.getElementById("workerResults").innerHTML = html;
 }
+
+function requestWorker(workerName) {
+
+    alert(
+        "Request sent to " +
+        workerName +
+        ".\n\nWorker contact details will be available after booking."
+    );
+}
+
 
 
 function searchWork() {
