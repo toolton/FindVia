@@ -177,13 +177,15 @@ function selectWorkerCategory(category) {
                 name: "Raj Electric Services",
                 area: "Nearby",
                 rating: "4.8",
-                experience: "5+ years"
+                experience: "5+ years",
+                jobs: "127"
             },
             {
                 name: "Sharma Electrical Works",
                 area: "Nearby",
                 rating: "4.6",
-                experience: "3+ years"
+                experience: "3+ years",
+                jobs: "89"
             }
         ],
 
@@ -192,13 +194,15 @@ function selectWorkerCategory(category) {
                 name: "QuickFix Plumbing",
                 area: "Nearby",
                 rating: "4.7",
-                experience: "6+ years"
+                experience: "6+ years",
+                jobs: "143"
             },
             {
                 name: "Local Plumbing Service",
                 area: "Nearby",
                 rating: "4.5",
-                experience: "4+ years"
+                experience: "4+ years",
+                jobs: "76"
             }
         ],
 
@@ -207,13 +211,15 @@ function selectWorkerCategory(category) {
                 name: "CoolCare AC Service",
                 area: "Nearby",
                 rating: "4.8",
-                experience: "5+ years"
+                experience: "5+ years",
+                jobs: "156"
             },
             {
                 name: "Fast AC Repair",
                 area: "Nearby",
                 rating: "4.6",
-                experience: "3+ years"
+                experience: "3+ years",
+                jobs: "94"
             }
         ],
 
@@ -222,7 +228,8 @@ function selectWorkerCategory(category) {
                 name: "Reliable Construction",
                 area: "Nearby",
                 rating: "4.7",
-                experience: "8+ years"
+                experience: "8+ years",
+                jobs: "210"
             }
         ],
 
@@ -231,7 +238,8 @@ function selectWorkerCategory(category) {
                 name: "Perfect Paint Works",
                 area: "Nearby",
                 rating: "4.6",
-                experience: "5+ years"
+                experience: "5+ years",
+                jobs: "118"
             }
         ],
 
@@ -240,32 +248,59 @@ function selectWorkerCategory(category) {
                 name: "Local Service Professional",
                 area: "Nearby",
                 rating: "4.5",
-                experience: "3+ years"
+                experience: "3+ years",
+                jobs: "65"
             }
         ]
     };
 
     const selectedWorkers = workers[category] || [];
 
-    let html = "<h3>" + category + " Workers</h3>";
+    let html = `
+        <div class="worker-results-header">
+            <div>
+                <span class="results-label">AVAILABLE NEAR YOU</span>
+                <h3>${category} Professionals</h3>
+            </div>
+            <span class="results-count">${selectedWorkers.length} found</span>
+        </div>
+    `;
 
     selectedWorkers.forEach(function(worker) {
 
         html += `
-            <div class="worker-card">
+            <div class="worker-card premium-worker-card">
+
+                <div class="worker-avatar">
+                    ${worker.name.charAt(0)}
+                </div>
 
                 <div class="worker-info">
 
-                    <h4>${worker.name}</h4>
+                    <div class="worker-name-row">
+                        <h4>${worker.name}</h4>
+                        <span class="verified-badge">✓ Verified</span>
+                    </div>
+
+                    <div class="worker-status">
+                        <span class="online-dot"></span>
+                        Available now
+                    </div>
 
                     <p>📍 ${worker.area}</p>
 
-                    <p>⭐ ${worker.rating} · ${worker.experience}</p>
+                    <div class="worker-stats">
+                        <span>⭐ ${worker.rating}</span>
+                        <span>•</span>
+                        <span>${worker.jobs} jobs</span>
+                        <span>•</span>
+                        <span>${worker.experience}</span>
+                    </div>
 
                 </div>
 
                 <button
-                    class="primary-btn"
+                    class="primary-btn worker-request-btn"
                     onclick="requestWorker('${worker.name}')"
                 >
                     Request
@@ -277,6 +312,8 @@ function selectWorkerCategory(category) {
 
     document.getElementById("workerResults").innerHTML = html;
 }
+    
+    
 
 function requestWorker(workerName) {
 
