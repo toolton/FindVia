@@ -149,7 +149,20 @@ function goHome() {
 
 
 function showProfile() {
-    alert("Profile section will be available soon.");
+
+    document.getElementById("homeContent").style.display = "none";
+
+    document.getElementById("findWorkScreen").classList.remove("active");
+    document.getElementById("findWorkersScreen").classList.remove("active");
+    document.getElementById("searchScreen").classList.remove("active");
+    document.getElementById("profileScreen").classList.add("active");
+
+    loadUserRole();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
 
 
@@ -160,6 +173,8 @@ function closeScreens() {
     document.getElementById("findWorkersScreen").classList.remove("active");
 
  document.getElementById("searchScreen").classList.remove("active");
+
+document.getElementById("profileScreen").classList.remove("active");
     
     document.getElementById("homeContent").style.display = "block";
 
@@ -370,3 +385,88 @@ function openSearch() {
     });
 }
 
+/* ================================
+   USER ROLE SYSTEM
+================================ */
+
+function selectUserRole(role) {
+
+    localStorage.setItem("findviaUserRole", role);
+
+    updateRoleUI(role);
+}
+
+
+function loadUserRole() {
+
+    const savedRole = localStorage.getItem("findviaUserRole");
+
+    if (savedRole) {
+        updateRoleUI(savedRole);
+    } else {
+
+        document.getElementById("workerRoleCard")
+            .classList.remove("selected");
+
+        document.getElementById("customerRoleCard")
+            .classList.remove("selected");
+
+        document.getElementById("workerRoleCheck").textContent = "○";
+        document.getElementById("customerRoleCheck").textContent = "○";
+
+        document.getElementById("selectedRoleBox").innerHTML = `
+            <span>ℹ️</span>
+            <p>
+                Role select karne ke baad FindVia aapke liye relevant options dikhayega.
+            </p>
+        `;
+    }
+}
+
+
+function updateRoleUI(role) {
+
+    const workerCard = document.getElementById("workerRoleCard");
+    const customerCard = document.getElementById("customerRoleCard");
+
+    const workerCheck = document.getElementById("workerRoleCheck");
+    const customerCheck = document.getElementById("customerRoleCheck");
+
+    workerCard.classList.remove("selected");
+    customerCard.classList.remove("selected");
+
+    workerCheck.textContent = "○";
+    customerCheck.textContent = "○";
+
+
+    if (role === "worker") {
+
+        workerCard.classList.add("selected");
+        workerCheck.textContent = "✓";
+
+        document.getElementById("selectedRoleBox").innerHTML = `
+            <span>👷</span>
+            <p>
+                <strong>Worker selected.</strong><br>
+                Ab FindVia aapko local work opportunities aur future job requests ke liye prepare karega.
+            </p>
+        `;
+
+    }
+
+
+    if (role === "customer") {
+
+        customerCard.classList.add("selected");
+        customerCheck.textContent = "✓";
+
+        document.getElementById("selectedRoleBox").innerHTML = `
+            <span>🏠</span>
+            <p>
+                <strong>Customer selected.</strong><br>
+                Ab FindVia aapko workers search karne aur future mein job post karne ke liye prepare karega.
+            </p>
+        `;
+
+    }
+}
