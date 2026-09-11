@@ -225,6 +225,81 @@
     </div>
 
 </section>
+
+
+<!-- Profile Screen -->
+
+<section id="profileScreen" class="app-screen">
+
+    <button class="back-btn" onclick="closeScreens()">← Back</button>
+
+    <div class="profile-header">
+        <div class="profile-avatar">👤</div>
+
+        <div>
+            <h2>My Profile</h2>
+            <p>Choose how you want to use FindVia.</p>
+        </div>
+    </div>
+
+    <div class="profile-role-box">
+
+        <h3>Your FindVia Role</h3>
+
+        <p class="role-help">
+            Aap apne purpose ke according role select kar sakte hain.
+        </p>
+
+        <div class="role-options">
+
+            <button
+                type="button"
+                class="role-card"
+                id="workerRoleCard"
+                onclick="selectUserRole('worker')"
+            >
+                <span class="role-icon">👷</span>
+
+                <div class="role-content">
+                    <strong>काम ढूँढना है</strong>
+                    <small>I'm looking for work</small>
+                </div>
+
+                <span class="role-check" id="workerRoleCheck">○</span>
+            </button>
+
+
+            <button
+                type="button"
+                class="role-card"
+                id="customerRoleCard"
+                onclick="selectUserRole('customer')"
+            >
+                <span class="role-icon">🏠</span>
+
+                <div class="role-content">
+                    <strong>काम करवाना है</strong>
+                    <small>I need a worker</small>
+                </div>
+
+                <span class="role-check" id="customerRoleCheck">○</span>
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="selectedRoleBox" class="selected-role-box">
+
+        <span>ℹ️</span>
+
+        <p>
+            Role select karne ke baad FindVia aapke liye relevant options dikhayega.
+        </p>
+
+    </div>
+
+</section>
         
     </main>
 
