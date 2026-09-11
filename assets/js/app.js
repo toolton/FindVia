@@ -405,6 +405,14 @@ function loadUserRole() {
         updateRoleUI(savedRole);
     } else {
 
+const workerProfileBtn = document.querySelector(".worker-profile-btn");
+
+if (workerProfileBtn) {
+    workerProfileBtn.style.display = "none";
+}
+
+
+        
         document.getElementById("workerRoleCard")
             .classList.remove("selected");
 
