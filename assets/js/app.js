@@ -431,7 +431,9 @@ function updateRoleUI(role) {
 
     const workerCheck = document.getElementById("workerRoleCheck");
     const customerCheck = document.getElementById("customerRoleCheck");
+const workerProfileBtn = document.querySelector(".worker-profile-btn");
 
+    
     workerCard.classList.remove("selected");
     customerCard.classList.remove("selected");
 
@@ -443,7 +445,9 @@ function updateRoleUI(role) {
 
         workerCard.classList.add("selected");
         workerCheck.textContent = "✓";
-
+if (workerProfileBtn) {
+    workerProfileBtn.style.display = "block";
+}
         document.getElementById("selectedRoleBox").innerHTML = `
             <span>👷</span>
             <p>
@@ -459,7 +463,9 @@ function updateRoleUI(role) {
 
         customerCard.classList.add("selected");
         customerCheck.textContent = "✓";
-
+if (workerProfileBtn) {
+    workerProfileBtn.style.display = "none";
+}
         document.getElementById("selectedRoleBox").innerHTML = `
             <span>🏠</span>
             <p>
