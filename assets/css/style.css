@@ -769,3 +769,48 @@ main.screen-open .app-screen.active {
     font-size: 12px;
     line-height: 1.5;
 }
+
+
+/* Worker Profile Setup */
+
+.profile-form-box {
+    margin-top: 18px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.profile-form-box label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 15px 0 7px;
+    color: var(--text);
+}
+
+.profile-form-box label:first-child {
+    margin-top: 0;
+}
+
+.profile-form-box input,
+.profile-form-box select {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+}
+
+.profile-form-box input:focus,
+.profile-form-box select:focus {
+    border-color: var(--primary);
+}
+
+.profile-form-box .primary-btn {
+    display: block;
+    margin: 22px auto 0;
+}
