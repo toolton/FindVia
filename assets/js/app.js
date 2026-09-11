@@ -163,7 +163,11 @@ function showProfile() {
         top: 0,
         behavior: "smooth"
     });
+loadWorkerProfileSummary();
+
 }
+
+
 
 
 function closeScreens() {
@@ -560,4 +564,44 @@ function loadWorkerProfile() {
 
     document.getElementById("workerAvailability").value =
         profile.availability || "";
+}
+
+
+/* ================================
+   WORKER PROFILE SUMMARY
+================================ */
+
+function loadWorkerProfileSummary() {
+
+    const summaryBox = document.getElementById("workerProfileSummary");
+
+    if (!summaryBox) {
+        return;
+    }
+
+    const savedProfile = localStorage.getItem("findviaWorkerProfile");
+
+    if (!savedProfile) {
+        summaryBox.style.display = "none";
+        return;
+    }
+
+    const profile = JSON.parse(savedProfile);
+
+    document.getElementById("summaryWorkerName").textContent =
+        profile.name || "-";
+
+    document.getElementById("summaryWorkerService").textContent =
+        profile.service || "-";
+
+    document.getElementById("summaryWorkerExperience").textContent =
+        profile.experience || "-";
+
+    document.getElementById("summaryWorkerArea").textContent =
+        profile.area || "-";
+
+    document.getElementById("summaryWorkerAvailability").textContent =
+        profile.availability || "-";
+
+    summaryBox.style.display = "block";
 }
