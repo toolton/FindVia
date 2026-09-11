@@ -300,6 +300,78 @@
     </div>
 
 </section>
+
+<!-- Worker Profile Setup -->
+
+<section id="workerProfileScreen" class="app-screen">
+
+    <button class="back-btn" onclick="showProfile()">← Back</button>
+
+    <div class="profile-header">
+        <div class="profile-avatar">👷</div>
+
+        <div>
+            <h2>Worker Profile</h2>
+            <p>Apne kaam ke baare mein basic information dein.</p>
+        </div>
+    </div>
+
+    <div class="profile-form-box">
+
+        <label for="workerName">आपका नाम</label>
+        <input
+            type="text"
+            id="workerName"
+            placeholder="जैसे Rahul Sharma"
+        >
+
+        <label for="workerService">आप कौन सा काम करते हैं?</label>
+        <select id="workerService">
+            <option value="">Service चुनें</option>
+            <option value="Electrician">Electrician</option>
+            <option value="Plumber">Plumber</option>
+            <option value="AC Repair">AC Repair</option>
+            <option value="Contractor">Contractor</option>
+            <option value="Painter">Painter</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label for="workerExperience">Experience</label>
+        <select id="workerExperience">
+            <option value="">Experience चुनें</option>
+            <option value="Less than 1 year">Less than 1 year</option>
+            <option value="1-3 years">1-3 years</option>
+            <option value="3-5 years">3-5 years</option>
+            <option value="5-10 years">5-10 years</option>
+            <option value="10+ years">10+ years</option>
+        </select>
+
+        <label for="workerArea">आप किस area में काम करते हैं?</label>
+        <input
+            type="text"
+            id="workerArea"
+            placeholder="जैसे Hindaun City"
+        >
+
+        <label for="workerAvailability">Availability</label>
+        <select id="workerAvailability">
+            <option value="">Availability चुनें</option>
+            <option value="Available now">Available now</option>
+            <option value="Available today">Available today</option>
+            <option value="Available on request">Available on request</option>
+        </select>
+
+        <button
+            type="button"
+            class="primary-btn"
+            onclick="saveWorkerProfile()"
+        >
+            Save Worker Profile
+        </button>
+
+    </div>
+
+</section>
         
     </main>
 
