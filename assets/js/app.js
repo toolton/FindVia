@@ -470,3 +470,80 @@ function updateRoleUI(role) {
 
     }
 }
+
+
+/* ================================
+   WORKER PROFILE
+================================ */
+
+function openWorkerProfile() {
+
+    document.getElementById("profileScreen").classList.remove("active");
+    document.getElementById("workerProfileScreen").classList.add("active");
+
+    loadWorkerProfile();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function saveWorkerProfile() {
+
+    const name = document.getElementById("workerName").value.trim();
+    const service = document.getElementById("workerService").value;
+    const experience = document.getElementById("workerExperience").value;
+    const area = document.getElementById("workerArea").value.trim();
+    const availability = document.getElementById("workerAvailability").value;
+
+    if (!name || !service || !experience || !area || !availability) {
+        alert("Please complete all worker profile details.");
+        return;
+    }
+
+    const workerProfile = {
+        name: name,
+        service: service,
+        experience: experience,
+        area: area,
+        availability: availability
+    };
+
+    localStorage.setItem(
+        "findviaWorkerProfile",
+        JSON.stringify(workerProfile)
+    );
+
+    alert("Worker profile saved successfully.");
+
+    showProfile();
+}
+
+
+function loadWorkerProfile() {
+
+    const savedProfile = localStorage.getItem("findviaWorkerProfile");
+
+    if (!savedProfile) {
+        return;
+    }
+
+    const profile = JSON.parse(savedProfile);
+
+    document.getElementById("workerName").value =
+        profile.name || "";
+
+    document.getElementById("workerService").value =
+        profile.service || "";
+
+    document.getElementById("workerExperience").value =
+        profile.experience || "";
+
+    document.getElementById("workerArea").value =
+        profile.area || "";
+
+    document.getElementById("workerAvailability").value =
+        profile.availability || "";
+}
