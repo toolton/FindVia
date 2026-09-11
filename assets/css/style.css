@@ -814,3 +814,10 @@ main.screen-open .app-screen.active {
     display: block;
     margin: 22px auto 0;
 }
+
+/* Worker Profile Button */
+
+.worker-profile-btn {
+    width: 100%;
+    margin-top: 12px;
+}
