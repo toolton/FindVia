@@ -398,6 +398,8 @@ function selectUserRole(role) {
     localStorage.setItem("findviaUserRole", role);
 
     updateRoleUI(role);
+loadWorkerProfileSummary();
+    
 }
 
 
@@ -570,12 +572,19 @@ function loadWorkerProfile() {
 /* ================================
    WORKER PROFILE SUMMARY
 ================================ */
-
 function loadWorkerProfileSummary() {
 
     const summaryBox = document.getElementById("workerProfileSummary");
 
     if (!summaryBox) {
+        return;
+    }
+
+    const currentRole = localStorage.getItem("findviaUserRole");
+
+    // Worker नहीं है तो profile summary hide रहे
+    if (currentRole !== "worker") {
+        summaryBox.style.display = "none";
         return;
     }
 
