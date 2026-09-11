@@ -156,7 +156,9 @@ function showProfile() {
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("searchScreen").classList.remove("active");
     document.getElementById("profileScreen").classList.add("active");
+document.getElementById("workerProfileScreen").classList.remove("active");
 
+    
     loadUserRole();
 
     window.scrollTo({
