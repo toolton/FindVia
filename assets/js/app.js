@@ -99,35 +99,33 @@ function selectLocation() {
 }
 
 
-
-
 function findWork() {
+document.getElementById("homeContent").style.display = "none";
 
-    document.getElementById("homeContent").style.display = "none";
+document.getElementById("searchScreen").classList.remove("active");
+document.getElementById("findWorkersScreen").classList.remove("active");
+document.getElementById("findWorkScreen").classList.add("active");
 
-    document.getElementById("findWorkScreen").classList.add("active");
-
-    document.getElementById("findWorkersScreen").classList.remove("active");
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+window.scrollTo({
+top: 0,
+behavior: "smooth"
+});
 }
 
 function findWorkers() {
+document.getElementById("homeContent").style.display = "none";
 
-    document.getElementById("homeContent").style.display = "none";
+document.getElementById("searchScreen").classList.remove("active");
+document.getElementById("findWorkScreen").classList.remove("active");
+document.getElementById("findWorkersScreen").classList.add("active");
 
-    document.getElementById("findWorkersScreen").classList.add("active");
-
-    document.getElementById("findWorkScreen").classList.remove("active");
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+window.scrollTo({
+top: 0,
+behavior: "smooth"
+});
 }
+
+
 
 function postJob() {
     alert("Job posting feature will be available soon.");
