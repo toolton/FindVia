@@ -1220,3 +1220,13 @@ main.screen-open .app-screen.active {
     width: 100%;
     margin-top: 10px;
 }
+
+
+/* My Posted Jobs screen - hidden by default */
+#myJobsScreen {
+    display: none;
+}
+
+#myJobsScreen.active {
+    display: block;
+}
