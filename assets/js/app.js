@@ -892,3 +892,359 @@ function loadWorkerProfileSummary() {
 
     summaryBox.style.display = "block";
 }
+
+
+function showMyJobs() {
+
+    document.getElementById("homeContent").style.display = "none";
+
+    document.getElementById("findWorkScreen").classList.remove("active");
+    document.getElementById("findWorkersScreen").classList.remove("active");
+    document.getElementById("searchScreen").classList.remove("active");
+    document.getElementById("profileScreen").classList.remove("active");
+    document.getElementById("workerProfileScreen").classList.remove("active");
+    document.getElementById("jobResponsesScreen").classList.remove("active");
+
+    document.getElementById("myJobsScreen").classList.add("active");
+
+    loadMyJobs();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function loadMyJobs() {
+
+    const box = document.getElementById("myJobsResults");
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    if (jobs.length === 0) {
+
+        box.innerHTML = `
+            <div class="empty-state">
+
+                <div style="font-size:40px;">📋</div>
+
+                <h3>No jobs posted yet</h3>
+
+                <p>
+                    Jab aap koi work requirement post karenge,
+                    woh yahan दिखाई देगी.
+                </p>
+
+                <button
+                    class="primary-btn"
+                    onclick="postJob()"
+                >
+                    + Post a Job
+                </button>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    let html = "";
+
+    jobs.forEach(function(job) {
+
+        const responses = JSON.parse(
+            localStorage.getItem("findviaJobResponses") || "[]"
+        );
+
+        const responseCount = responses.filter(function(response) {
+
+            return response.jobId === job.id;
+
+        }).length;
+
+
+        html += `
+            <div class="job-card">
+
+                <div class="job-card-top">
+
+                    <div>
+
+                        <span class="job-category">
+                            ${escapeHTML(job.category)}
+                        </span>
+
+                        <h3>
+                            ${escapeHTML(job.title)}
+                        </h3>
+
+                    </div>
+
+                    <span class="job-status">
+                        ${job.status === "open" ? "Open" : "Closed"}
+                    </span>
+
+                </div>
+
+
+                <p class="job-description">
+                    ${escapeHTML(job.description)}
+                </p>
+
+
+                <div class="job-meta">
+
+                    <span>
+                        📍 ${escapeHTML(job.area)}
+                    </span>
+
+                    <span>
+                        🕒 ${escapeHTML(job.timing)}
+                    </span>
+
+                </div>
+
+
+                <div class="response-count-box">
+
+                    👥
+
+                    <strong>
+                        ${responseCount}
+                    </strong>
+
+                    worker${responseCount === 1 ? "" : "s"}
+                    interested
+
+                </div>
+
+
+                <button
+                    class="primary-btn"
+                    onclick="showJobResponses(${job.id})"
+                >
+                    View Responses
+                </button>
+
+            </div>
+        `;
+    });
+
+    box.innerHTML = html;
+}
+
+function showJobResponses(jobId) {
+
+    document.getElementById("homeContent").style.display = "none";
+
+    document.getElementById("myJobsScreen").classList.remove("active");
+    document.getElementById("jobResponsesScreen").classList.add("active");
+
+    loadJobResponses(jobId);
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function loadJobResponses(jobId) {
+
+    const box = document.getElementById("jobResponsesResults");
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const responses = JSON.parse(
+        localStorage.getItem("findviaJobResponses") || "[]"
+    );
+
+
+    const job = jobs.find(function(item) {
+
+        return item.id === jobId;
+
+    });
+
+
+    if (!job) {
+
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Job not found</h3>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const jobResponses = responses.filter(function(response) {
+
+        return response.jobId === jobId;
+
+    });
+
+
+    if (jobResponses.length === 0) {
+
+        box.innerHTML = `
+            <div class="empty-state">
+
+                <div style="font-size:40px;">👥</div>
+
+                <h3>No responses yet</h3>
+
+                <p>
+                    Jab koi worker is job mein interest dikhayega,
+                    uski response yahan दिखाई देगी.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    let html = `
+
+        <div class="job-response-job">
+
+            <span class="job-category">
+                ${escapeHTML(job.category)}
+            </span>
+
+            <h3>
+                ${escapeHTML(job.title)}
+            </h3>
+
+            <p>
+                ${escapeHTML(job.area)}
+            </p>
+
+        </div>
+
+    `;
+
+
+    jobResponses.forEach(function(response, index) {
+
+        let workerProfile = null;
+
+        try {
+
+            workerProfile =
+                JSON.parse(response.workerProfile);
+
+        } catch (error) {
+
+            workerProfile = null;
+
+        }
+
+
+        if (!workerProfile) {
+
+            html += `
+                <div class="worker-response-card">
+
+                    <div class="worker-response-avatar">
+                        👷
+                    </div>
+
+                    <div class="worker-response-info">
+
+                        <h3>
+                            Worker ${index + 1}
+                        </h3>
+
+                        <p>
+                            Profile details unavailable
+                        </p>
+
+                    </div>
+
+                </div>
+            `;
+
+            return;
+        }
+
+
+        html += `
+
+            <div class="worker-response-card">
+
+                <div class="worker-response-avatar">
+                    ${escapeHTML(
+                        workerProfile.name
+                            ? workerProfile.name.charAt(0).toUpperCase()
+                            : "W"
+                    )}
+                </div>
+
+
+                <div class="worker-response-info">
+
+                    <div class="worker-response-name">
+
+                        <h3>
+                            ${escapeHTML(workerProfile.name)}
+                        </h3>
+
+                        <span class="verified-badge">
+                            ✓ Profile
+                        </span>
+
+                    </div>
+
+
+                    <p>
+                        🛠️ ${escapeHTML(workerProfile.service)}
+                    </p>
+
+                    <p>
+                        ⭐ ${escapeHTML(workerProfile.experience)}
+                    </p>
+
+                    <p>
+                        📍 ${escapeHTML(workerProfile.area)}
+                    </p>
+
+                    <p>
+                        🟢 ${escapeHTML(workerProfile.availability)}
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="primary-btn"
+                    onclick="selectWorkerForJob(${jobId}, ${index})"
+                >
+                    Review
+                </button>
+
+            </div>
+
+        `;
+    });
+
+
+    box.innerHTML = html;
+}
+
+
+
+function selectWorkerForJob(jobId, responseIndex) {
+
+    alert(
+        "Worker profile review selected.\n\n" +
+        "Next step mein yahan secure matching flow banega."
+    );
+}
