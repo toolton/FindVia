@@ -388,7 +388,7 @@ function respondToJob(jobId) {
 
     responses.push({
         jobId: jobId,
-        workerProfile: localStorage.getItem("findviaWorkerProfile"),
+        workerProfile: localStorage.getItem("findviaWorkerProfile") || "{}",
         status: "pending",
         createdAt: new Date().toISOString()
     });
