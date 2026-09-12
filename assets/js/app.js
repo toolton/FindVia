@@ -447,7 +447,8 @@ function showProfile() {
     document.getElementById("profileScreen").classList.add("active");
 document.getElementById("workerProfileScreen").classList.remove("active");
 document.getElementById("postJobScreen").classList.remove("active");
-    
+  document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("jobResponsesScreen")?.classList.remove("active");  
     loadUserRole();
 
     window.scrollTo({
@@ -672,7 +673,8 @@ function openSearch() {
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("profileScreen").classList.remove("active");
     document.getElementById("workerProfileScreen").classList.remove("active");
-
+document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("jobResponsesScreen")?.classList.remove("active");
     document.getElementById("searchScreen").classList.add("active");
 document.getElementById("postJobScreen").classList.remove("active");
     window.scrollTo({
