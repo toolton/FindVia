@@ -105,7 +105,7 @@ document.getElementById("homeContent").style.display = "none";
 document.getElementById("searchScreen").classList.remove("active");
 document.getElementById("findWorkersScreen").classList.remove("active");
 document.getElementById("findWorkScreen").classList.add("active");
-
+showPostedJobs();
 window.scrollTo({
 top: 0,
 behavior: "smooth"
@@ -126,10 +126,285 @@ behavior: "smooth"
 }
 
 
-
 function postJob() {
-    alert("Job posting feature will be available soon.");
+
+    const currentRole = localStorage.getItem("findviaUserRole");
+
+    if (currentRole !== "customer") {
+        alert("Job post karne ke liye pehle Customer role select karein.");
+
+        showProfile();
+        return;
+    }
+
+    document.getElementById("homeContent").style.display = "none";
+
+    document.getElementById("findWorkScreen").classList.remove("active");
+    document.getElementById("findWorkersScreen").classList.remove("active");
+    document.getElementById("searchScreen").classList.remove("active");
+    document.getElementById("profileScreen").classList.remove("active");
+    document.getElementById("workerProfileScreen").classList.remove("active");
+
+    document.getElementById("postJobScreen").classList.add("active");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
+
+function saveJob() {
+
+    const title = document.getElementById("jobTitle").value.trim();
+    const category = document.getElementById("jobCategory").value;
+    const description = document.getElementById("jobDescription").value.trim();
+    const area = document.getElementById("jobArea").value.trim();
+    const timing = document.getElementById("jobTiming").value;
+    const budget = document.getElementById("jobBudget").value.trim();
+    const photoInput = document.getElementById("jobPhoto");
+
+    if (!title || !category || !description || !area || !timing || !budget) {
+        alert("Please complete all required job details.");
+        return;
+    }
+
+    if (Number(budget) <= 0) {
+        alert("Please enter a valid maximum budget.");
+        return;
+    }
+
+    const createJob = function(photoData) {
+
+        const jobs = JSON.parse(
+            localStorage.getItem("findviaJobs") || "[]"
+        );
+
+        const newJob = {
+            id: Date.now(),
+            title: title,
+            category: category,
+            description: description,
+            area: area,
+            timing: timing,
+
+            // Private customer information
+            budget: Number(budget),
+
+            photo: photoData || "",
+
+            status: "open",
+
+            createdAt: new Date().toISOString()
+        };
+
+        jobs.unshift(newJob);
+
+        localStorage.setItem(
+            "findviaJobs",
+            JSON.stringify(jobs)
+        );
+
+        alert("Your job has been posted successfully.");
+
+        document.getElementById("jobTitle").value = "";
+        document.getElementById("jobCategory").value = "";
+        document.getElementById("jobDescription").value = "";
+        document.getElementById("jobArea").value = "";
+        document.getElementById("jobTiming").value = "";
+        document.getElementById("jobBudget").value = "";
+        document.getElementById("jobPhoto").value = "";
+
+        showPostedJobs();
+
+        findWork();
+    };
+
+
+    if (photoInput.files && photoInput.files[0]) {
+
+        const file = photoInput.files[0];
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert("Photo size 2MB se kam honi chahiye.");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+            createJob(event.target.result);
+        };
+
+        reader.readAsDataURL(file);
+
+    } else {
+
+        createJob("");
+    }
+}
+
+
+function showPostedJobs() {
+
+    const resultsBox = document.getElementById("workResults");
+
+    if (!resultsBox) {
+        return;
+    }
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const openJobs = jobs.filter(function(job) {
+        return job.status === "open";
+    });
+
+    if (openJobs.length === 0) {
+
+        resultsBox.innerHTML = `
+            <div class="empty-state">
+                <strong>No jobs available yet.</strong>
+                <p>New local work opportunities will appear here.</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    let html = `
+        <div class="worker-results-header">
+            <div>
+                <span class="results-label">LOCAL OPPORTUNITIES</span>
+                <h3>Available Jobs</h3>
+            </div>
+
+            <span class="results-count">
+                ${openJobs.length} found
+            </span>
+        </div>
+    `;
+
+    openJobs.forEach(function(job) {
+
+        html += `
+            <div class="job-card">
+
+                <div class="job-card-top">
+
+                    <div>
+                        <span class="job-category">
+                            ${job.category}
+                        </span>
+
+                        <h3>${escapeHTML(job.title)}</h3>
+                    </div>
+
+                    <span class="job-status">
+                        Open
+                    </span>
+
+                </div>
+
+                <p class="job-description">
+                    ${escapeHTML(job.description)}
+                </p>
+
+                <div class="job-meta">
+                    <span>📍 ${escapeHTML(job.area)}</span>
+                    <span>🕒 ${escapeHTML(job.timing)}</span>
+                </div>
+
+                ${
+                    job.photo
+                    ? `<img
+                        class="job-photo"
+                        src="${job.photo}"
+                        alt="Job photo"
+                    >`
+                    : ""
+                }
+
+                <div class="job-private-note">
+                    🔒 Customer budget is hidden until the appropriate match stage.
+                </div>
+
+                <button
+                    class="primary-btn job-interest-btn"
+                    onclick="respondToJob(${job.id})"
+                >
+                    I'm Interested
+                </button>
+
+            </div>
+        `;
+    });
+
+    resultsBox.innerHTML = html;
+}
+
+function escapeHTML(value) {
+
+    const div = document.createElement("div");
+
+    div.textContent = value || "";
+
+    return div.innerHTML;
+}
+
+
+function respondToJob(jobId) {
+
+    const currentRole = localStorage.getItem("findviaUserRole");
+
+    if (currentRole !== "worker") {
+
+        alert(
+            "Is job par interest show karne ke liye Worker role select karein."
+        );
+
+        showProfile();
+        return;
+    }
+
+    const responses = JSON.parse(
+        localStorage.getItem("findviaJobResponses") || "[]"
+    );
+
+    const alreadyResponded = responses.some(function(response) {
+
+        return (
+            response.jobId === jobId &&
+            response.workerProfile === localStorage.getItem("findviaWorkerProfile")
+        );
+
+    });
+
+    if (alreadyResponded) {
+
+        alert("Aap already is job mein interest dikha chuke hain.");
+        return;
+    }
+
+    responses.push({
+        jobId: jobId,
+        workerProfile: localStorage.getItem("findviaWorkerProfile"),
+        status: "pending",
+        createdAt: new Date().toISOString()
+    });
+
+    localStorage.setItem(
+        "findviaJobResponses",
+        JSON.stringify(responses)
+    );
+
+    alert(
+        "Interest sent successfully.\n\n" +
+        "Customer ko aapki response milegi. " +
+        "Contact details abhi hidden rahengi."
+    );
+}
+
 
 function goHome() {
 
@@ -140,7 +415,7 @@ function goHome() {
     document.getElementById("workerProfileScreen").classList.remove("active");
 
     document.getElementById("homeContent").style.display = "block";
-
+document.getElementById("postJobScreen").classList.remove("active");
     window.scrollTo({
         top: 0,
         behavior: "smooth"
@@ -157,7 +432,7 @@ function showProfile() {
     document.getElementById("searchScreen").classList.remove("active");
     document.getElementById("profileScreen").classList.add("active");
 document.getElementById("workerProfileScreen").classList.remove("active");
-
+document.getElementById("postJobScreen").classList.remove("active");
     
     loadUserRole();
 
@@ -385,7 +660,7 @@ function openSearch() {
     document.getElementById("workerProfileScreen").classList.remove("active");
 
     document.getElementById("searchScreen").classList.add("active");
-
+document.getElementById("postJobScreen").classList.remove("active");
     window.scrollTo({
         top: 0,
         behavior: "smooth"
