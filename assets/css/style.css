@@ -908,3 +908,141 @@ main.screen-open .app-screen.active {
     font-size: 14px;
     color: var(--text);
 }
+
+
+/* ================================
+   POST JOB
+================================ */
+
+.profile-form-box textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.profile-form-box textarea:focus {
+    border-color: var(--primary);
+}
+
+.form-note {
+    margin: 9px 0 0;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* ================================
+   JOB CARDS
+================================ */
+
+.job-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 17px;
+    margin: 14px 0;
+    box-shadow: 0 7px 22px rgba(0, 0, 0, 0.06);
+    text-align: left;
+}
+
+.job-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.job-card h3 {
+    margin: 6px 0 0;
+    font-size: 17px;
+    color: var(--text);
+}
+
+.job-category {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: var(--primary);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.job-status {
+    flex-shrink: 0;
+    padding: 5px 8px;
+    border-radius: 20px;
+    background: #eef7f1;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.job-description {
+    margin: 13px 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+
+.job-meta span {
+    padding: 6px 8px;
+    background: var(--bg);
+    border-radius: 8px;
+}
+
+.job-photo {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 5px 0 12px;
+}
+
+.job-private-note {
+    padding: 9px 11px;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.job-interest-btn {
+    width: 100%;
+}
+
+.empty-state {
+    padding: 20px 10px;
+}
+
+.empty-state strong {
+    color: var(--text);
+}
+
+.empty-state p {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+}
