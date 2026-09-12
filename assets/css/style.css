@@ -1222,11 +1222,3 @@ main.screen-open .app-screen.active {
 }
 
 
-/* My Posted Jobs screen - hidden by default */
-#myJobsScreen {
-    display: none;
-}
-
-#myJobsScreen.active {
-    display: block;
-}
