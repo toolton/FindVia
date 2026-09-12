@@ -105,6 +105,12 @@ document.getElementById("homeContent").style.display = "none";
 document.getElementById("searchScreen").classList.remove("active");
 document.getElementById("findWorkersScreen").classList.remove("active");
 document.getElementById("findWorkScreen").classList.add("active");
+document.getElementById("postJobScreen")?.classList.remove("active");
+document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("jobResponsesScreen")?.classList.remove("active");
+
+
+    
 showPostedJobs();
 window.scrollTo({
 top: 0,
@@ -118,7 +124,9 @@ document.getElementById("homeContent").style.display = "none";
 document.getElementById("searchScreen").classList.remove("active");
 document.getElementById("findWorkScreen").classList.remove("active");
 document.getElementById("findWorkersScreen").classList.add("active");
-
+document.getElementById("postJobScreen")?.classList.remove("active");
+document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("jobResponsesScreen")?.classList.remove("active");
 window.scrollTo({
 top: 0,
 behavior: "smooth"
@@ -144,7 +152,8 @@ function postJob() {
     document.getElementById("searchScreen").classList.remove("active");
     document.getElementById("profileScreen").classList.remove("active");
     document.getElementById("workerProfileScreen").classList.remove("active");
-
+document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("jobResponsesScreen")?.classList.remove("active");
     document.getElementById("postJobScreen").classList.add("active");
 
     window.scrollTo({
@@ -414,6 +423,11 @@ function goHome() {
     document.getElementById("profileScreen").classList.remove("active");
     document.getElementById("workerProfileScreen").classList.remove("active");
 
+
+document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("jobResponsesScreen")?.classList.remove("active");
+
+    
     document.getElementById("homeContent").style.display = "block";
 document.getElementById("postJobScreen").classList.remove("active");
     window.scrollTo({
@@ -778,7 +792,9 @@ function openWorkerProfile() {
 
     document.getElementById("profileScreen").classList.remove("active");
     document.getElementById("workerProfileScreen").classList.add("active");
-
+document.getElementById("postJobScreen")?.classList.remove("active");
+document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("jobResponsesScreen")?.classList.remove("active");
     loadWorkerProfile();
 
     window.scrollTo({
