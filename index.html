@@ -373,6 +373,96 @@
         
 </section>
 
+<!-- Post Job Screen -->
+
+<section id="postJobScreen" class="app-screen">
+
+    <button class="back-btn" onclick="closeScreens()">← Back</button>
+
+    <div class="profile-header">
+        <div class="profile-avatar">📋</div>
+        <div>
+            <h2>Post a Job</h2>
+            <p>Apni work requirement share karein.</p>
+        </div>
+    </div>
+
+    <div class="profile-form-box">
+
+        <label for="jobTitle">काम का नाम</label>
+        <input
+            type="text"
+            id="jobTitle"
+            placeholder="जैसे घर में wiring करवानी है"
+        >
+
+        <label for="jobCategory">काम की category</label>
+        <select id="jobCategory">
+            <option value="">Category चुनें</option>
+            <option value="Electrician">Electrician</option>
+            <option value="Plumber">Plumber</option>
+            <option value="AC Repair">AC Repair</option>
+            <option value="Contractor">Contractor</option>
+            <option value="Painter">Painter</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label for="jobDescription">काम की जानकारी</label>
+        <textarea
+            id="jobDescription"
+            rows="4"
+            placeholder="काम क्या है, कितनी जगह है और कोई जरूरी जानकारी..."
+        ></textarea>
+
+        <label for="jobArea">काम कहाँ करना है?</label>
+        <input
+            type="text"
+            id="jobArea"
+            placeholder="जैसे Hindaun City"
+        >
+
+        <label for="jobTiming">काम कब चाहिए?</label>
+        <select id="jobTiming">
+            <option value="">Timing चुनें</option>
+            <option value="As soon as possible">As soon as possible</option>
+            <option value="Today">Today</option>
+            <option value="Tomorrow">Tomorrow</option>
+            <option value="Within this week">Within this week</option>
+            <option value="Flexible">Flexible</option>
+        </select>
+
+        <label for="jobBudget">आपका maximum budget</label>
+        <input
+            type="number"
+            id="jobBudget"
+            placeholder="₹ Maximum budget"
+            min="0"
+        >
+
+        <p class="form-note">
+            🔒 आपका maximum budget अभी workers को नहीं दिखाया जाएगा।
+        </p>
+
+        <label for="jobPhoto">काम की photo (optional)</label>
+        <input
+            type="file"
+            id="jobPhoto"
+            accept="image/*"
+        >
+
+        <button
+            type="button"
+            class="primary-btn"
+            onclick="saveJob()"
+        >
+            Post Job
+        </button>
+
+    </div>
+
+</section>
+
+        
 <!-- Worker Profile Setup -->
 
 <section id="workerProfileScreen" class="app-screen">
