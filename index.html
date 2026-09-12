@@ -306,6 +306,19 @@
 
     </div>
 
+<div id="customerJobsBox" class="customer-jobs-box">
+
+    <button
+        type="button"
+        class="primary-btn"
+        onclick="showMyJobs()"
+    >
+        📋 My Posted Jobs
+    </button>
+
+</div>
+
+        
 <!-- Worker Profile Summary -->
 
 <div id="workerProfileSummary" class="worker-profile-summary">
@@ -462,6 +475,49 @@
 
 </section>
 
+
+ <!-- My Jobs Screen -->
+
+<section id="myJobsScreen" class="app-screen">
+
+    <button class="back-btn" onclick="showProfile()">← Back</button>
+
+    <div class="profile-header">
+        <div class="profile-avatar">📋</div>
+
+        <div>
+            <h2>My Jobs</h2>
+            <p>Aapki posted work requirements.</p>
+        </div>
+    </div>
+
+    <div id="myJobsResults" class="results-box">
+        <p>Loading your jobs...</p>
+    </div>
+
+</section>
+
+
+<!-- Job Responses Screen -->
+
+<section id="jobResponsesScreen" class="app-screen">
+
+    <button class="back-btn" onclick="showMyJobs()">← Back</button>
+
+    <div class="profile-header">
+        <div class="profile-avatar">👥</div>
+
+        <div>
+            <h2>Interested Workers</h2>
+            <p>Is job mein interested workers.</p>
+        </div>
+    </div>
+
+    <div id="jobResponsesResults" class="results-box">
+        <p>Loading responses...</p>
+    </div>
+
+</section>       
         
 <!-- Worker Profile Setup -->
 
