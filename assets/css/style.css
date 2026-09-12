@@ -1046,3 +1046,106 @@ main.screen-open .app-screen.active {
     color: var(--muted);
     font-size: 12px;
 }
+
+/* ================================
+   CUSTOMER MY JOBS
+================================ */
+
+.customer-jobs-box {
+    margin: 15px 0;
+}
+
+.response-count-box {
+    margin: 12px 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: var(--text);
+    font-size: 12px;
+}
+
+.response-count-box strong {
+    font-size: 15px;
+}
+
+.job-response-job {
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--white);
+}
+
+.job-response-job h3 {
+    margin: 8px 0 4px;
+}
+
+.job-response-job p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+
+/* Worker response */
+
+.worker-response-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 14px;
+    margin: 12px 0;
+
+    border: 1px solid var(--border);
+    border-radius: 15px;
+
+    background: var(--white);
+}
+
+.worker-response-avatar {
+    width: 45px;
+    height: 45px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #eff6ff;
+    color: var(--primary);
+
+    font-weight: 700;
+    font-size: 17px;
+}
+
+.worker-response-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.worker-response-info h3 {
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+
+.worker-response-info p {
+    margin: 3px 0;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.worker-response-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.worker-response-card .primary-btn {
+    flex-shrink: 0;
+    padding: 8px 10px;
+    font-size: 11px;
+}
