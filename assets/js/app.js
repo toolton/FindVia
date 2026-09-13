@@ -1043,13 +1043,22 @@ function loadMyJobs() {
 
                 </div>
 
-
-                <button
-                    class="primary-btn"
-                    onclick="showJobResponses(${job.id})"
-                >
-                    View Responses
-                </button>
+${job.matchStatus === "matched" ? `
+    <button
+        class="primary-btn"
+        onclick="openPricingForJob(${job.id})"
+    >
+        💰 Set Price
+    </button>
+` : `
+    <button
+        class="primary-btn"
+        onclick="showJobResponses(${job.id})"
+    >
+        View Responses
+    </button>
+`}
+                
 
             </div>
         `;
@@ -1336,6 +1345,59 @@ function selectWorkerForJob(jobId, responseIndex) {
     alert(
         "Worker successfully matched! ✅\n\n" +
         "Ab next step mein private pricing process shuru hoga."
+    );
+
+    showMyJobs();
+}
+
+function openPricingForJob(jobId) {
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    if (job.matchStatus !== "matched") {
+        alert("Pehle worker ko match karein.");
+        return;
+    }
+
+    const price = prompt(
+        "Is job ke liye aap kitna price offer karna chahte hain?\n\n" +
+        "Ye offer private rahega."
+    );
+
+    if (price === null) {
+        return;
+    }
+
+    const amount = Number(price);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Please ek valid amount enter karein.");
+        return;
+    }
+
+    job.customerOffer = amount;
+    job.priceStatus = "customer_offer_sent";
+    job.priceUpdatedAt = new Date().toISOString();
+
+    localStorage.setItem(
+        "findviaJobs",
+        JSON.stringify(jobs)
+    );
+
+    alert(
+        "Private price offer save ho gaya. ✅\n\n" +
+        "Next step mein worker is offer ko dekhkar apna response dega."
     );
 
     showMyJobs();
