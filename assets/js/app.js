@@ -1059,22 +1059,57 @@ function loadMyJobs() {
 
                 </div>
 
-${job.matchStatus === "matched" ? `
-    <button
-        class="primary-btn"
-        onclick="openPricingForJob(${job.id})"
-    >
-        💰 Set Price
-    </button>
-` : `
-    <button
-        class="primary-btn"
-        onclick="showJobResponses(${job.id})"
-    >
-        View Responses
-    </button>
-`}
-                
+
+ ${
+    job.matchStatus === "matched"
+    ? `
+        ${
+            job.priceStatus === "counter_offer"
+            ? `
+                <button
+                    class="primary-btn"
+                    onclick="openCustomerPriceResponse(${job.id})"
+                >
+                    💰 View Worker Offer
+                </button>
+            `
+            : job.priceStatus === "accepted"
+            ? `
+                <button
+                    class="primary-btn"
+                    onclick="openCustomerPriceResponse(${job.id})"
+                >
+                    ✅ View Price Status
+                </button>
+            `
+            : job.priceStatus === "rejected"
+            ? `
+                <button
+                    class="primary-btn"
+                    onclick="openCustomerPriceResponse(${job.id})"
+                >
+                    ❌ View Price Status
+                </button>
+            `
+            : `
+                <button
+                    class="primary-btn"
+                    onclick="openPricingForJob(${job.id})"
+                >
+                    💰 Set Price
+                </button>
+            `
+        }
+    `
+    : `
+        <button
+            class="primary-btn"
+            onclick="showJobResponses(${job.id})"
+        >
+            View Responses
+        </button>
+    `
+}               
 
             </div>
         `;
@@ -1549,5 +1584,78 @@ function openWorkerOffer(jobId) {
     alert(
         "Invalid option. Please 1, 2 ya 3 choose karein."
     );
+}
+
+
+function openCustomerPriceResponse(jobId) {
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    if (job.priceStatus === "accepted") {
+
+        alert(
+            "Worker ne aapka offer accept kar liya hai. ✅\n\n" +
+            "Agla step job confirmation hoga."
+        );
+
+        return;
+    }
+
+    if (job.priceStatus === "rejected") {
+
+        alert(
+            "Worker ne aapka price offer reject kar diya hai. ❌"
+        );
+
+        return;
+    }
+
+    if (job.priceStatus === "counter_offer") {
+
+        const workerOffer = job.workerOffer;
+
+        const choice = confirm(
+            "Worker ka counter offer: ₹" +
+            workerOffer +
+            "\n\n" +
+            "OK = Counter offer accept karein\n" +
+            "Cancel = Abhi accept na karein"
+        );
+
+        if (choice) {
+
+            job.customerOffer = workerOffer;
+            job.priceStatus = "accepted";
+            job.priceUpdatedAt = new Date().toISOString();
+
+            localStorage.setItem(
+                "findviaJobs",
+                JSON.stringify(jobs)
+            );
+
+            alert(
+                "Worker ka offer accept ho gaya! ✅\n\n" +
+                "Agla step job confirmation hoga."
+            );
+
+            showMyJobs();
+
+        }
+
+        return;
+    }
+
+    alert("Abhi koi worker price response nahi hai.");
 }
 
