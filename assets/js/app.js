@@ -1244,13 +1244,13 @@ function loadJobResponses(jobId) {
 
                 </div>
 
-
-                <button
-                    class="primary-btn"
-                    onclick="selectWorkerForJob(${jobId}, ${index})"
-                >
-                    Review
-                </button>
+<button
+    class="primary-btn"
+    onclick="selectWorkerForJob(${jobId}, ${index})"
+>
+    Select Worker
+</button>
+                
 
             </div>
 
@@ -1265,17 +1265,36 @@ function loadJobResponses(jobId) {
 
 function selectWorkerForJob(jobId, responseIndex) {
 
-    let jobs = JSON.parse(localStorage.getItem("findviaJobs") || "[]");
-    let responses = JSON.parse(localStorage.getItem("findviaJobResponses") || "[]");
+    const confirmMatch = confirm(
+        "Kya aap is worker ko is job ke liye select karna chahte hain?\n\n" +
+        "Select karne ke baad worker ke saath private pricing process shuru hogi."
+    );
 
-    let job = jobs.find(j => j.id === jobId);
+    if (!confirmMatch) {
+        return;
+    }
+
+    let jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    let responses = JSON.parse(
+        localStorage.getItem("findviaJobResponses") || "[]"
+    );
+
+    let job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
 
     if (!job) {
         alert("Job nahi mili.");
         return;
     }
 
-    let jobResponses = responses.filter(r => r.jobId === jobId);
+    let jobResponses = responses.filter(function(response) {
+        return response.jobId === jobId;
+    });
+
     let selectedResponse = jobResponses[responseIndex];
 
     if (!selectedResponse) {
@@ -1283,25 +1302,30 @@ function selectWorkerForJob(jobId, responseIndex) {
         return;
     }
 
-    // Save selected worker against this job
     job.matchedWorker = selectedResponse.workerProfile;
     job.matchStatus = "matched";
     job.matchedAt = new Date().toISOString();
 
-    // Save updated jobs
-    localStorage.setItem("findviaJobs", JSON.stringify(jobs));
-
-    // Update selected response status
-    selectedResponse.status = "matched";
-
-    let globalResponseIndex = responses.findIndex(
-        r =>
-            r.jobId === jobId &&
-            r.createdAt === selectedResponse.createdAt
+    localStorage.setItem(
+        "findviaJobs",
+        JSON.stringify(jobs)
     );
 
+    selectedResponse.status = "matched";
+
+    let globalResponseIndex = responses.findIndex(function(response) {
+
+        return (
+            response.jobId === jobId &&
+            response.createdAt === selectedResponse.createdAt
+        );
+
+    });
+
     if (globalResponseIndex !== -1) {
+
         responses[globalResponseIndex].status = "matched";
+
     }
 
     localStorage.setItem(
@@ -1310,9 +1334,8 @@ function selectWorkerForJob(jobId, responseIndex) {
     );
 
     alert(
-        "Worker select ho gaya! ✅\n\n" +
-        "Job successfully matched.\n\n" +
-        "Next step mein private pricing flow banega."
+        "Worker successfully matched! ✅\n\n" +
+        "Ab next step mein private pricing process shuru hoga."
     );
 
     showMyJobs();
