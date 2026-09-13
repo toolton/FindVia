@@ -338,6 +338,22 @@ function showPostedJobs() {
                     🔒 Customer budget is hidden until the appropriate match stage.
                 </div>
 
+
+${
+    job.matchedWorker &&
+    job.matchedWorker === localStorage.getItem("findviaWorkerProfile") &&
+    job.customerOffer
+    ? `
+        <button
+            class="primary-btn"
+            onclick="openWorkerOffer(${job.id})"
+        >
+            💰 View Private Offer
+        </button>
+    `
+    : ""
+}
+
                 <button
                     class="primary-btn job-interest-btn"
                     onclick="respondToJob(${job.id})"
@@ -1402,3 +1418,39 @@ function openPricingForJob(jobId) {
 
     showMyJobs();
 }
+
+function openWorkerOffer(jobId) {
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    if (job.matchStatus !== "matched") {
+        alert("Ye job abhi matched nahi hai.");
+        return;
+    }
+
+    if (!job.customerOffer) {
+        alert(
+            "Customer ne abhi price offer nahi bheja hai."
+        );
+        return;
+    }
+
+    alert(
+        "Customer ka private offer:\n\n" +
+        "₹" + job.customerOffer + "\n\n" +
+        "Next step mein yahan Accept / Counter Offer / Reject options aayenge."
+    );
+}
+
+
