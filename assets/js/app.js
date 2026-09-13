@@ -1263,8 +1263,55 @@ function loadJobResponses(jobId) {
 
 function selectWorkerForJob(jobId, responseIndex) {
 
-    alert(
-        "Worker profile review selected.\n\n" +
-        "Next step mein yahan secure matching flow banega."
+    let jobs = JSON.parse(localStorage.getItem("findviaJobs") || "[]");
+    let responses = JSON.parse(localStorage.getItem("findviaJobResponses") || "[]");
+
+    let job = jobs.find(j => j.id === jobId);
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    let jobResponses = responses.filter(r => r.jobId === jobId);
+    let selectedResponse = jobResponses[responseIndex];
+
+    if (!selectedResponse) {
+        alert("Worker response nahi mili.");
+        return;
+    }
+
+    // Save selected worker against this job
+    job.matchedWorker = selectedResponse.workerProfile;
+    job.matchStatus = "matched";
+    job.matchedAt = new Date().toISOString();
+
+    // Save updated jobs
+    localStorage.setItem("findviaJobs", JSON.stringify(jobs));
+
+    // Update selected response status
+    selectedResponse.status = "matched";
+
+    let globalResponseIndex = responses.findIndex(
+        r =>
+            r.jobId === jobId &&
+            r.createdAt === selectedResponse.createdAt
     );
+
+    if (globalResponseIndex !== -1) {
+        responses[globalResponseIndex].status = "matched";
+    }
+
+    localStorage.setItem(
+        "findviaJobResponses",
+        JSON.stringify(responses)
+    );
+
+    alert(
+        "Worker select ho gaya! ✅\n\n" +
+        "Job successfully matched.\n\n" +
+        "Next step mein private pricing flow banega."
+    );
+
+    showMyJobs();
 }
