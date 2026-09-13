@@ -1003,9 +1003,11 @@ function loadMyJobs() {
 
                     </div>
 
-                    <span class="job-status">
-                        ${job.status === "open" ? "Open" : "Closed"}
-                    </span>
+                <span class="job-status">
+    ${job.matchStatus === "matched"
+        ? "✅ Worker Matched"
+        : (job.status === "open" ? "Open" : "Closed")}
+</span>    
 
                 </div>
 
