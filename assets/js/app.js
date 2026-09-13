@@ -1075,12 +1075,15 @@ function loadMyJobs() {
             `
             : job.priceStatus === "accepted"
             ? `
-                <button
-                    class="primary-btn"
-                    onclick="openCustomerPriceResponse(${job.id})"
-                >
-                    ✅ View Price Status
-                </button>
+
+ 
+<button
+    class="primary-btn"
+    onclick="confirmJob(${job.id})"
+>
+    ✅ Confirm Job
+</button>
+                
             `
             : job.priceStatus === "rejected"
             ? `
@@ -1659,3 +1662,60 @@ function openCustomerPriceResponse(jobId) {
     alert("Abhi koi worker price response nahi hai.");
 }
 
+function confirmJob(jobId) {
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    if (job.priceStatus !== "accepted") {
+        alert(
+            "Pehle price agreement complete karein."
+        );
+        return;
+    }
+
+    if (job.jobStatus === "confirmed") {
+        alert(
+            "Ye job already confirmed hai."
+        );
+        return;
+    }
+
+    const confirmJob = confirm(
+        "Job confirm karna hai?\n\n" +
+        "Agreed Price: ₹" +
+        job.customerOffer +
+        "\n\n" +
+        "Confirm karne ke baad job officially active ho jayegi."
+    );
+
+    if (!confirmJob) {
+        return;
+    }
+
+    job.jobStatus = "confirmed";
+    job.confirmedAt = new Date().toISOString();
+
+    localStorage.setItem(
+        "findviaJobs",
+        JSON.stringify(jobs)
+    );
+
+    alert(
+        "Job successfully confirmed! ✅\n\n" +
+        "Agreed Price: ₹" +
+        job.customerOffer
+    );
+
+    showMyJobs();
+}
