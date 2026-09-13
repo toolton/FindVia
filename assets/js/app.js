@@ -1419,6 +1419,7 @@ function openPricingForJob(jobId) {
     showMyJobs();
 }
 
+
 function openWorkerOffer(jobId) {
 
     const jobs = JSON.parse(
@@ -1434,23 +1435,119 @@ function openWorkerOffer(jobId) {
         return;
     }
 
-    if (job.matchStatus !== "matched") {
-        alert("Ye job abhi matched nahi hai.");
+    const currentWorker =
+        localStorage.getItem("findviaWorkerProfile");
+
+    if (!job.matchedWorker ||
+        job.matchedWorker !== currentWorker) {
+
+        alert(
+            "Ye private offer aapke liye available nahi hai."
+        );
+
         return;
     }
 
     if (!job.customerOffer) {
+
         alert(
             "Customer ne abhi price offer nahi bheja hai."
         );
+
+        return;
+    }
+
+    const choice = prompt(
+        "Customer ka private offer: ₹" +
+        job.customerOffer +
+        "\n\n" +
+        "1 = Accept Offer\n" +
+        "2 = Counter Offer\n" +
+        "3 = Reject Offer"
+    );
+
+    if (choice === null) {
+        return;
+    }
+
+    if (choice === "1") {
+
+        job.priceStatus = "accepted";
+        job.workerOffer = job.customerOffer;
+        job.priceUpdatedAt = new Date().toISOString();
+
+        localStorage.setItem(
+            "findviaJobs",
+            JSON.stringify(jobs)
+        );
+
+        alert(
+            "Offer accepted! ✅\n\n" +
+            "Agla step job confirmation hoga."
+        );
+
+        showMyJobs();
+
+        return;
+    }
+
+    if (choice === "2") {
+
+        const counterPrice = prompt(
+            "Apna counter offer enter karein:"
+        );
+
+        if (counterPrice === null) {
+            return;
+        }
+
+        const amount = Number(counterPrice);
+
+        if (!Number.isFinite(amount) || amount <= 0) {
+
+            alert(
+                "Please ek valid amount enter karein."
+            );
+
+            return;
+        }
+
+        job.workerOffer = amount;
+        job.priceStatus = "counter_offer";
+        job.priceUpdatedAt = new Date().toISOString();
+
+        localStorage.setItem(
+            "findviaJobs",
+            JSON.stringify(jobs)
+        );
+
+        alert(
+            "Counter offer send ho gaya. 💰\n\n" +
+            "Customer ise review karega."
+        );
+
+        return;
+    }
+
+    if (choice === "3") {
+
+        job.priceStatus = "rejected";
+        job.priceUpdatedAt = new Date().toISOString();
+
+        localStorage.setItem(
+            "findviaJobs",
+            JSON.stringify(jobs)
+        );
+
+        alert(
+            "Offer reject kar diya gaya."
+        );
+
         return;
     }
 
     alert(
-        "Customer ka private offer:\n\n" +
-        "₹" + job.customerOffer + "\n\n" +
-        "Next step mein yahan Accept / Counter Offer / Reject options aayenge."
+        "Invalid option. Please 1, 2 ya 3 choose karein."
     );
 }
-
 
