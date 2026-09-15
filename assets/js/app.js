@@ -2301,3 +2301,46 @@ function openAdminPanel() {
         behavior: "smooth"
     });
 }
+function adminLogin() {
+
+    const passwordInput =
+        document.getElementById("adminPasswordInput");
+
+    if (!passwordInput) {
+        alert("Admin login screen nahi mili.");
+        return;
+    }
+
+    const password =
+        passwordInput.value.trim();
+
+    if (!password) {
+        alert("Please admin password enter karein.");
+        return;
+    }
+
+    /*
+        Prototype admin password.
+        Real authentication Supabase/backend
+        ke saath later implement hogi.
+    */
+    const ADMIN_PASSWORD = "FindViaAdmin2026";
+
+    if (password !== ADMIN_PASSWORD) {
+
+        alert(
+            "❌ Incorrect admin password."
+        );
+
+        passwordInput.value = "";
+
+        return;
+    }
+
+    passwordInput.value = "";
+
+    document.getElementById("adminLoginScreen").style.display =
+        "none";
+
+    openAdminPanel();
+}
