@@ -977,6 +977,18 @@ function loadMyJobs() {
 
     if (currentRole === "worker") {
 
+
+const workerCredits = getWorkerCredits();
+
+const creditsBox = `
+    <div class="job-private-note" style="margin-bottom:15px;">
+        💰 <strong>FindVia Credits</strong>
+        <span style="float:right;">
+            ₹${workerCredits}
+        </span>
+    </div>
+`;
+        
         const matchedJobs = jobs.filter(function(job) {
 
             return (
@@ -1157,7 +1169,7 @@ ${
         });
 
 
-        box.innerHTML = html;
+        box.innerHTML = creditsBox + html;
 
         return;
     }
@@ -2093,4 +2105,48 @@ function verifyCompletionOTP(jobId) {
     );
 
     showMyJobs();
+}
+
+
+function getWorkerCredits() {
+
+    const currentWorker =
+        localStorage.getItem("findviaWorkerProfile");
+
+    if (!currentWorker) {
+        return 0;
+    }
+
+    const wallets = JSON.parse(
+        localStorage.getItem("findviaWorkerCredits") || "{}"
+    );
+
+    return Number(wallets[currentWorker] || 0);
+}
+
+
+function setWorkerCredits(amount) {
+
+    const currentWorker =
+        localStorage.getItem("findviaWorkerProfile");
+
+    if (!currentWorker) {
+        return false;
+    }
+
+    const wallets = JSON.parse(
+        localStorage.getItem("findviaWorkerCredits") || "{}"
+    );
+
+    wallets[currentWorker] = Math.max(
+        0,
+        Number(amount) || 0
+    );
+
+    localStorage.setItem(
+        "findviaWorkerCredits",
+        JSON.stringify(wallets)
+    );
+
+    return true;
 }
