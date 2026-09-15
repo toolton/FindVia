@@ -2429,3 +2429,141 @@ function hideAdminScreens() {
         adminPanelScreen.style.display = "none";
     }
 }
+
+
+function openAdminWorkers() {
+
+    hideAdminScreens();
+
+    const workersScreen = document.getElementById("adminWorkersScreen");
+    const workersList = document.getElementById("adminWorkersList");
+
+    if (!workersScreen || !workersList) {
+        alert("Worker management screen not found.");
+        return;
+    }
+
+    workersScreen.style.display = "block";
+
+    const workerProfiles = JSON.parse(
+        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    );
+
+    if (workerProfiles.length === 0) {
+        workersList.innerHTML = `
+            <div class="job-card">
+                <h3>No workers found</h3>
+                <p class="job-description">
+                    Abhi tak koi worker profile available nahi hai.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    workersList.innerHTML = "";
+
+    workerProfiles.forEach((profileString, index) => {
+
+        const worker = JSON.parse(profileString);
+
+        const credits = getWorkerCreditsForProfile(profileString);
+
+        const card = document.createElement("div");
+        card.className = "job-card";
+
+        card.innerHTML = `
+            <div class="job-card-top">
+                <div>
+                    <span class="job-category">
+                        WORKER #${index + 1}
+                    </span>
+
+                    <h3>${worker.name}</h3>
+                </div>
+
+                <span class="job-status">
+                    ${worker.availability}
+                </span>
+            </div>
+
+            <p class="job-description">
+                🔧 ${worker.service}<br>
+                📍 ${worker.area}<br>
+                ⭐ ${worker.experience} experience
+            </p>
+
+            <div style="
+                margin-top:12px;
+                padding:12px;
+                border-radius:10px;
+                background:#f5f5f5;
+            ">
+                💰 <strong>FindVia Credits</strong><br>
+                <span style="font-size:20px;font-weight:bold;">
+                    ₹${credits}
+                </span>
+            </div>
+
+            <button
+                class="primary-btn"
+                style="margin-top:12px;"
+                onclick="adminAddWorkerCreditsFromList(${index})"
+            >
+                ➕ Add Credits
+            </button>
+        `;
+
+        workersList.appendChild(card);
+    });
+}
+
+function adminAddWorkerCreditsFromList(index) {
+
+    const workerProfiles = JSON.parse(
+        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    );
+
+    const profileString = workerProfiles[index];
+
+    if (!profileString) {
+        alert("Worker not found.");
+        return;
+    }
+
+    const worker = JSON.parse(profileString);
+
+    const amount = prompt(
+        `Worker: ${worker.name}\n\nKitne credits add karne hain?`
+    );
+
+    if (amount === null) {
+        return;
+    }
+
+    const creditAmount = Number(amount);
+
+    if (!Number.isFinite(creditAmount) || creditAmount <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+    }
+
+    const currentCredits = getWorkerCreditsForProfile(profileString);
+
+    setWorkerCreditsForProfile(
+        profileString,
+        currentCredits + creditAmount
+    );
+
+    addWorkerCreditTransaction(
+        profileString,
+        creditAmount,
+        "Admin credit recharge"
+    );
+
+    alert(
+        `₹${creditAmount} credits added successfully to ${worker.name}.`
+    );
+
+    openAdminWorkers();
+}
