@@ -1276,14 +1276,27 @@ function loadMyJobs() {
                                 </button>
                             `
                             : job.priceStatus === "accepted"
-                            ? `
-                                <button
-                                    class="primary-btn"
-                                    onclick="confirmJob(${job.id})"
-                                >
-                                    ✅ Confirm Job
-                                </button>
-                            `
+? `
+    ${
+        job.jobStatus === "confirmed"
+        ? `
+            <button
+                class="primary-btn"
+                onclick="generateCompletionOTP(${job.id})"
+            >
+                🔐 Generate Completion OTP
+            </button>
+        `
+        : `
+            <button
+                class="primary-btn"
+                onclick="confirmJob(${job.id})"
+            >
+                ✅ Confirm Job
+            </button>
+        `
+    }
+`
                             : job.priceStatus === "rejected"
                             ? `
                                 <button
@@ -1920,3 +1933,58 @@ function confirmJob(jobId) {
 
     showMyJobs();
 }
+
+
+function generateCompletionOTP(jobId) {
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    if (job.jobStatus !== "confirmed") {
+        alert(
+            "Pehle job confirm karein."
+        );
+        return;
+    }
+
+    if (job.completionOTP) {
+
+        alert(
+            "Completion OTP already generated hai.\n\n" +
+            "OTP: " + job.completionOTP
+        );
+
+        return;
+    }
+
+    const otp = Math.floor(
+        1000 + Math.random() * 9000
+    ).toString();
+
+    job.completionOTP = otp;
+    job.completionOTPGeneratedAt =
+        new Date().toISOString();
+
+    localStorage.setItem(
+        "findviaJobs",
+        JSON.stringify(jobs)
+    );
+
+    alert(
+        "Completion OTP generated! 🔐\n\n" +
+        "OTP: " + otp +
+        "\n\n" +
+        "Kaam complete hone ke baad ye OTP worker ko batayein."
+    );
+}
+
