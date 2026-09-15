@@ -622,7 +622,125 @@
     </nav>
 
 <script src="assets/js/app.js?v=24"></script>
-    
+
+
+
+    <!-- =========================
+     FINDVIA ADMIN PANEL
+========================= -->
+
+<section id="adminPanelScreen" style="display:none;">
+
+    <button
+        class="back-btn"
+        onclick="goHome()"
+    >
+        ← Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            🛠️
+        </div>
+
+        <div>
+            <h2>Admin Panel</h2>
+            <p>FindVia system management</p>
+        </div>
+
+    </div>
+
+
+    <div class="results-box">
+
+        <div class="job-card">
+
+            <div class="job-card-top">
+
+                <div>
+                    <span class="job-category">
+                        MANAGEMENT
+                    </span>
+
+                    <h3>Worker Management</h3>
+                </div>
+
+                <span class="job-status">
+                    Admin
+                </span>
+
+            </div>
+
+            <p class="job-description">
+                Workers, credits aur verification ko manage karein.
+            </p>
+
+            <button
+                class="primary-btn"
+                onclick="openAdminWorkers()"
+            >
+                👷 Manage Workers
+            </button>
+
+        </div>
+
+
+        <div class="job-card">
+
+            <div class="job-card-top">
+
+                <div>
+                    <span class="job-category">
+                        FINANCE
+                    </span>
+
+                    <h3>Credits & Commission</h3>
+
+                </div>
+
+                <span class="job-status">
+                    Admin
+                </span>
+
+            </div>
+
+            <p class="job-description">
+                Worker credits aur FindVia commission settings
+                yahan manage hongi.
+            </p>
+
+        </div>
+
+
+        <div class="job-card">
+
+            <div class="job-card-top">
+
+                <div>
+                    <span class="job-category">
+                        SYSTEM
+                    </span>
+
+                    <h3>Platform Overview</h3>
+
+                </div>
+
+                <span class="job-status">
+                    Active
+                </span>
+
+            </div>
+
+            <p class="job-description">
+                FindVia ke important system controls.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
 
 </body>
 </html>
