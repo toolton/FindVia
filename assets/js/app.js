@@ -432,7 +432,7 @@ function respondToJob(jobId) {
 
 
 function goHome() {
-
+hideAdminScreens();
     document.getElementById("findWorkScreen").classList.remove("active");
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("searchScreen").classList.remove("active");
@@ -2393,4 +2393,23 @@ function openAdminLogin() {
         top: 0,
         behavior: "smooth"
     });
+}
+
+
+
+function hideAdminScreens() {
+
+    const adminLoginScreen =
+        document.getElementById("adminLoginScreen");
+
+    const adminPanelScreen =
+        document.getElementById("adminPanelScreen");
+
+    if (adminLoginScreen) {
+        adminLoginScreen.style.display = "none";
+    }
+
+    if (adminPanelScreen) {
+        adminPanelScreen.style.display = "none";
+    }
 }
