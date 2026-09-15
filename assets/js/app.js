@@ -2265,3 +2265,39 @@ function setWorkerCreditsForProfile(
         JSON.stringify(wallets)
     );
 }
+
+
+function openAdminPanel() {
+
+    document.getElementById("homeContent").style.display = "none";
+
+    document.getElementById("searchScreen")?.classList.remove("active");
+    document.getElementById("findWorkScreen")?.classList.remove("active");
+    document.getElementById("findWorkersScreen")?.classList.remove("active");
+    document.getElementById("profileScreen")?.classList.remove("active");
+    document.getElementById("workerProfileScreen")?.classList.remove("active");
+    document.getElementById("postJobScreen")?.classList.remove("active");
+    document.getElementById("jobResponsesScreen")?.classList.remove("active");
+
+    const myJobsScreen =
+        document.getElementById("myJobsScreen");
+
+    if (myJobsScreen) {
+        myJobsScreen.style.display = "none";
+    }
+
+    const adminPanelScreen =
+        document.getElementById("adminPanelScreen");
+
+    if (!adminPanelScreen) {
+        alert("Admin Panel screen nahi mili.");
+        return;
+    }
+
+    adminPanelScreen.style.display = "block";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
