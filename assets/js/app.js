@@ -1303,7 +1303,13 @@ ${
                             : job.priceStatus === "accepted"
 ? `
     ${
-        job.jobStatus === "confirmed"
+        job.jobStatus === "completed"
+        ? `
+            <div class="job-private-note">
+                ✅ Job Completed
+            </div>
+        `
+        : job.jobStatus === "confirmed"
         ? `
             <button
                 class="primary-btn"
