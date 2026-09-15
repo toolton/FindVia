@@ -1102,19 +1102,44 @@ function loadMyJobs() {
 
 
                     ${
-                        job.customerOffer &&
-                        job.priceStatus !== "accepted"
-                        ? `
-                            <button
-                                class="primary-btn"
-                                onclick="openWorkerOffer(${job.id})"
-                            >
-                                💰 View Private Offer
-                            </button>
-                        `
-                        : ""
-                    }
+    job.customerOffer &&
+    job.priceStatus !== "accepted"
+    ? `
+        <button
+            class="primary-btn"
+            onclick="openWorkerOffer(${job.id})"
+        >
+            💰 View Private Offer
+        </button>
+    `
+    : ""
+}
 
+
+${
+    job.priceStatus === "accepted" &&
+    job.jobStatus === "confirmed"
+    ? `
+        <button
+            class="primary-btn"
+            onclick="verifyCompletionOTP(${job.id})"
+        >
+            🔐 Enter Completion OTP
+        </button>
+    `
+    : ""
+}
+
+
+${
+    job.jobStatus === "completed"
+    ? `
+        <div class="job-private-note">
+            ✅ Job Completed
+        </div>
+    `
+    : ""
+}
 
                     ${
                         job.priceStatus === "accepted"
@@ -1988,3 +2013,78 @@ function generateCompletionOTP(jobId) {
     );
 }
 
+function verifyCompletionOTP(jobId) {
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    const currentWorker =
+        localStorage.getItem("findviaWorkerProfile");
+
+    if (
+        !job.matchedWorker ||
+        job.matchedWorker !== currentWorker
+    ) {
+        alert(
+            "Ye OTP aapke liye available nahi hai."
+        );
+        return;
+    }
+
+    if (job.jobStatus !== "confirmed") {
+        alert(
+            "Ye job abhi confirmed nahi hai."
+        );
+        return;
+    }
+
+    if (!job.completionOTP) {
+        alert(
+            "Customer ne abhi Completion OTP generate nahi kiya hai."
+        );
+        return;
+    }
+
+    const enteredOTP = prompt(
+        "Customer se Completion OTP lekar yahan enter karein:"
+    );
+
+    if (enteredOTP === null) {
+        return;
+    }
+
+    if (enteredOTP.trim() !== job.completionOTP) {
+
+        alert(
+            "❌ Incorrect OTP.\n\n" +
+            "Job complete nahi hui."
+        );
+
+        return;
+    }
+
+    job.jobStatus = "completed";
+    job.completedAt = new Date().toISOString();
+
+    localStorage.setItem(
+        "findviaJobs",
+        JSON.stringify(jobs)
+    );
+
+    alert(
+        "Job successfully completed! ✅\n\n" +
+        "Completion OTP verified."
+    );
+
+    showMyJobs();
+}
