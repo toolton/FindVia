@@ -2445,9 +2445,27 @@ function openAdminWorkers() {
 
     workersScreen.style.display = "block";
 
-    const workerProfiles = JSON.parse(
-        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    let workerProfiles = JSON.parse(
+    localStorage.getItem("findviaWorkerProfiles") || "[]"
+);
+
+// Agar existing current worker profile collection mein nahi hai,
+// to use automatically collection mein add karo.
+const currentWorkerProfile = localStorage.getItem(
+    "findviaWorkerProfile"
+);
+
+if (
+    currentWorkerProfile &&
+    !workerProfiles.includes(currentWorkerProfile)
+) {
+    workerProfiles.push(currentWorkerProfile);
+
+    localStorage.setItem(
+        "findviaWorkerProfiles",
+        JSON.stringify(workerProfiles)
     );
+}
 
     if (workerProfiles.length === 0) {
         workersList.innerHTML = `
