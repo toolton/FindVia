@@ -2150,3 +2150,118 @@ function setWorkerCredits(amount) {
 
     return true;
 }
+
+
+function addWorkerCreditTransaction(
+    workerProfile,
+    amount,
+    type,
+    note
+) {
+
+    const transactions = JSON.parse(
+        localStorage.getItem("findviaCreditTransactions") || "[]"
+    );
+
+    transactions.push({
+        id: Date.now(),
+        workerProfile: workerProfile,
+        amount: Number(amount),
+        type: type,
+        note: note || "",
+        createdAt: new Date().toISOString()
+    });
+
+    localStorage.setItem(
+        "findviaCreditTransactions",
+        JSON.stringify(transactions)
+    );
+}
+
+
+function adminAddWorkerCredits() {
+
+    const workerProfile =
+        prompt(
+            "Worker ka exact profile data enter karein:"
+        );
+
+    if (!workerProfile) {
+        return;
+    }
+
+    const amountInput =
+        prompt(
+            "Kitne credits add karne hain?\n\n" +
+            "Amount ₹ mein enter karein:"
+        );
+
+    if (amountInput === null) {
+        return;
+    }
+
+    const amount = Number(amountInput);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        alert(
+            "Please ek valid amount enter karein."
+        );
+        return;
+    }
+
+    const currentBalance =
+        getWorkerCreditsForProfile(workerProfile);
+
+    const newBalance =
+        currentBalance + amount;
+
+    setWorkerCreditsForProfile(
+        workerProfile,
+        newBalance
+    );
+
+    addWorkerCreditTransaction(
+        workerProfile,
+        amount,
+        "recharge",
+        "Admin verified credit addition"
+    );
+
+    alert(
+        "Credits successfully added! ✅\n\n" +
+        "Added: ₹" + amount +
+        "\n" +
+        "New Balance: ₹" + newBalance
+    );
+}
+
+
+function getWorkerCreditsForProfile(workerProfile) {
+
+    const wallets = JSON.parse(
+        localStorage.getItem("findviaWorkerCredits") || "{}"
+    );
+
+    return Number(
+        wallets[workerProfile] || 0
+    );
+}
+
+
+function setWorkerCreditsForProfile(
+    workerProfile,
+    amount
+) {
+
+    const wallets = JSON.parse(
+        localStorage.getItem("findviaWorkerCredits") || "{}"
+    );
+
+    wallets[workerProfile] =
+        Math.max(0, Number(amount) || 0);
+
+    localStorage.setItem(
+        "findviaWorkerCredits",
+        JSON.stringify(wallets)
+    );
+}
