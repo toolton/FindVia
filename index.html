@@ -623,7 +623,74 @@
 
 <script src="assets/js/app.js?v=24"></script>
 
+<!-- =========================
+     FINDVIA ADMIN LOGIN
+========================= -->
 
+<section id="adminLoginScreen" style="display:none;">
+
+    <button
+        class="back-btn"
+        onclick="goHome()"
+    >
+        ← Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            🔐
+        </div>
+
+        <div>
+            <h2>Admin Login</h2>
+            <p>Authorized access only</p>
+        </div>
+
+    </div>
+
+
+    <div class="results-box">
+
+        <div class="job-card">
+
+            <span class="job-category">
+                ADMIN ACCESS
+            </span>
+
+            <h3>FindVia Administration</h3>
+
+            <p class="job-description">
+                Admin credentials enter karke dashboard access karein.
+            </p>
+
+            <input
+                id="adminPasswordInput"
+                type="password"
+                placeholder="Admin password"
+                autocomplete="off"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    margin:15px 0;
+                    padding:14px;
+                    border-radius:12px;
+                    border:1px solid #ddd;
+                "
+            >
+
+            <button
+                class="primary-btn"
+                onclick="adminLogin()"
+            >
+                🔓 Login to Admin Panel
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
 
     <!-- =========================
      FINDVIA ADMIN PANEL
