@@ -956,9 +956,207 @@ function loadMyJobs() {
 
     const box = document.getElementById("myJobsResults");
 
+    const currentRole =
+        localStorage.getItem("findviaUserRole");
+
+    const currentWorkerProfile =
+        localStorage.getItem("findviaWorkerProfile") || "";
+
     const jobs = JSON.parse(
         localStorage.getItem("findviaJobs") || "[]"
     );
+
+    const responses = JSON.parse(
+        localStorage.getItem("findviaJobResponses") || "[]"
+    );
+
+
+    /* =========================
+       WORKER VIEW
+    ========================= */
+
+    if (currentRole === "worker") {
+
+        const matchedJobs = jobs.filter(function(job) {
+
+            return (
+                job.matchStatus === "matched" &&
+                job.matchedWorker === currentWorkerProfile
+            );
+
+        });
+
+
+        const title =
+            document.querySelector("#myJobsScreen .profile-header h2");
+
+        const subtitle =
+            document.querySelector("#myJobsScreen .profile-header p");
+
+        if (title) {
+            title.textContent = "My Matched Jobs";
+        }
+
+        if (subtitle) {
+            subtitle.textContent =
+                "Jin jobs ke liye aap customer ke saath matched hain.";
+        }
+
+
+        if (matchedJobs.length === 0) {
+
+            box.innerHTML = `
+                <div class="empty-state">
+
+                    <div style="font-size:40px;">📋</div>
+
+                    <h3>No matched jobs yet</h3>
+
+                    <p>
+                        Jab koi customer aapko apni job ke liye select karega,
+                        woh job yahan दिखाई देगी.
+                    </p>
+
+                </div>
+            `;
+
+            return;
+        }
+
+
+        let html = "";
+
+
+        matchedJobs.forEach(function(job) {
+
+            let statusText = "✅ Worker Matched";
+
+            if (job.jobStatus === "confirmed") {
+
+                statusText = "✅ Job Confirmed";
+
+            } else if (job.priceStatus === "accepted") {
+
+                statusText = "💰 Price Accepted";
+
+            } else if (job.priceStatus === "counter_offer") {
+
+                statusText = "💰 Counter Offer Sent";
+
+            } else if (job.priceStatus === "rejected") {
+
+                statusText = "❌ Offer Rejected";
+
+            } else if (job.customerOffer) {
+
+                statusText = "💰 Price Offer Received";
+
+            }
+
+
+            html += `
+                <div class="job-card">
+
+                    <div class="job-card-top">
+
+                        <div>
+
+                            <span class="job-category">
+                                ${escapeHTML(job.category)}
+                            </span>
+
+                            <h3>
+                                ${escapeHTML(job.title)}
+                            </h3>
+
+                        </div>
+
+                        <span class="job-status">
+                            ${statusText}
+                        </span>
+
+                    </div>
+
+
+                    <p class="job-description">
+                        ${escapeHTML(job.description)}
+                    </p>
+
+
+                    <div class="job-meta">
+
+                        <span>
+                            📍 ${escapeHTML(job.area)}
+                        </span>
+
+                        <span>
+                            🕒 ${escapeHTML(job.timing)}
+                        </span>
+
+                    </div>
+
+
+                    <div class="job-private-note">
+                        🔒 Ye job aapke saath privately matched hai.
+                    </div>
+
+
+                    ${
+                        job.customerOffer &&
+                        job.priceStatus !== "accepted"
+                        ? `
+                            <button
+                                class="primary-btn"
+                                onclick="openWorkerOffer(${job.id})"
+                            >
+                                💰 View Private Offer
+                            </button>
+                        `
+                        : ""
+                    }
+
+
+                    ${
+                        job.priceStatus === "accepted"
+                        ? `
+                            <div class="job-private-note">
+                                ✅ Price agreement complete.
+                            </div>
+                        `
+                        : ""
+                    }
+
+
+                </div>
+            `;
+        });
+
+
+        box.innerHTML = html;
+
+        return;
+    }
+
+
+    /* =========================
+       CUSTOMER VIEW
+    ========================= */
+
+    const title =
+        document.querySelector("#myJobsScreen .profile-header h2");
+
+    const subtitle =
+        document.querySelector("#myJobsScreen .profile-header p");
+
+    if (title) {
+        title.textContent = "My Jobs";
+    }
+
+    if (subtitle) {
+        subtitle.textContent =
+            "Aapki posted work requirements.";
+    }
+
 
     if (jobs.length === 0) {
 
@@ -987,13 +1185,11 @@ function loadMyJobs() {
         return;
     }
 
+
     let html = "";
 
-    jobs.forEach(function(job) {
 
-        const responses = JSON.parse(
-            localStorage.getItem("findviaJobResponses") || "[]"
-        );
+    jobs.forEach(function(job) {
 
         const responseCount = responses.filter(function(response) {
 
@@ -1019,11 +1215,17 @@ function loadMyJobs() {
 
                     </div>
 
-                <span class="job-status">
-    ${job.matchStatus === "matched"
-        ? "✅ Worker Matched"
-        : (job.status === "open" ? "Open" : "Closed")}
-</span>    
+                    <span class="job-status">
+                        ${
+                            job.matchStatus === "matched"
+                            ? "✅ Worker Matched"
+                            : (
+                                job.status === "open"
+                                ? "Open"
+                                : "Closed"
+                            )
+                        }
+                    </span>
 
                 </div>
 
@@ -1060,66 +1262,65 @@ function loadMyJobs() {
                 </div>
 
 
- ${
-    job.matchStatus === "matched"
-    ? `
-        ${
-            job.priceStatus === "counter_offer"
-            ? `
-                <button
-                    class="primary-btn"
-                    onclick="openCustomerPriceResponse(${job.id})"
-                >
-                    💰 View Worker Offer
-                </button>
-            `
-            : job.priceStatus === "accepted"
-            ? `
-
- 
-<button
-    class="primary-btn"
-    onclick="confirmJob(${job.id})"
->
-    ✅ Confirm Job
-</button>
-                
-            `
-            : job.priceStatus === "rejected"
-            ? `
-                <button
-                    class="primary-btn"
-                    onclick="openCustomerPriceResponse(${job.id})"
-                >
-                    ❌ View Price Status
-                </button>
-            `
-            : `
-                <button
-                    class="primary-btn"
-                    onclick="openPricingForJob(${job.id})"
-                >
-                    💰 Set Price
-                </button>
-            `
-        }
-    `
-    : `
-        <button
-            class="primary-btn"
-            onclick="showJobResponses(${job.id})"
-        >
-            View Responses
-        </button>
-    `
-}               
+                ${
+                    job.matchStatus === "matched"
+                    ? `
+                        ${
+                            job.priceStatus === "counter_offer"
+                            ? `
+                                <button
+                                    class="primary-btn"
+                                    onclick="openCustomerPriceResponse(${job.id})"
+                                >
+                                    💰 View Worker Offer
+                                </button>
+                            `
+                            : job.priceStatus === "accepted"
+                            ? `
+                                <button
+                                    class="primary-btn"
+                                    onclick="confirmJob(${job.id})"
+                                >
+                                    ✅ Confirm Job
+                                </button>
+                            `
+                            : job.priceStatus === "rejected"
+                            ? `
+                                <button
+                                    class="primary-btn"
+                                    onclick="openCustomerPriceResponse(${job.id})"
+                                >
+                                    ❌ View Price Status
+                                </button>
+                            `
+                            : `
+                                <button
+                                    class="primary-btn"
+                                    onclick="openPricingForJob(${job.id})"
+                                >
+                                    💰 Set Price
+                                </button>
+                            `
+                        }
+                    `
+                    : `
+                        <button
+                            class="primary-btn"
+                            onclick="showJobResponses(${job.id})"
+                        >
+                            View Responses
+                        </button>
+                    `
+                }
 
             </div>
         `;
     });
 
+
     box.innerHTML = html;
 }
+
 
 function showJobResponses(jobId) {
 
