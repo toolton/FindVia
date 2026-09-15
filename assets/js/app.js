@@ -845,10 +845,26 @@ function saveWorkerProfile() {
         availability: availability
     };
 
-    localStorage.setItem(
-        "findviaWorkerProfile",
-        JSON.stringify(workerProfile)
-    );
+    const profileString = JSON.stringify(workerProfile);
+
+localStorage.setItem(
+    "findviaWorkerProfile",
+    profileString
+);
+
+// Admin ke liye worker profiles ki collection
+const workerProfiles = JSON.parse(
+    localStorage.getItem("findviaWorkerProfiles") || "[]"
+);
+
+if (!workerProfiles.includes(profileString)) {
+    workerProfiles.push(profileString);
+}
+
+localStorage.setItem(
+    "findviaWorkerProfiles",
+    JSON.stringify(workerProfiles)
+);
 
     alert("Worker profile saved successfully.");
 
