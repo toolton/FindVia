@@ -2522,14 +2522,22 @@ if (
                     ₹${credits}
                 </span>
             </div>
+<button
+    class="primary-btn"
+    style="margin-top:12px;"
+    onclick="adminAddWorkerCreditsFromList(${index})"
+>
+    ➕ Add Credits
+</button>
 
-            <button
-                class="primary-btn"
-                style="margin-top:12px;"
-                onclick="adminAddWorkerCreditsFromList(${index})"
-            >
-                ➕ Add Credits
-            </button>
+<button
+    class="primary-btn"
+    style="margin-top:8px;"
+    onclick="openWorkerTransactions(${index})"
+>
+    📋 Transaction History
+</button>
+            
         `;
 
         workersList.appendChild(card);
