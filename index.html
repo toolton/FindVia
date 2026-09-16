@@ -800,6 +800,44 @@
                 yahan manage hongi.
             </p>
 
+<div style="margin-top:14px;">
+
+    <label
+        for="adminCommissionInput"
+        style="display:block; margin-bottom:6px; font-weight:600;"
+    >
+        FindVia Commission (%)
+    </label>
+
+    <input
+        type="number"
+        id="adminCommissionInput"
+        min="0"
+        max="100"
+        step="1"
+        placeholder="10"
+        style="width:100%; box-sizing:border-box;"
+    >
+
+    <p
+        style="font-size:13px; margin:8px 0 10px;"
+    >
+        Current commission:
+        <strong id="adminCommissionCurrent">
+            10%
+        </strong>
+    </p>
+
+    <button
+        class="primary-btn"
+        onclick="saveAdminCommission()"
+    >
+        💾 Save Commission
+    </button>
+
+</div>
+
+            
         </div>
 
 
