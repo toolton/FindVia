@@ -2328,6 +2328,26 @@ hideAdminScreens();
 
     adminPanelScreen.style.display = "block";
 
+
+const commissionInput =
+    document.getElementById("adminCommissionInput");
+
+const commissionDisplay =
+    document.getElementById("adminCommissionCurrent");
+
+const currentCommission =
+    getFindViaCommissionPercent();
+
+if (commissionInput) {
+    commissionInput.value = currentCommission;
+}
+
+if (commissionDisplay) {
+    commissionDisplay.textContent =
+        currentCommission + "%";
+}
+    
+
     window.scrollTo({
         top: 0,
         behavior: "smooth"
