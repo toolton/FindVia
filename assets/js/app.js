@@ -2118,6 +2118,29 @@ function verifyCompletionOTP(jobId) {
         return;
     }
 
+
+const agreedAmount = Number(job.customerOffer);
+
+if (!Number.isFinite(agreedAmount) || agreedAmount <= 0) {
+    alert(
+        "Job price valid nahi hai.\n\n" +
+        "Commission process nahi ho sakta."
+    );
+    return;
+}
+
+const commissionPercent =
+    getFindViaCommissionPercent();
+
+const commissionAmount =
+    calculateFindViaCommission(agreedAmount);
+
+job.finalAmount = agreedAmount;
+job.commissionPercent = commissionPercent;
+job.commissionAmount = commissionAmount;
+job.commissionLockedAt = new Date().toISOString();
+    
+
     job.jobStatus = "completed";
     job.completedAt = new Date().toISOString();
 
