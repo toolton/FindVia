@@ -454,7 +454,7 @@ document.getElementById("postJobScreen").classList.remove("active");
 
 
 function showProfile() {
-
+hideAdminScreens();
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen").classList.remove("active");
@@ -480,6 +480,8 @@ loadWorkerProfileSummary();
 
 function closeScreens() {
 
+
+    
     document.getElementById("findWorkScreen").classList.remove("active");
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("searchScreen").classList.remove("active");
@@ -685,6 +687,8 @@ function searchWorkers() {
 
 function openSearch() {
 
+hideAdminScreens();
+    
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen").classList.remove("active");
@@ -2288,6 +2292,8 @@ function setWorkerCreditsForProfile(
 
 function openAdminPanel() {
 
+hideAdminScreens();
+    
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("searchScreen")?.classList.remove("active");
