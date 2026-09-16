@@ -2593,3 +2593,135 @@ function adminAddWorkerCreditsFromList(index) {
 
     openAdminWorkers();
 }
+
+function openWorkerTransactions(index) {
+
+    const workerProfiles = JSON.parse(
+        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    );
+
+    const profileString = workerProfiles[index];
+
+    if (!profileString) {
+        alert("Worker not found.");
+        return;
+    }
+
+    const worker = JSON.parse(profileString);
+
+    const transactions = JSON.parse(
+        localStorage.getItem("findviaCreditTransactions") || "[]"
+    );
+
+    const workerTransactions = transactions.filter(
+        function(transaction) {
+            return transaction.workerProfile === profileString;
+        }
+    );
+
+    const transactionScreen = document.getElementById(
+        "adminWorkerTransactionsScreen"
+    );
+
+    const transactionList = document.getElementById(
+        "adminWorkerTransactionsList"
+    );
+
+    const workerName = document.getElementById(
+        "adminTransactionWorkerName"
+    );
+
+    if (
+        !transactionScreen ||
+        !transactionList ||
+        !workerName
+    ) {
+        alert("Transaction screen not found.");
+        return;
+    }
+
+    document.getElementById("adminWorkersScreen").style.display =
+        "none";
+
+    transactionScreen.style.display = "block";
+
+    workerName.textContent =
+        worker.name + " • Transaction History";
+
+    if (workerTransactions.length === 0) {
+
+        transactionList.innerHTML = `
+            <div class="job-card">
+                <h3>No transactions yet</h3>
+
+                <p class="job-description">
+                    Is worker ke liye abhi koi credit transaction nahi hai.
+                </p>
+            </div>
+        `;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        return;
+    }
+
+    transactionList.innerHTML = "";
+
+    workerTransactions
+        .slice()
+        .reverse()
+        .forEach(function(transaction) {
+
+            const amount = Number(transaction.amount) || 0;
+
+            const date = transaction.createdAt
+                ? new Date(transaction.createdAt).toLocaleString()
+                : "Date unavailable";
+
+            const card = document.createElement("div");
+
+            card.className = "job-card";
+
+            card.innerHTML = `
+                <div class="job-card-top">
+
+                    <div>
+                        <span class="job-category">
+                            ${transaction.type || "Credit Transaction"}
+                        </span>
+
+                        <h3>
+                            💰 +₹${amount}
+                        </h3>
+                    </div>
+
+                    <span class="job-status">
+                        Added
+                    </span>
+
+                </div>
+
+                <p class="job-description">
+
+                    📅 ${date}
+
+                    ${
+                        transaction.note
+                        ? `<br>📝 ${transaction.note}`
+                        : ""
+                    }
+
+                </p>
+            `;
+
+            transactionList.appendChild(card);
+        });
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
