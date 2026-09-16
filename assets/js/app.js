@@ -2781,3 +2781,64 @@ workerTransactions
         behavior: "smooth"
     });
 }
+
+/* ================================
+   FINDVIA COMMISSION SYSTEM
+================================ */
+
+function getFindViaCommissionPercent() {
+
+    const savedCommission = localStorage.getItem(
+        "findviaCommissionPercent"
+    );
+
+    if (savedCommission === null) {
+        return 10;
+    }
+
+    const commission = Number(savedCommission);
+
+    if (!Number.isFinite(commission) || commission < 0 || commission > 100) {
+        return 10;
+    }
+
+    return commission;
+}
+
+
+function setFindViaCommissionPercent(percent) {
+
+    const commission = Number(percent);
+
+    if (
+        !Number.isFinite(commission) ||
+        commission < 0 ||
+        commission > 100
+    ) {
+        return false;
+    }
+
+    localStorage.setItem(
+        "findviaCommissionPercent",
+        commission.toString()
+    );
+
+    return true;
+}
+
+
+function calculateFindViaCommission(amount) {
+
+    const price = Number(amount);
+
+    if (!Number.isFinite(price) || price <= 0) {
+        return 0;
+    }
+
+    const commissionPercent =
+        getFindViaCommissionPercent();
+
+    return Math.round(
+        (price * commissionPercent) / 100
+    );
+}
