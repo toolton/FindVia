@@ -100,6 +100,10 @@ function selectLocation() {
 
 
 function findWork() {
+
+hideAdminScreens();
+
+    
 document.getElementById("homeContent").style.display = "none";
 
 document.getElementById("searchScreen").classList.remove("active");
@@ -119,6 +123,9 @@ behavior: "smooth"
 }
 
 function findWorkers() {
+
+hideAdminScreens();
+    
 document.getElementById("homeContent").style.display = "none";
 
 document.getElementById("searchScreen").classList.remove("active");
