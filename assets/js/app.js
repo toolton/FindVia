@@ -2140,7 +2140,54 @@ job.commissionPercent = commissionPercent;
 job.commissionAmount = commissionAmount;
 job.commissionLockedAt = new Date().toISOString();
     
+const workerProfile =
+    JSON.parse(
+        localStorage.getItem("findviaWorkerProfile") || "null"
+    );
 
+if (!workerProfile) {
+    alert(
+        "Worker profile nahi mila.\n\n" +
+        "Job complete nahi hui."
+    );
+    return;
+}
+
+const currentCredits =
+    getWorkerCreditsForProfile(workerProfile);
+
+if (currentCredits < commissionAmount) {
+    alert(
+        "❌ Insufficient FindVia credits.\n\n" +
+        "Required: ₹" +
+        commissionAmount +
+        "\n" +
+        "Available: ₹" +
+        currentCredits +
+        "\n\n" +
+        "Please recharge credits before completing this job."
+    );
+
+    return;
+}
+
+const newBalance =
+    currentCredits - commissionAmount;
+
+setWorkerCreditsForProfile(
+    workerProfile,
+    newBalance
+);
+
+addWorkerCreditTransaction(
+    workerProfile,
+    -commissionAmount,
+    "debit",
+    "Commission deducted for completed job"
+);
+
+
+    
     job.jobStatus = "completed";
     job.completedAt = new Date().toISOString();
 
