@@ -2179,12 +2179,15 @@ function addWorkerCreditTransaction(
         localStorage.getItem("findviaCreditTransactions") || "[]"
     );
 
+    const balanceAfter = getWorkerCreditsForProfile(workerProfile);
+
     transactions.push({
         id: Date.now(),
         workerProfile: workerProfile,
         amount: Number(amount),
         type: type,
         note: note || "",
+        balanceAfter: balanceAfter,
         createdAt: new Date().toISOString()
     });
 
@@ -2412,14 +2415,23 @@ function openAdminLogin() {
 }
 
 
-
 function hideAdminScreens() {
 
-    const adminLoginScreen =
-        document.getElementById("adminLoginScreen");
+    const adminLoginScreen = document.getElementById(
+        "adminLoginScreen"
+    );
 
-    const adminPanelScreen =
-        document.getElementById("adminPanelScreen");
+    const adminPanelScreen = document.getElementById(
+        "adminPanelScreen"
+    );
+
+    const adminWorkersScreen = document.getElementById(
+        "adminWorkersScreen"
+    );
+
+    const adminTransactionsScreen = document.getElementById(
+        "adminWorkerTransactionsScreen"
+    );
 
     if (adminLoginScreen) {
         adminLoginScreen.style.display = "none";
@@ -2428,7 +2440,16 @@ function hideAdminScreens() {
     if (adminPanelScreen) {
         adminPanelScreen.style.display = "none";
     }
+
+    if (adminWorkersScreen) {
+        adminWorkersScreen.style.display = "none";
+    }
+
+    if (adminTransactionsScreen) {
+        adminTransactionsScreen.style.display = "none";
+    }
 }
+
 
 
 function openAdminWorkers() {
@@ -2670,55 +2691,77 @@ function openWorkerTransactions(index) {
 
     transactionList.innerHTML = "";
 
-    workerTransactions
-        .slice()
-        .reverse()
-        .forEach(function(transaction) {
+    let runningBalance = 0;
 
-            const amount = Number(transaction.amount) || 0;
+workerTransactions
+    .slice()
+    .sort(function(a, b) {
+        return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    })
+    .forEach(function(transaction) {
 
-            const date = transaction.createdAt
-                ? new Date(transaction.createdAt).toLocaleString()
-                : "Date unavailable";
+        const amount = Number(transaction.amount) || 0;
 
-            const card = document.createElement("div");
+        runningBalance += amount;
 
-            card.className = "job-card";
+        const balanceAfter =
+            transaction.balanceAfter !== undefined
+                ? Number(transaction.balanceAfter)
+                : runningBalance;
 
-            card.innerHTML = `
-                <div class="job-card-top">
+        const isDebit = amount < 0;
 
-                    <div>
-                        <span class="job-category">
-                            ${transaction.type || "Credit Transaction"}
-                        </span>
+        const displayAmount = Math.abs(amount);
 
-                        <h3>
-                            💰 +₹${amount}
-                        </h3>
-                    </div>
+        const date = transaction.createdAt
+            ? new Date(transaction.createdAt).toLocaleString()
+            : "Date unavailable";
 
-                    <span class="job-status">
-                        Added
+        const card = document.createElement("div");
+
+        card.className = "job-card";
+
+        card.innerHTML = `
+            <div class="job-card-top">
+
+                <div>
+
+                    <span class="job-category">
+                        ${transaction.type || "Credit Transaction"}
                     </span>
+
+                    <h3>
+                        ${isDebit ? "💸 −" : "💰 +"}₹${displayAmount}
+                    </h3>
 
                 </div>
 
-                <p class="job-description">
+                <span class="job-status">
+                    ${isDebit ? "Deducted" : "Added"}
+                </span>
 
-                    📅 ${date}
+            </div>
 
-                    ${
-                        transaction.note
-                        ? `<br>📝 ${transaction.note}`
-                        : ""
-                    }
+            <p class="job-description">
 
-                </p>
-            `;
+                📅 ${date}
 
-            transactionList.appendChild(card);
-        });
+                <br>
+
+                💰 Balance after:
+                <strong>₹${balanceAfter}</strong>
+
+                ${
+                    transaction.note
+                    ? `<br>📝 ${transaction.note}`
+                    : ""
+                }
+
+            </p>
+        `;
+
+        transactionList.appendChild(card);
+    });
 
     window.scrollTo({
         top: 0,
