@@ -2842,3 +2842,49 @@ function calculateFindViaCommission(amount) {
         (price * commissionPercent) / 100
     );
 }
+
+function saveAdminCommission() {
+
+    const input = document.getElementById(
+        "adminCommissionInput"
+    );
+
+    const currentDisplay = document.getElementById(
+        "adminCommissionCurrent"
+    );
+
+    if (!input) {
+        return;
+    }
+
+    const commission = Number(input.value);
+
+    if (
+        !Number.isFinite(commission) ||
+        commission < 0 ||
+        commission > 100
+    ) {
+        alert("Commission must be between 0% and 100%.");
+        return;
+    }
+
+    const saved = setFindViaCommissionPercent(
+        commission
+    );
+
+    if (!saved) {
+        alert("Unable to save commission.");
+        return;
+    }
+
+    if (currentDisplay) {
+        currentDisplay.textContent =
+            commission + "%";
+    }
+
+    alert(
+        "Commission updated successfully to " +
+        commission +
+        "%."
+    );
+}
