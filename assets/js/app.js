@@ -2141,9 +2141,7 @@ job.commissionAmount = commissionAmount;
 job.commissionLockedAt = new Date().toISOString();
     
 const workerProfile =
-    JSON.parse(
-        localStorage.getItem("findviaWorkerProfile") || "null"
-    );
+    localStorage.getItem("findviaWorkerProfile");
 
 if (!workerProfile) {
     alert(
@@ -2156,6 +2154,7 @@ if (!workerProfile) {
 const currentCredits =
     getWorkerCreditsForProfile(workerProfile);
 
+    
 if (currentCredits < commissionAmount) {
     alert(
         "❌ Insufficient FindVia credits.\n\n" +
