@@ -2181,6 +2181,8 @@ function generateCompletionOTP(jobId) {
     );
 }
 
+
+
 function verifyCompletionOTP(jobId) {
 
     const jobs = JSON.parse(
@@ -2223,113 +2225,146 @@ function verifyCompletionOTP(jobId) {
         return;
     }
 
-    const enteredOTP = prompt(
-        "Customer se Completion OTP lekar yahan enter karein:"
+    showFindViaInputModal(
+        "Complete Job",
+        "Customer se mila 4-digit OTP enter karein:",
+        function(enteredOTP) {
+
+            if (
+                enteredOTP.trim() !==
+                job.completionOTP
+            ) {
+
+                alert(
+                    "❌ Incorrect OTP.\n\n" +
+                    "Job complete nahi hui."
+                );
+
+                return;
+            }
+
+            const agreedAmount =
+                Number(job.customerOffer);
+
+            if (
+                !Number.isFinite(agreedAmount) ||
+                agreedAmount <= 0
+            ) {
+
+                alert(
+                    "Job price valid nahi hai.\n\n" +
+                    "Commission process nahi ho sakta."
+                );
+
+                return;
+            }
+
+            const commissionPercent =
+                getFindViaCommissionPercent();
+
+            const commissionAmount =
+                calculateFindViaCommission(
+                    agreedAmount
+                );
+
+            job.finalAmount =
+                agreedAmount;
+
+            job.commissionPercent =
+                commissionPercent;
+
+            job.commissionAmount =
+                commissionAmount;
+
+            job.commissionLockedAt =
+                new Date().toISOString();
+
+            const workerProfile =
+                localStorage.getItem(
+                    "findviaWorkerProfile"
+                );
+
+            if (!workerProfile) {
+
+                alert(
+                    "Worker profile nahi mila.\n\n" +
+                    "Job complete nahi hui."
+                );
+
+                return;
+            }
+
+            const currentCredits =
+                getWorkerCreditsForProfile(
+                    workerProfile
+                );
+
+            if (
+                currentCredits <
+                commissionAmount
+            ) {
+
+                alert(
+                    "❌ Insufficient FindVia credits.\n\n" +
+                    "Required: ₹" +
+                    commissionAmount +
+                    "\n" +
+                    "Available: ₹" +
+                    currentCredits +
+                    "\n\n" +
+                    "Please recharge credits before completing this job."
+                );
+
+                return;
+            }
+
+            const newBalance =
+                currentCredits -
+                commissionAmount;
+
+            setWorkerCreditsForProfile(
+                workerProfile,
+                newBalance
+            );
+
+            addWorkerCreditTransaction(
+                workerProfile,
+                -commissionAmount,
+                "debit",
+                "Commission deducted for Job #" +
+                    job.id,
+                {
+                    jobId: job.id,
+                    jobAmount:
+                        job.finalAmount,
+                    commissionPercent:
+                        job.commissionPercent,
+                    commissionAmount:
+                        job.commissionAmount
+                }
+            );
+
+            job.jobStatus =
+                "completed";
+
+            job.completedAt =
+                new Date().toISOString();
+
+            localStorage.setItem(
+                "findviaJobs",
+                JSON.stringify(jobs)
+            );
+
+            alert(
+                "Job successfully completed! ✅\n\n" +
+                "Completion OTP verified."
+            );
+
+            showMyJobs();
+        }
     );
-
-    if (enteredOTP === null) {
-        return;
-    }
-
-    if (enteredOTP.trim() !== job.completionOTP) {
-
-        alert(
-            "❌ Incorrect OTP.\n\n" +
-            "Job complete nahi hui."
-        );
-
-        return;
-    }
-
-
-const agreedAmount = Number(job.customerOffer);
-
-if (!Number.isFinite(agreedAmount) || agreedAmount <= 0) {
-    alert(
-        "Job price valid nahi hai.\n\n" +
-        "Commission process nahi ho sakta."
-    );
-    return;
 }
 
-const commissionPercent =
-    getFindViaCommissionPercent();
-
-const commissionAmount =
-    calculateFindViaCommission(agreedAmount);
-
-job.finalAmount = agreedAmount;
-job.commissionPercent = commissionPercent;
-job.commissionAmount = commissionAmount;
-job.commissionLockedAt = new Date().toISOString();
-    
-const workerProfile =
-    localStorage.getItem("findviaWorkerProfile");
-
-if (!workerProfile) {
-    alert(
-        "Worker profile nahi mila.\n\n" +
-        "Job complete nahi hui."
-    );
-    return;
-}
-
-const currentCredits =
-    getWorkerCreditsForProfile(workerProfile);
-
-    
-if (currentCredits < commissionAmount) {
-    alert(
-        "❌ Insufficient FindVia credits.\n\n" +
-        "Required: ₹" +
-        commissionAmount +
-        "\n" +
-        "Available: ₹" +
-        currentCredits +
-        "\n\n" +
-        "Please recharge credits before completing this job."
-    );
-
-    return;
-}
-
-const newBalance =
-    currentCredits - commissionAmount;
-
-setWorkerCreditsForProfile(
-    workerProfile,
-    newBalance
-);
-
-addWorkerCreditTransaction(
-    workerProfile,
-    -commissionAmount,
-    "debit",
-    "Commission deducted for Job #" + job.id,
-    {
-        jobId: job.id,
-        jobAmount: job.finalAmount,
-        commissionPercent: job.commissionPercent,
-        commissionAmount: job.commissionAmount
-    }
-);
-
-    
-    job.jobStatus = "completed";
-    job.completedAt = new Date().toISOString();
-
-    localStorage.setItem(
-        "findviaJobs",
-        JSON.stringify(jobs)
-    );
-
-    alert(
-        "Job successfully completed! ✅\n\n" +
-        "Completion OTP verified."
-    );
-
-    showMyJobs();
-}
 
 
 function getWorkerCredits() {
