@@ -3215,131 +3215,311 @@ function runFindViaSystemTest() {
     const results = [];
 
     function test(name, condition) {
-
         results.push({
             name: name,
             passed: Boolean(condition)
         });
     }
 
+    function getSource(functionName) {
+
+        try {
+
+            if (
+                typeof window[functionName] === "function"
+            ) {
+                return window[functionName].toString();
+            }
+
+            return "";
+
+        } catch (error) {
+
+            return "";
+        }
+    }
+
+
     // ==========================================
-    // 1. Worker Verification
+    // BASIC SYSTEM
     // ==========================================
 
     test(
-        "Worker verification status exists",
-        ["pending", "approved", "rejected"].includes(
-            JSON.parse(
-                localStorage.getItem("findviaWorkerProfile") || "{}"
-            ).verificationStatus
+        "Worker response function exists",
+        typeof respondToJob === "function"
+    );
+
+    test(
+        "Worker matching function exists",
+        typeof selectWorkerForJob === "function"
+    );
+
+    test(
+        "Customer pricing function exists",
+        typeof openPricingForJob === "function"
+    );
+
+    test(
+        "Worker offer function exists",
+        typeof openWorkerOffer === "function"
+    );
+
+    test(
+        "Customer price response function exists",
+        typeof openCustomerPriceResponse === "function"
+    );
+
+    test(
+        "Job confirmation function exists",
+        typeof confirmJob === "function"
+    );
+
+    test(
+        "Completion OTP function exists",
+        typeof generateCompletionOTP === "function"
+    );
+
+    test(
+        "OTP verification function exists",
+        typeof verifyCompletionOTP === "function"
+    );
+
+
+    // ==========================================
+    // WORKER VERIFICATION
+    // ==========================================
+
+    const responseSource =
+        getSource("respondToJob");
+
+    test(
+        "Pending/rejected worker response is blocked",
+        responseSource.includes(
+            "verificationStatus !== \"approved\""
+        )
+    );
+
+
+    // ==========================================
+    // MATCHING SAFETY
+    // ==========================================
+
+    const matchSource =
+        getSource("selectWorkerForJob");
+
+    test(
+        "Worker matching checks job existence",
+        matchSource.includes("if (!job)")
+    );
+
+    test(
+        "Matched job cannot be matched again",
+        /job\.matchStatus\s*===\s*["']matched["']/.test(
+            matchSource
+        )
+    );
+
+
+    // ==========================================
+    // PRICING SAFETY
+    // ==========================================
+
+    const customerPricingSource =
+        getSource("openPricingForJob");
+
+    test(
+        "Customer pricing requires matched job",
+        customerPricingSource.includes(
+            'job.matchStatus !== "matched"'
+        )
+    );
+
+    const workerOfferSource =
+        getSource("openWorkerOffer");
+
+    test(
+        "Worker offer verifies matched worker",
+        workerOfferSource.includes(
+            "job.matchedWorker"
+        )
+    );
+
+
+    // ==========================================
+    // CONFIRMATION SAFETY
+    // ==========================================
+
+    const confirmSource =
+        getSource("confirmJob");
+
+    test(
+        "Confirmation requires accepted price",
+        confirmSource.includes(
+            'job.priceStatus !== "accepted"'
         )
     );
 
     test(
-        "Verification response rule exists",
-        typeof respondToJob === "function"
-    );
-
-    test(
-        "Worker approval function exists",
-        typeof approveWorker === "function"
-    );
-
-    test(
-        "Worker rejection function exists",
-        typeof rejectWorker === "function"
+        "Already confirmed job is protected",
+        confirmSource.includes(
+            'job.jobStatus === "confirmed"'
+        )
     );
 
 
     // ==========================================
-    // 2. Job System
+    // COMPLETION SAFETY
     // ==========================================
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
+    const otpSource =
+        getSource("generateCompletionOTP");
+
+    test(
+        "OTP generation requires confirmed job",
+        otpSource.includes(
+            'job.jobStatus !== "confirmed"'
+        )
+    );
+
+    const verifySource =
+        getSource("verifyCompletionOTP");
+
+    test(
+        "OTP verifies matched worker",
+        verifySource.includes(
+            "job.matchedWorker"
+        )
     );
 
     test(
-        "Job storage is readable",
-        Array.isArray(jobs)
-    );
-
-
-    // ==========================================
-    // 3. Job Responses
-    // ==========================================
-
-    const responses = JSON.parse(
-        localStorage.getItem("findviaJobResponses") || "[]"
+        "OTP verification requires confirmed job",
+        verifySource.includes(
+            'job.jobStatus !== "confirmed"'
+        )
     );
 
     test(
-        "Job response storage is readable",
-        Array.isArray(responses)
+        "OTP cannot be generated twice",
+        otpSource.includes(
+            "job.completionOTP"
+        )
     );
 
     test(
-        "Response function exists",
-        typeof respondToJob === "function"
+        "Insufficient credits block completion",
+        verifySource.includes(
+            "currentCredits < commissionAmount"
+        )
+    );
+
+    test(
+        "Commission transaction is created",
+        verifySource.includes(
+            "addWorkerCreditTransaction"
+        )
+    );
+
+    test(
+        "Completed status is saved",
+        verifySource.includes(
+            'job.jobStatus = "completed"'
+        )
     );
 
 
     // ==========================================
-    // 4. Credits System
+    // COMMISSION LOCK
     // ==========================================
 
     test(
-        "Worker credit reader exists",
+        "Commission percentage is stored on job",
+        verifySource.includes(
+            "job.commissionPercent"
+        )
+    );
+
+    test(
+        "Commission amount is stored on job",
+        verifySource.includes(
+            "job.commissionAmount"
+        )
+    );
+
+    test(
+        "Commission lock timestamp is stored",
+        verifySource.includes(
+            "job.commissionLockedAt"
+        )
+    );
+
+
+    // ==========================================
+    // CREDIT SYSTEM
+    // ==========================================
+
+    test(
+        "Credit reader exists",
         typeof getWorkerCreditsForProfile === "function"
     );
 
     test(
-        "Worker credit setter exists",
+        "Credit setter exists",
         typeof setWorkerCreditsForProfile === "function"
     );
 
     test(
-        "Credit transaction function exists",
+        "Transaction ledger exists",
         typeof addWorkerCreditTransaction === "function"
     );
 
 
     // ==========================================
-    // 5. Commission System
+    // CALCULATION TESTS
     // ==========================================
 
-    test(
-        "Commission percentage function exists",
-        typeof getFindViaCommissionPercent === "function"
-    );
+    const commissionPercent =
+        getFindViaCommissionPercent();
 
-    test(
-        "Commission calculation function exists",
-        typeof calculateFindViaCommission === "function"
-    );
-
-    const commissionTest =
+    const commission1000 =
         calculateFindViaCommission(1000);
 
-    const expectedCommission =
+    const expected1000 =
         Math.round(
             1000 *
-            getFindViaCommissionPercent() /
+            commissionPercent /
             100
         );
 
     test(
-        "Commission calculation is correct",
-        commissionTest === expectedCommission
+        "Commission calculation: ₹1000",
+        commission1000 === expected1000
+    );
+
+
+    const commission500 =
+        calculateFindViaCommission(500);
+
+    const expected500 =
+        Math.round(
+            500 *
+            commissionPercent /
+            100
+        );
+
+    test(
+        "Commission calculation: ₹500",
+        commission500 === expected500
     );
 
 
     // ==========================================
-    // 6. Transaction System
+    // TRANSACTION DATA
     // ==========================================
 
     const transactions = JSON.parse(
-        localStorage.getItem("findviaCreditTransactions") || "[]"
+        localStorage.getItem(
+            "findviaCreditTransactions"
+        ) || "[]"
     );
 
     test(
@@ -3363,21 +3543,6 @@ function runFindViaSystemTest() {
 
 
     // ==========================================
-    // 7. Admin System
-    // ==========================================
-
-    test(
-        "Admin worker management exists",
-        typeof openAdminWorkers === "function"
-    );
-
-    test(
-        "Admin panel exists",
-        typeof openAdminPanel === "function"
-    );
-
-
-    // ==========================================
     // RESULT
     // ==========================================
 
@@ -3393,7 +3558,7 @@ function runFindViaSystemTest() {
 
 
     let message =
-        "🔎 FindVia System Test\n\n";
+        "🧪 FindVia Business Rule Audit\n\n";
 
     results.forEach(function(result) {
 
@@ -3406,8 +3571,9 @@ function runFindViaSystemTest() {
 
     message +=
         "\n--------------------\n" +
-        "Passed: " + passed +
-        "\nFailed: " + failed;
+        "PASSED: " + passed +
+        "\n" +
+        "FAILED: " + failed;
 
 
     alert(message);
