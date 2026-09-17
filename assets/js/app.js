@@ -3207,3 +3207,208 @@ function rejectWorker(index) {
 
     openAdminWorkers();
 }
+
+
+
+function runFindViaSystemTest() {
+
+    const results = [];
+
+    function test(name, condition) {
+
+        results.push({
+            name: name,
+            passed: Boolean(condition)
+        });
+    }
+
+    // ==========================================
+    // 1. Worker Verification
+    // ==========================================
+
+    test(
+        "Worker verification status exists",
+        ["pending", "approved", "rejected"].includes(
+            JSON.parse(
+                localStorage.getItem("findviaWorkerProfile") || "{}"
+            ).verificationStatus
+        )
+    );
+
+    test(
+        "Verification response rule exists",
+        typeof respondToJob === "function"
+    );
+
+    test(
+        "Worker approval function exists",
+        typeof approveWorker === "function"
+    );
+
+    test(
+        "Worker rejection function exists",
+        typeof rejectWorker === "function"
+    );
+
+
+    // ==========================================
+    // 2. Job System
+    // ==========================================
+
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    test(
+        "Job storage is readable",
+        Array.isArray(jobs)
+    );
+
+
+    // ==========================================
+    // 3. Job Responses
+    // ==========================================
+
+    const responses = JSON.parse(
+        localStorage.getItem("findviaJobResponses") || "[]"
+    );
+
+    test(
+        "Job response storage is readable",
+        Array.isArray(responses)
+    );
+
+    test(
+        "Response function exists",
+        typeof respondToJob === "function"
+    );
+
+
+    // ==========================================
+    // 4. Credits System
+    // ==========================================
+
+    test(
+        "Worker credit reader exists",
+        typeof getWorkerCreditsForProfile === "function"
+    );
+
+    test(
+        "Worker credit setter exists",
+        typeof setWorkerCreditsForProfile === "function"
+    );
+
+    test(
+        "Credit transaction function exists",
+        typeof addWorkerCreditTransaction === "function"
+    );
+
+
+    // ==========================================
+    // 5. Commission System
+    // ==========================================
+
+    test(
+        "Commission percentage function exists",
+        typeof getFindViaCommissionPercent === "function"
+    );
+
+    test(
+        "Commission calculation function exists",
+        typeof calculateFindViaCommission === "function"
+    );
+
+    const commissionTest =
+        calculateFindViaCommission(1000);
+
+    const expectedCommission =
+        Math.round(
+            1000 *
+            getFindViaCommissionPercent() /
+            100
+        );
+
+    test(
+        "Commission calculation is correct",
+        commissionTest === expectedCommission
+    );
+
+
+    // ==========================================
+    // 6. Transaction System
+    // ==========================================
+
+    const transactions = JSON.parse(
+        localStorage.getItem("findviaCreditTransactions") || "[]"
+    );
+
+    test(
+        "Transaction storage is readable",
+        Array.isArray(transactions)
+    );
+
+    if (transactions.length > 0) {
+
+        const latestTransaction =
+            transactions[transactions.length - 1];
+
+        test(
+            "Latest transaction has balanceAfter",
+            Object.prototype.hasOwnProperty.call(
+                latestTransaction,
+                "balanceAfter"
+            )
+        );
+    }
+
+
+    // ==========================================
+    // 7. Admin System
+    // ==========================================
+
+    test(
+        "Admin worker management exists",
+        typeof openAdminWorkers === "function"
+    );
+
+    test(
+        "Admin panel exists",
+        typeof openAdminPanel === "function"
+    );
+
+
+    // ==========================================
+    // RESULT
+    // ==========================================
+
+    const passed =
+        results.filter(function(result) {
+            return result.passed;
+        }).length;
+
+    const failed =
+        results.filter(function(result) {
+            return !result.passed;
+        }).length;
+
+
+    let message =
+        "🔎 FindVia System Test\n\n";
+
+    results.forEach(function(result) {
+
+        message +=
+            (result.passed ? "✅ " : "❌ ") +
+            result.name +
+            "\n";
+
+    });
+
+    message +=
+        "\n--------------------\n" +
+        "Passed: " + passed +
+        "\nFailed: " + failed;
+
+
+    alert(message);
+}
