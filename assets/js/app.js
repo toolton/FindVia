@@ -2880,8 +2880,24 @@ workerTransactions
                     transaction.note
                     ? `<br>📝 ${transaction.note}`
                     : ""
-                }
+                }      
+${
+    transaction.jobId
+    ? `
+        <br>🔧 Job ID:
+        <strong>#${transaction.jobId}</strong>
 
+        <br>💵 Job Amount:
+        <strong>₹${transaction.jobAmount}</strong>
+
+        <br>📊 Commission:
+        <strong>
+            ${transaction.commissionPercent}%
+            (₹${transaction.commissionAmount})
+        </strong>
+    `
+    : ""
+}
             </p>
         `;
 
