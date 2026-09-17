@@ -3659,3 +3659,14 @@ function closeFindViaModal() {
 
     modal.style.display = "none";
 }
+
+
+window.alert = function(message) {
+
+    showFindViaModal(
+        message,
+        "FindVia",
+        "ℹ️"
+    );
+
+};
