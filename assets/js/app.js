@@ -1706,6 +1706,14 @@ function selectWorkerForJob(jobId, responseIndex) {
         return;
     }
 
+
+    if (job.matchStatus === "matched") {
+    alert(
+        "Ye job already kisi worker ke saath matched hai."
+    );
+    return;
+    }
+
     let jobResponses = responses.filter(function(response) {
         return response.jobId === jobId;
     });
