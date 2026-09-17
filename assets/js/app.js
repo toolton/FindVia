@@ -724,7 +724,7 @@ hideAdminScreens();
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("profileScreen").classList.remove("active");
     document.getElementById("workerProfileScreen").classList.remove("active");
-document.getElementById("myJobsScreen")?.classList.remove("active");
+document.getElementById("myJobsScreen").style.display = "none";
 document.getElementById("jobResponsesScreen")?.classList.remove("active");
     document.getElementById("searchScreen").classList.add("active");
 document.getElementById("postJobScreen").classList.remove("active");
