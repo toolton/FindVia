@@ -879,9 +879,11 @@ function saveWorkerProfile() {
         experience: experience,
         area: area,
         availability: availability,
-
-        verificationStatus:
-            existingProfile?.verificationStatus || "pending"
+verificationStatus:
+    existingProfile?.verificationStatus === "approved"
+        ? "approved"
+        : "pending"
+        
     };
 
     const profileString = JSON.stringify(workerProfile);
