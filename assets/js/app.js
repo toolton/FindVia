@@ -996,6 +996,29 @@ function loadWorkerProfileSummary() {
     document.getElementById("summaryWorkerAvailability").textContent =
         profile.availability || "-";
 
+const verificationElement =
+    document.getElementById("summaryWorkerVerification");
+
+if (verificationElement) {
+
+    if (profile.verificationStatus === "approved") {
+
+        verificationElement.textContent =
+            "🟢 Approved";
+
+    } else if (profile.verificationStatus === "rejected") {
+
+        verificationElement.textContent =
+            "🔴 Rejected";
+
+    } else {
+
+        verificationElement.textContent =
+            "🟡 Pending Verification";
+    }
+}
+    
+
     summaryBox.style.display = "block";
 }
 
