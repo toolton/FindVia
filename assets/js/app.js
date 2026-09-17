@@ -785,6 +785,24 @@ if (workerProfileBtn) {
 
 function updateRoleUI(role) {
 
+
+    const myJobsButton =
+    document.getElementById("myJobsButton");
+
+if (myJobsButton) {
+
+    if (role === "worker") {
+
+        myJobsButton.textContent =
+            "📋 My Matched Jobs";
+
+    } else {
+
+        myJobsButton.textContent =
+            "📋 My Posted Jobs";
+    }
+}
+
     const workerCard = document.getElementById("workerRoleCard");
     const customerCard = document.getElementById("customerRoleCard");
 
