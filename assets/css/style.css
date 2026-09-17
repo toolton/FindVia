@@ -1222,3 +1222,28 @@ main.screen-open .app-screen.active {
 }
 
 
+.primary-btn:active,
+.back-btn:active,
+.search-box button:active,
+.category-grid button:active,
+.edit-profile-btn:active,
+.language-btn:active,
+.bottom-nav button:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+}
+
+.primary-btn,
+.back-btn,
+.search-box button,
+.category-grid button,
+.edit-profile-btn,
+.language-btn,
+.bottom-nav button {
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        transform 0.12s ease,
+        opacity 0.12s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
