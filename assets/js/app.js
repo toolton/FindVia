@@ -1849,7 +1849,8 @@ function openPricingForJob(jobId) {
 }
 
 
-function openWorkerOffer(jobId) {
+
+   function openWorkerOffer(jobId) {
 
     const jobs = JSON.parse(
         localStorage.getItem("findviaJobs") || "[]"
@@ -1867,8 +1868,10 @@ function openWorkerOffer(jobId) {
     const currentWorker =
         localStorage.getItem("findviaWorkerProfile");
 
-    if (!job.matchedWorker ||
-        job.matchedWorker !== currentWorker) {
+    if (
+        !job.matchedWorker ||
+        job.matchedWorker !== currentWorker
+    ) {
 
         alert(
             "Ye private offer aapke liye available nahi hai."
@@ -1886,99 +1889,109 @@ function openWorkerOffer(jobId) {
         return;
     }
 
-    const choice = prompt(
-        "Customer ka private offer: ₹" +
-        job.customerOffer +
-        "\n\n" +
-        "1 = Accept Offer\n" +
-        "2 = Counter Offer\n" +
-        "3 = Reject Offer"
+    showFindViaActionModal(
+        "Customer ka Private Offer",
+        "₹" + job.customerOffer,
+        [
+            {
+                text: "Accept Offer",
+                icon: "✅",
+                action: function() {
+
+                    job.priceStatus = "accepted";
+                    job.workerOffer = job.customerOffer;
+                    job.priceUpdatedAt =
+                        new Date().toISOString();
+
+                    localStorage.setItem(
+                        "findviaJobs",
+                        JSON.stringify(jobs)
+                    );
+
+                    closeFindViaActionModal();
+
+                    alert(
+                        "Offer accepted! ✅\n\n" +
+                        "Agla step job confirmation hoga."
+                    );
+
+                    showMyJobs();
+                }
+            },
+
+            {
+                text: "Counter Offer",
+                icon: "💰",
+                action: function() {
+
+                    showFindViaInputModal(
+                        "Counter Offer",
+                        "Apna counter offer enter karein:",
+                        function(counterPrice) {
+
+                            const amount =
+                                Number(counterPrice);
+
+                            if (
+                                !Number.isFinite(amount) ||
+                                amount <= 0
+                            ) {
+
+                                alert(
+                                    "Please ek valid amount enter karein."
+                                );
+
+                                return;
+                            }
+
+                            job.workerOffer = amount;
+                            job.priceStatus =
+                                "counter_offer";
+                            job.priceUpdatedAt =
+                                new Date().toISOString();
+
+                            localStorage.setItem(
+                                "findviaJobs",
+                                JSON.stringify(jobs)
+                            );
+
+                            closeFindViaInputModal();
+
+                            alert(
+                                "Counter offer send ho gaya. 💰\n\n" +
+                                "Customer ise review karega."
+                            );
+                        }
+                    );
+                }
+            },
+
+            {
+                text: "Reject Offer",
+                icon: "❌",
+                action: function() {
+
+                    job.priceStatus = "rejected";
+                    job.priceUpdatedAt =
+                        new Date().toISOString();
+
+                    localStorage.setItem(
+                        "findviaJobs",
+                        JSON.stringify(jobs)
+                    );
+
+                    closeFindViaActionModal();
+
+                    alert(
+                        "Offer reject kar diya gaya."
+                    );
+                }
+            }
+        ]
     );
+   }     
 
-    if (choice === null) {
-        return;
-    }
 
-    if (choice === "1") {
-
-        job.priceStatus = "accepted";
-        job.workerOffer = job.customerOffer;
-        job.priceUpdatedAt = new Date().toISOString();
-
-        localStorage.setItem(
-            "findviaJobs",
-            JSON.stringify(jobs)
-        );
-
-        alert(
-            "Offer accepted! ✅\n\n" +
-            "Agla step job confirmation hoga."
-        );
-
-        showMyJobs();
-
-        return;
-    }
-
-    if (choice === "2") {
-
-        const counterPrice = prompt(
-            "Apna counter offer enter karein:"
-        );
-
-        if (counterPrice === null) {
-            return;
-        }
-
-        const amount = Number(counterPrice);
-
-        if (!Number.isFinite(amount) || amount <= 0) {
-
-            alert(
-                "Please ek valid amount enter karein."
-            );
-
-            return;
-        }
-
-        job.workerOffer = amount;
-        job.priceStatus = "counter_offer";
-        job.priceUpdatedAt = new Date().toISOString();
-
-        localStorage.setItem(
-            "findviaJobs",
-            JSON.stringify(jobs)
-        );
-
-        alert(
-            "Counter offer send ho gaya. 💰\n\n" +
-            "Customer ise review karega."
-        );
-
-        return;
-    }
-
-    if (choice === "3") {
-
-        job.priceStatus = "rejected";
-        job.priceUpdatedAt = new Date().toISOString();
-
-        localStorage.setItem(
-            "findviaJobs",
-            JSON.stringify(jobs)
-        );
-
-        alert(
-            "Offer reject kar diya gaya."
-        );
-
-        return;
-    }
-
-    alert(
-        "Invalid option. Please 1, 2 ya 3 choose karein."
-    );
-}
 
 
 function openCustomerPriceResponse(jobId) {
@@ -3670,3 +3683,220 @@ window.alert = function(message) {
     );
 
 };
+
+
+function showFindViaActionModal(
+    title,
+    message,
+    actions
+) {
+
+    let modal =
+        document.getElementById(
+            "findviaActionModal"
+        );
+
+    if (!modal) {
+
+        modal =
+            document.createElement("div");
+
+        modal.id =
+            "findviaActionModal";
+
+        modal.className =
+            "findvia-modal";
+
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div class="findvia-modal-box">
+
+            <div class="findvia-modal-icon">
+                💰
+            </div>
+
+            <h3>
+                ${escapeHTML(title)}
+            </h3>
+
+            <p>
+                ${escapeHTML(message)}
+            </p>
+
+            <div class="findvia-action-buttons">
+
+                ${actions.map(function(item) {
+
+                    return `
+                        <button
+                            type="button"
+                            class="primary-btn"
+                            data-action-index="${actions.indexOf(item)}"
+                        >
+                            ${item.icon} ${item.text}
+                        </button>
+                    `;
+
+                }).join("")}
+
+                <button
+                    type="button"
+                    class="back-btn"
+                    onclick="closeFindViaActionModal()"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    actions.forEach(function(item, index) {
+
+        const button =
+            modal.querySelector(
+                `[data-action-index="${index}"]`
+            );
+
+        if (button) {
+
+            button.addEventListener(
+                "click",
+                item.action
+            );
+        }
+    });
+
+    modal.style.display = "flex";
+}
+
+
+function closeFindViaActionModal() {
+
+    const modal =
+        document.getElementById(
+            "findviaActionModal"
+        );
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
+
+function showFindViaInputModal(
+    title,
+    message,
+    onSubmit
+) {
+
+    let modal =
+        document.getElementById(
+            "findviaInputModal"
+        );
+
+    if (!modal) {
+
+        modal =
+            document.createElement("div");
+
+        modal.id =
+            "findviaInputModal";
+
+        modal.className =
+            "findvia-modal";
+
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div class="findvia-modal-box">
+
+            <div class="findvia-modal-icon">
+                💰
+            </div>
+
+            <h3>
+                ${escapeHTML(title)}
+            </h3>
+
+            <p>
+                ${escapeHTML(message)}
+            </p>
+
+            <input
+                type="number"
+                id="findviaModalInput"
+                class="findvia-modal-input"
+                placeholder="Enter amount"
+                min="1"
+                inputmode="numeric"
+            >
+
+            <div class="findvia-action-buttons">
+
+                <button
+                    type="button"
+                    class="primary-btn"
+                    id="findviaInputSubmit"
+                >
+                    Continue
+                </button>
+
+                <button
+                    type="button"
+                    class="back-btn"
+                    onclick="closeFindViaInputModal()"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    const input =
+        document.getElementById(
+            "findviaModalInput"
+        );
+
+    const submit =
+        document.getElementById(
+            "findviaInputSubmit"
+        );
+
+    submit.addEventListener(
+        "click",
+        function() {
+
+            onSubmit(
+                input.value.trim()
+            );
+
+        }
+    );
+
+    modal.style.display = "flex";
+
+    setTimeout(function() {
+        input.focus();
+    }, 100);
+}
+
+
+function closeFindViaInputModal() {
+
+    const modal =
+        document.getElementById(
+            "findviaInputModal"
+        );
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
