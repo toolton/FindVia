@@ -1944,6 +1944,9 @@ function openPricingForJob(jobId) {
                                 return;
                             }
 
+closeFindViaActionModal();
+
+                            
                             job.workerOffer = amount;
                             job.priceStatus =
                                 "counter_offer";
@@ -3870,15 +3873,22 @@ function showFindViaInputModal(
         );
 
     submit.addEventListener(
-        "click",
-        function() {
+    "click",
+    function() {
 
-            onSubmit(
-                input.value.trim()
-            );
+        const value = input.value.trim();
 
+        if (!value) {
+            alert("Please amount enter karein.");
+            return;
         }
-    );
+
+        closeFindViaInputModal();
+
+        onSubmit(value);
+
+    }
+);
 
     modal.style.display = "flex";
 
