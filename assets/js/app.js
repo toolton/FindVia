@@ -2178,13 +2178,13 @@ setWorkerCreditsForProfile(
     newBalance
 );
 
+
 addWorkerCreditTransaction(
     workerProfile,
     -commissionAmount,
     "debit",
-    "Commission deducted for completed job"
+    "Commission deducted for Job #" + job.id
 );
-
 
     
     job.jobStatus = "completed";
