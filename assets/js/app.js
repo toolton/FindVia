@@ -836,7 +836,6 @@ document.getElementById("jobResponsesScreen")?.classList.remove("active");
 
 
 function saveWorkerProfile() {
-
     const name = document.getElementById("workerName").value.trim();
     const service = document.getElementById("workerService").value;
     const experience = document.getElementById("workerExperience").value;
@@ -848,36 +847,65 @@ function saveWorkerProfile() {
         return;
     }
 
+    const existingProfile = JSON.parse(
+        localStorage.getItem("findviaWorkerProfile") || "null"
+    );
+
     const workerProfile = {
         name: name,
         service: service,
         experience: experience,
         area: area,
-        availability: availability
+        availability: availability,
+
+        // Existing approved/rejected status preserve rahega.
+        // New worker automatically pending hoga.
+        verificationStatus:
+            existingProfile?.verificationStatus || "pending"
     };
 
     const profileString = JSON.stringify(workerProfile);
 
-localStorage.setItem(
-    "findviaWorkerProfile",
-    profileString
-);
+    localStorage.setItem(
+        "findviaWorkerProfile",
+        profileString
+    );
 
-// Admin ke liye worker profiles ki collection
-const workerProfiles = JSON.parse(
-    localStorage.getItem("findviaWorkerProfiles") || "[]"
-);
+    // Admin ke liye worker profiles ki collection
+    const workerProfiles = JSON.parse(
+        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    );
 
-if (!workerProfiles.includes(profileString)) {
-    workerProfiles.push(profileString);
-}
+    const existingProfileString =
+        existingProfile
+            ? JSON.stringify(existingProfile)
+            : null;
 
-localStorage.setItem(
-    "findviaWorkerProfiles",
-    JSON.stringify(workerProfiles)
-);
+    const existingIndex =
+        existingProfileString
+            ? workerProfiles.indexOf(existingProfileString)
+            : -1;
 
-    alert("Worker profile saved successfully.");
+    if (existingIndex !== -1) {
+
+        // Existing profile ko update karo
+        workerProfiles[existingIndex] = profileString;
+
+    } else if (!workerProfiles.includes(profileString)) {
+
+        workerProfiles.push(profileString);
+    }
+
+    localStorage.setItem(
+        "findviaWorkerProfiles",
+        JSON.stringify(workerProfiles)
+    );
+
+    alert(
+        "Worker profile saved successfully.\n\n" +
+        "Verification status: " +
+        workerProfile.verificationStatus
+    );
 
     showProfile();
 }
@@ -2646,9 +2674,16 @@ if (
                     <h3>${worker.name}</h3>
                 </div>
 
-                <span class="job-status">
-                    ${worker.availability}
-                </span>
+
+<span class="job-status">
+    ${worker.verificationStatus === "approved"
+        ? "Approved"
+        : worker.verificationStatus === "rejected"
+        ? "Rejected"
+        : "Pending"}
+</span>
+
+                
             </div>
 
             <p class="job-description">
@@ -2683,6 +2718,30 @@ if (
 >
     📋 Transaction History
 </button>
+
+
+${
+    worker.verificationStatus !== "approved"
+    ? `
+        <button
+            class="primary-btn"
+            style="margin-top:8px;"
+            onclick="approveWorker(${index})"
+        >
+            ✅ Approve Worker
+        </button>
+    `
+    : `
+        <button
+            class="primary-btn"
+            style="margin-top:8px;"
+            onclick="rejectWorker(${index})"
+        >
+            ❌ Reject Worker
+        </button>
+    `
+}
+
             
         `;
 
@@ -3015,4 +3074,96 @@ function saveAdminCommission() {
         commission +
         "%."
     );
+}
+
+
+function approveWorker(index) {
+
+    const workerProfiles = JSON.parse(
+        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    );
+
+    if (!workerProfiles[index]) {
+        alert("Worker profile nahi mila.");
+        return;
+    }
+
+    const worker = JSON.parse(workerProfiles[index]);
+
+    worker.verificationStatus = "approved";
+
+    workerProfiles[index] = JSON.stringify(worker);
+
+    localStorage.setItem(
+        "findviaWorkerProfiles",
+        JSON.stringify(workerProfiles)
+    );
+
+    const currentProfile = JSON.parse(
+        localStorage.getItem("findviaWorkerProfile") || "null"
+    );
+
+    if (
+        currentProfile &&
+        currentProfile.name === worker.name
+    ) {
+        currentProfile.verificationStatus = "approved";
+
+        localStorage.setItem(
+            "findviaWorkerProfile",
+            JSON.stringify(currentProfile)
+        );
+    }
+
+    alert(
+        "✅ Worker approved successfully."
+    );
+
+    openAdminWorkers();
+}
+
+
+function rejectWorker(index) {
+
+    const workerProfiles = JSON.parse(
+        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    );
+
+    if (!workerProfiles[index]) {
+        alert("Worker profile nahi mila.");
+        return;
+    }
+
+    const worker = JSON.parse(workerProfiles[index]);
+
+    worker.verificationStatus = "rejected";
+
+    workerProfiles[index] = JSON.stringify(worker);
+
+    localStorage.setItem(
+        "findviaWorkerProfiles",
+        JSON.stringify(workerProfiles)
+    );
+
+    const currentProfile = JSON.parse(
+        localStorage.getItem("findviaWorkerProfile") || "null"
+    );
+
+    if (
+        currentProfile &&
+        currentProfile.name === worker.name
+    ) {
+        currentProfile.verificationStatus = "rejected";
+
+        localStorage.setItem(
+            "findviaWorkerProfile",
+            JSON.stringify(currentProfile)
+        );
+    }
+
+    alert(
+        "❌ Worker rejected."
+    );
+
+    openAdminWorkers();
 }
