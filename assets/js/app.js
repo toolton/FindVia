@@ -2178,12 +2178,17 @@ setWorkerCreditsForProfile(
     newBalance
 );
 
-
 addWorkerCreditTransaction(
     workerProfile,
     -commissionAmount,
     "debit",
-    "Commission deducted for Job #" + job.id
+    "Commission deducted for Job #" + job.id,
+    {
+        jobId: job.id,
+        jobAmount: job.finalAmount,
+        commissionPercent: job.commissionPercent,
+        commissionAmount: job.commissionAmount
+    }
 );
 
     
@@ -2248,20 +2253,23 @@ function setWorkerCredits(amount) {
 }
 
 
+
 function addWorkerCreditTransaction(
     workerProfile,
     amount,
     type,
-    note
+    note,
+    jobDetails
 ) {
 
     const transactions = JSON.parse(
         localStorage.getItem("findviaCreditTransactions") || "[]"
     );
 
-    const balanceAfter = getWorkerCreditsForProfile(workerProfile);
+    const balanceAfter =
+        getWorkerCreditsForProfile(workerProfile);
 
-    transactions.push({
+    const transaction = {
         id: Date.now(),
         workerProfile: workerProfile,
         amount: Number(amount),
@@ -2269,14 +2277,29 @@ function addWorkerCreditTransaction(
         note: note || "",
         balanceAfter: balanceAfter,
         createdAt: new Date().toISOString()
-    });
+    };
+
+    if (jobDetails) {
+        transaction.jobId =
+            jobDetails.jobId || null;
+
+        transaction.jobAmount =
+            Number(jobDetails.jobAmount) || 0;
+
+        transaction.commissionPercent =
+            Number(jobDetails.commissionPercent) || 0;
+
+        transaction.commissionAmount =
+            Number(jobDetails.commissionAmount) || 0;
+    }
+
+    transactions.push(transaction);
 
     localStorage.setItem(
         "findviaCreditTransactions",
         JSON.stringify(transactions)
     );
 }
-
 
 function adminAddWorkerCredits() {
 
