@@ -387,6 +387,28 @@ function escapeHTML(value) {
 
 function respondToJob(jobId) {
 
+
+    const workerProfile = JSON.parse(
+    localStorage.getItem("findviaWorkerProfile") || "null"
+);
+
+if (!workerProfile) {
+    alert(
+        "Worker profile nahi mila.\n\n" +
+        "Pehle worker profile setup karein."
+    );
+    return;
+}
+
+if (workerProfile.verificationStatus !== "approved") {
+    alert(
+        "⏳ Worker verification required.\n\n" +
+        "Aapka worker profile abhi approved nahi hai.\n\n" +
+        "Admin approval ke baad hi aap jobs par response kar sakte hain."
+    );
+    return;
+}
+
     const currentRole = localStorage.getItem("findviaUserRole");
 
     if (currentRole !== "worker") {
@@ -858,8 +880,6 @@ function saveWorkerProfile() {
         area: area,
         availability: availability,
 
-        // Existing approved/rejected status preserve rahega.
-        // New worker automatically pending hoga.
         verificationStatus:
             existingProfile?.verificationStatus || "pending"
     };
@@ -871,7 +891,6 @@ function saveWorkerProfile() {
         profileString
     );
 
-    // Admin ke liye worker profiles ki collection
     const workerProfiles = JSON.parse(
         localStorage.getItem("findviaWorkerProfiles") || "[]"
     );
@@ -887,12 +906,8 @@ function saveWorkerProfile() {
             : -1;
 
     if (existingIndex !== -1) {
-
-        // Existing profile ko update karo
         workerProfiles[existingIndex] = profileString;
-
     } else if (!workerProfiles.includes(profileString)) {
-
         workerProfiles.push(profileString);
     }
 
