@@ -3617,3 +3617,45 @@ function runFindViaSystemTest() {
 
     alert(message);
 }
+
+
+function showFindViaModal(
+    message,
+    title = "FindVia",
+    icon = "ℹ️"
+) {
+    const modal =
+        document.getElementById("findviaModal");
+
+    const modalTitle =
+        document.getElementById("findviaModalTitle");
+
+    const modalMessage =
+        document.getElementById("findviaModalMessage");
+
+    const modalIcon =
+        document.getElementById("findviaModalIcon");
+
+    if (!modal) {
+        return;
+    }
+
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modalIcon.textContent = icon;
+
+    modal.style.display = "flex";
+}
+
+
+function closeFindViaModal() {
+
+    const modal =
+        document.getElementById("findviaModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = "none";
+}
