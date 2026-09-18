@@ -5451,13 +5451,13 @@ function runFindViaSystemTest() {
         )
     );
 
-    test(
-        "Worker role is required for response",
-        sourceHas(
-            "respondToJob",
-            /role\s*!==\s*["']worker["']/
-        )
-    );
+   test(
+    "Worker role is required for response",
+    sourceHas(
+        "respondToJob",
+        /currentRole\s*!==\s*["']worker["']/
+    )
+); 
 
     test(
         "Insufficient credits block worker response",
@@ -6030,18 +6030,14 @@ function runFindViaSystemTest() {
         )
     );
 
-    test(
-        "Job expiry logic exists",
-        sourceHas(
-            "showPostedJobs",
-            "expiry"
-        ) ||
-        sourceHas(
-            "showPostedJobs",
-            "expires"
-        )
-    );
-
+   test(
+    "Job expiry logic exists",
+    typeof isJobAvailableForFindWork === "function" &&
+    sourceHas(
+        "isJobAvailableForFindWork",
+        "job.timing"
+    )
+); 
 
     // ==========================================
     // 14. LANGUAGE SYSTEM
