@@ -5219,6 +5219,98 @@ function closeFindViaModal() {
 
 window.alert = function(message) {
 
+    const localizedMessages = {
+
+        "Job nahi mili.":
+            {
+                en: "Job not found.",
+                hi: "काम नहीं मिला।"
+            },
+
+        "Pehle worker ko match karein.":
+            {
+                en: "Please match a worker first.",
+                hi: "कृपया पहले किसी worker को match करें।"
+            },
+
+        "Worker profile nahi mila.":
+            {
+                en: "Worker profile not found.",
+                hi: "Worker profile नहीं मिला।"
+            },
+
+        "Pehle worker profile setup karein.":
+            {
+                en: "Please set up your worker profile first.",
+                hi: "कृपया पहले अपना worker profile सेट करें।"
+            },
+
+        "Please location enter karein.":
+            {
+                en: "Please enter a location.",
+                hi: "कृपया location दर्ज करें।"
+            },
+
+        "Please amount enter karein.":
+            {
+                en: "Please enter an amount.",
+                hi: "कृपया amount दर्ज करें।"
+            },
+
+        "Please ek valid amount enter karein.":
+            {
+                en: "Please enter a valid amount.",
+                hi: "कृपया सही amount दर्ज करें।"
+            },
+
+        "Offer reject kar diya gaya.":
+            {
+                en: "The offer has been rejected.",
+                hi: "Offer अस्वीकार कर दिया गया है।"
+            },
+
+        "Pehle price agreement complete karein.":
+            {
+                en: "Please complete the price agreement first.",
+                hi: "कृपया पहले price agreement पूरा करें।"
+            },
+
+        "Ye job already confirmed hai.":
+            {
+                en: "This job is already confirmed.",
+                hi: "यह job पहले से confirmed है।"
+            },
+
+        "Pehle job confirm karein.":
+            {
+                en: "Please confirm the job first.",
+                hi: "कृपया पहले job confirm करें।"
+            }
+
+    };
+
+    const translation =
+        localizedMessages[message];
+
+    if (translation) {
+
+        showFindViaModal(
+            hindiMode
+                ? translation.hi
+                : translation.en,
+            "FindVia",
+            "ℹ️"
+        );
+
+        return;
+    }
+
+    /*
+     * Temporary fallback:
+     * Unconverted messages continue working.
+     * They will be cleaned in the next language pass.
+     */
+
     showFindViaModal(
         message,
         "FindVia",
