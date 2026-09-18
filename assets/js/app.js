@@ -89,15 +89,56 @@ function toggleLanguage() {
 
 function selectLocation() {
 
-    const location = prompt("Enter your location:");
+    const currentLocation =
+        document.getElementById(
+            "locationText"
+        )?.textContent || "";
 
-    if (location && location.trim() !== "") {
+    showFindViaInputModal(
+        "Select Location",
+        "Apna location enter karein:",
+        function(location) {
 
-        document.getElementById("locationText").textContent =
-            location.trim();
+            const cleanLocation =
+                location.trim();
+
+            if (!cleanLocation) {
+
+                alert(
+                    "Please location enter karein."
+                );
+
+                return;
+            }
+
+            const locationText =
+                document.getElementById(
+                    "locationText"
+                );
+
+            if (locationText) {
+
+                locationText.textContent =
+                    cleanLocation;
+            }
+        }
+    );
+
+    const input =
+        document.getElementById(
+            "findviaModalInput"
+        );
+
+    if (
+        input &&
+        currentLocation &&
+        currentLocation !== "Select Location"
+    ) {
+
+        input.value =
+            currentLocation;
     }
 }
-
 
 function findWork() {
 
