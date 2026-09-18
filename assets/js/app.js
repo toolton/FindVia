@@ -110,7 +110,193 @@ function t(key) {
     );
 }
 
+function translateFindViaMessage(message) {
 
+    if (!message) {
+        return message;
+    }
+
+    const text =
+        String(message);
+
+    const messages = {
+
+        "Job nahi mili.":
+        {
+            en: "Job not found.",
+            hi: "काम नहीं मिला।"
+        },
+
+        "Pehle worker ko match karein.":
+        {
+            en: "Please match a worker first.",
+            hi: "कृपया पहले किसी कामगार को चुनें।"
+        },
+
+        "Apna location enter karein:":
+        {
+            en: "Enter your location:",
+            hi: "अपना स्थान दर्ज करें:"
+        },
+
+        "Please location enter karein.":
+        {
+            en: "Please enter a location.",
+            hi: "कृपया अपना स्थान दर्ज करें।"
+        },
+
+        "Job post karne ke liye pehle Customer role select karein.":
+        {
+            en: "Please select the Customer role before posting a job.",
+            hi: "काम पोस्ट करने से पहले Customer भूमिका चुनें।"
+        },
+
+        "Please complete all required job details.":
+        {
+            en: "Please complete all required job details.",
+            hi: "कृपया काम की सभी आवश्यक जानकारी भरें।"
+        },
+
+        "Please enter a valid maximum budget.":
+        {
+            en: "Please enter a valid maximum budget.",
+            hi: "कृपया अधिकतम बजट की सही राशि दर्ज करें।"
+        },
+
+        "Photo size 2MB se kam honi chahiye.":
+        {
+            en: "Photo size must be less than 2 MB.",
+            hi: "फोटो का आकार 2 MB से कम होना चाहिए।"
+        },
+
+        "Worker profile nahi mila.":
+        {
+            en: "Worker profile not found.",
+            hi: "कामगार प्रोफाइल नहीं मिली।"
+        },
+
+        "Pehle worker profile setup karein.":
+        {
+            en: "Please set up your worker profile first.",
+            hi: "कृपया पहले अपना कामगार प्रोफाइल सेट करें।"
+        },
+
+        "Ye job ab available nahi hai.":
+        {
+            en: "This job is no longer available.",
+            hi: "यह काम अब उपलब्ध नहीं है।"
+        },
+
+        "Aap already is job mein interest dikha chuke hain.":
+        {
+            en: "You have already shown interest in this job.",
+            hi: "आप इस काम में पहले ही रुचि दिखा चुके हैं।"
+        },
+
+        "Interest sent successfully.":
+        {
+            en: "Interest sent successfully.",
+            hi: "रुचि सफलतापूर्वक भेज दी गई है।"
+        },
+
+        "Customer ko aapki response milegi.":
+        {
+            en: "The customer will receive your response.",
+            hi: "ग्राहक को आपकी प्रतिक्रिया मिल जाएगी।"
+        },
+
+        "Contact details abhi hidden rahengi.":
+        {
+            en: "Contact details will remain hidden for now.",
+            hi: "संपर्क विवरण अभी छिपे रहेंगे।"
+        },
+
+        "FindVia credits insufficient hain.":
+        {
+            en: "You do not have enough FindVia credits.",
+            hi: "आपके पास पर्याप्त FindVia credits नहीं हैं।"
+        },
+
+        "Is job par interest show karne se pehle credits recharge karein.":
+        {
+            en: "Please recharge your credits before showing interest in this job.",
+            hi: "इस काम में रुचि दिखाने से पहले अपने credits recharge करें।"
+        },
+
+        "Is job par interest show karne ke liye Worker role select karein.":
+        {
+            en: "Please select the Worker role to show interest in this job.",
+            hi: "इस काम में रुचि दिखाने के लिए Worker भूमिका चुनें।"
+        },
+
+        "Ye job already kisi worker ke saath matched hai.":
+        {
+            en: "This job is already matched with a worker.",
+            hi: "यह काम पहले ही किसी कामगार के साथ match हो चुका है।"
+        },
+
+        "Worker response nahi mili.":
+        {
+            en: "Worker response not found.",
+            hi: "कामगार की प्रतिक्रिया नहीं मिली।"
+        },
+
+        "Pehle price agreement complete karein.":
+        {
+            en: "Please complete the price agreement first.",
+            hi: "कृपया पहले कीमत पर सहमति पूरी करें।"
+        },
+
+        "Ye job already confirmed hai.":
+        {
+            en: "This job is already confirmed.",
+            hi: "यह काम पहले ही confirm हो चुका है।"
+        },
+
+        "Offer reject kar diya gaya.":
+        {
+            en: "The offer has been rejected.",
+            hi: "Offer अस्वीकार कर दिया गया है।"
+        }
+
+    };
+
+    if (messages[text]) {
+
+        return hindiMode
+            ? messages[text].hi
+            : messages[text].en;
+    }
+
+
+    /*
+     * Handle longer dynamic messages
+     * containing the phrases above.
+     */
+
+    let translated =
+        text;
+
+    Object.keys(messages).forEach(
+        function(sourceText) {
+
+            const translation =
+                messages[sourceText];
+
+            const replacement =
+                hindiMode
+                ? translation.hi
+                : translation.en;
+
+            translated =
+                translated.split(sourceText)
+                .join(replacement);
+
+        }
+    );
+
+    return translated;
+}
 /*
  * Set text safely by element ID.
  */
@@ -5218,6 +5404,9 @@ function closeFindViaModal() {
 
 
 window.alert = function(message) {
+
+    message =
+    translateFindViaMessage(message);
 
     const localizedMessages = {
 
