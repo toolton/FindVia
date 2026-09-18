@@ -259,6 +259,45 @@ function saveJob() {
     }
 }
 
+function hasSufficientCreditsForJob(job) {
+
+    if (!job) {
+        return false;
+    }
+
+    const workerProfile =
+        localStorage.getItem("findviaWorkerProfile");
+
+    if (!workerProfile) {
+        return false;
+    }
+
+    const currentCredits =
+        getWorkerCreditsForProfile(workerProfile);
+
+    /*
+     * Customer ka maximum budget worker ko show nahi hota.
+     * Sirf internal eligibility check ke liye use ho raha hai.
+     */
+    const maximumJobAmount =
+        Number(job.budget);
+
+    if (
+        !Number.isFinite(maximumJobAmount) ||
+        maximumJobAmount <= 0
+    ) {
+        return true;
+    }
+
+    const estimatedCommission =
+        calculateFindViaCommission(
+            maximumJobAmount
+        );
+
+    return currentCredits >= estimatedCommission;
+}
+
+
 
 function showPostedJobs() {
 
@@ -361,12 +400,18 @@ ${
     : ""
 }
 
-                <button
-                    class="primary-btn job-interest-btn"
-                    onclick="respondToJob(${job.id})"
-                >
-                    I'm Interested
-                </button>
+              ${
+    hasSufficientCreditsForJob(job)
+    ? `
+        <button
+            class="primary-btn job-interest-btn"
+            onclick="respondToJob(${job.id})"
+        >
+            I'm Interested
+        </button>
+    `
+    : ""
+              }  
 
             </div>
         `;
@@ -384,32 +429,44 @@ function escapeHTML(value) {
     return div.innerHTML;
 }
 
-
 function respondToJob(jobId) {
 
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const job = jobs.find(function(item) {
+        return item.id === jobId;
+    });
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
 
     const workerProfile = JSON.parse(
-    localStorage.getItem("findviaWorkerProfile") || "null"
-);
-
-if (!workerProfile) {
-    alert(
-        "Worker profile nahi mila.\n\n" +
-        "Pehle worker profile setup karein."
+        localStorage.getItem("findviaWorkerProfile") || "null"
     );
-    return;
-}
 
-if (workerProfile.verificationStatus !== "approved") {
-    alert(
-        "⏳ Worker verification required.\n\n" +
-        "Aapka worker profile abhi approved nahi hai.\n\n" +
-        "Admin approval ke baad hi aap jobs par response kar sakte hain."
-    );
-    return;
-}
+    if (!workerProfile) {
+        alert(
+            "Worker profile nahi mila.\n\n" +
+            "Pehle worker profile setup karein."
+        );
+        return;
+    }
 
-    const currentRole = localStorage.getItem("findviaUserRole");
+    if (workerProfile.verificationStatus !== "approved") {
+        alert(
+            "⏳ Worker verification required.\n\n" +
+            "Aapka worker profile abhi approved nahi hai.\n\n" +
+            "Admin approval ke baad hi aap jobs par response kar sakte hain."
+        );
+        return;
+    }
+
+    const currentRole =
+        localStorage.getItem("findviaUserRole");
 
     if (currentRole !== "worker") {
 
@@ -421,30 +478,58 @@ if (workerProfile.verificationStatus !== "approved") {
         return;
     }
 
+    /*
+     * Final completion se pehle hi credit eligibility check.
+     */
+    if (!hasSufficientCreditsForJob(job)) {
+
+        alert(
+            "❌ FindVia credits insufficient hain.\n\n" +
+            "Is job par interest show karne se pehle credits recharge karein."
+        );
+
+        return;
+    }
+
     const responses = JSON.parse(
         localStorage.getItem("findviaJobResponses") || "[]"
     );
 
-    const alreadyResponded = responses.some(function(response) {
+    const alreadyResponded =
+        responses.some(function(response) {
 
-        return (
-            response.jobId === jobId &&
-            response.workerProfile === localStorage.getItem("findviaWorkerProfile")
-        );
+            return (
+                response.jobId === jobId &&
+                response.workerProfile ===
+                    localStorage.getItem(
+                        "findviaWorkerProfile"
+                    )
+            );
 
-    });
+        });
 
     if (alreadyResponded) {
 
-        alert("Aap already is job mein interest dikha chuke hain.");
+        alert(
+            "Aap already is job mein interest dikha chuke hain."
+        );
+
         return;
     }
 
     responses.push({
+
         jobId: jobId,
-        workerProfile: localStorage.getItem("findviaWorkerProfile") || "{}",
+
+        workerProfile:
+            localStorage.getItem(
+                "findviaWorkerProfile"
+            ) || "{}",
+
         status: "pending",
-        createdAt: new Date().toISOString()
+
+        createdAt:
+            new Date().toISOString()
     });
 
     localStorage.setItem(
