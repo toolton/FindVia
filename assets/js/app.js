@@ -1186,19 +1186,223 @@ function searchWork() {
 }
 
 
+
 function searchWorkers() {
 
-    const search = document.getElementById("workerSearch").value.trim();
+    const searchInput =
+        document.getElementById("workerSearch");
+
+    const search =
+        searchInput
+        ? searchInput.value.trim().toLowerCase()
+        : "";
 
     if (search === "") {
-        alert("Please enter the worker/service you need.");
+
+        document.getElementById(
+            "workerResults"
+        ).innerHTML = `
+            <div class="empty-state">
+                <strong>Search workers or services.</strong>
+                <p>
+                    Worker name, service, experience ya area search karein.
+                </p>
+            </div>
+        `;
+
         return;
     }
 
-    document.getElementById("workerResults").innerHTML =
-        "<strong>Searching for:</strong><br>" + search;
-}
+    const workerProfiles = JSON.parse(
+        localStorage.getItem(
+            "findviaWorkerProfiles"
+        ) || "[]"
+    );
 
+    const matchedWorkers = [];
+
+    workerProfiles.forEach(function(profileData) {
+
+        try {
+
+            const worker =
+                typeof profileData === "string"
+                    ? JSON.parse(profileData)
+                    : profileData;
+
+            if (
+                !worker ||
+                worker.verificationStatus !== "approved"
+            ) {
+                return;
+            }
+
+            const name =
+                String(worker.name || "").toLowerCase();
+
+            const service =
+                String(worker.service || "").toLowerCase();
+
+            const area =
+                String(worker.area || "").toLowerCase();
+
+            const experience =
+                String(worker.experience || "").toLowerCase();
+
+            const availability =
+                String(worker.availability || "").toLowerCase();
+
+            if (
+                name.includes(search) ||
+                service.includes(search) ||
+                area.includes(search) ||
+                experience.includes(search) ||
+                availability.includes(search)
+            ) {
+
+                matchedWorkers.push(worker);
+
+            }
+
+        } catch (error) {
+
+            console.log(
+                "Invalid worker profile skipped."
+            );
+
+        }
+
+    });
+
+    const resultsBox =
+        document.getElementById(
+            "workerResults"
+        );
+
+    if (!resultsBox) {
+        return;
+    }
+
+    let html = `
+        <div class="worker-results-header">
+
+            <div>
+                <span class="results-label">
+                    SEARCH RESULTS
+                </span>
+
+                <h3>
+                    Matching Workers
+                </h3>
+            </div>
+
+            <span class="results-count">
+                ${matchedWorkers.length} found
+            </span>
+
+        </div>
+    `;
+
+    if (matchedWorkers.length === 0) {
+
+        html += `
+            <div class="empty-state">
+
+                <div style="font-size:40px;">
+                    👷
+                </div>
+
+                <h3>
+                    No approved workers found
+                </h3>
+
+                <p>
+                    Is search ke liye koi approved worker nahi mila.
+                </p>
+
+            </div>
+        `;
+
+        resultsBox.innerHTML = html;
+
+        return;
+    }
+
+    matchedWorkers.forEach(function(worker) {
+
+        const workerName =
+            worker.name || "Worker";
+
+        const workerInitial =
+            workerName
+            .charAt(0)
+            .toUpperCase();
+
+        html += `
+            <div class="worker-card premium-worker-card">
+
+                <div class="worker-avatar">
+                    ${escapeHTML(workerInitial)}
+                </div>
+
+                <div class="worker-info">
+
+                    <div class="worker-name-row">
+
+                        <h4>
+                            ${escapeHTML(workerName)}
+                        </h4>
+
+                        <span class="verified-badge">
+                            ✓ Verified
+                        </span>
+
+                    </div>
+
+                    <div class="worker-status">
+
+                        <span class="online-dot"></span>
+
+                        ${escapeHTML(
+                            worker.availability ||
+                            "Available"
+                        )}
+
+                    </div>
+
+                    <p>
+                        🔧 ${escapeHTML(
+                            worker.service ||
+                            "Service not specified"
+                        )}
+                    </p>
+
+                    <p>
+                        📍 ${escapeHTML(
+                            worker.area ||
+                            "Area not specified"
+                        )}
+                    </p>
+
+                    <div class="worker-stats">
+
+                        <span>
+                            💼 ${escapeHTML(
+                                worker.experience ||
+                                "Experience not specified"
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+    });
+
+    resultsBox.innerHTML = html;
+}
 
 function openSearch() {
 
