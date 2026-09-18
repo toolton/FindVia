@@ -3184,6 +3184,250 @@ ${
     });
 }
 
+
+function openWorkerTransactionHistory() {
+
+    const workerProfile =
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        );
+
+    if (!workerProfile) {
+
+        alert(
+            "Worker profile nahi mila."
+        );
+
+        return;
+    }
+
+    const worker =
+        JSON.parse(workerProfile);
+
+    const transactions =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaCreditTransactions"
+            ) || "[]"
+        );
+
+    const workerTransactions =
+        transactions.filter(
+            function(transaction) {
+
+                return (
+                    transaction.workerProfile ===
+                    workerProfile
+                );
+
+            }
+        );
+
+    const profileScreen =
+        document.getElementById(
+            "profileScreen"
+        );
+
+    const transactionScreen =
+        document.getElementById(
+            "workerTransactionHistoryScreen"
+        );
+
+    const transactionList =
+        document.getElementById(
+            "workerTransactionHistoryList"
+        );
+
+    if (
+        !transactionScreen ||
+        !transactionList
+    ) {
+
+        alert(
+            "Transaction History screen nahi mili."
+        );
+
+        return;
+    }
+
+    if (profileScreen) {
+        profileScreen.classList.remove(
+            "active"
+        );
+    }
+
+    transactionScreen.style.display =
+        "block";
+
+    transactionList.innerHTML = "";
+
+    if (
+        workerTransactions.length === 0
+    ) {
+
+        transactionList.innerHTML = `
+            <div class="job-card">
+
+                <h3>
+                    No transactions yet
+                </h3>
+
+                <p class="job-description">
+                    Abhi tak aapki koi credit transaction nahi hui hai.
+                </p>
+
+            </div>
+        `;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        return;
+    }
+
+    let runningBalance = 0;
+
+    workerTransactions
+        .slice()
+        .sort(function(a, b) {
+
+            return (
+                new Date(
+                    a.createdAt || 0
+                ) -
+                new Date(
+                    b.createdAt || 0
+                )
+            );
+
+        })
+        .forEach(function(transaction) {
+
+            const amount =
+                Number(transaction.amount) || 0;
+
+            runningBalance += amount;
+
+            const balanceAfter =
+                transaction.balanceAfter !== undefined
+                    ? Number(
+                        transaction.balanceAfter
+                    )
+                    : runningBalance;
+
+            const isDebit =
+                amount < 0;
+
+            const displayAmount =
+                Math.abs(amount);
+
+            const date =
+                transaction.createdAt
+                    ? new Date(
+                        transaction.createdAt
+                    ).toLocaleString()
+                    : "Date unavailable";
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+            card.className =
+                "job-card";
+
+            card.innerHTML = `
+
+                <div class="job-card-top">
+
+                    <div>
+
+                        <span class="job-category">
+                            ${transaction.type || "Credit Transaction"}
+                        </span>
+
+                        <h3>
+                            ${
+                                isDebit
+                                    ? "💸 −"
+                                    : "💰 +"
+                            }₹${displayAmount}
+                        </h3>
+
+                    </div>
+
+                    <span class="job-status">
+                        ${
+                            isDebit
+                                ? "Deducted"
+                                : "Added"
+                        }
+                    </span>
+
+                </div>
+
+                <p class="job-description">
+
+                    📅 ${date}
+
+                    <br>
+
+                    💳 Balance after:
+                    <strong>
+                        ₹${balanceAfter}
+                    </strong>
+
+                    ${
+                        transaction.note
+                            ? `
+                                <br>
+                                📝 ${transaction.note}
+                            `
+                            : ""
+                    }
+
+                    ${
+                        transaction.jobId
+                            ? `
+                                <br>
+                                🔧 Job ID:
+                                <strong>
+                                    #${transaction.jobId}
+                                </strong>
+
+                                <br>
+                                💵 Job Amount:
+                                <strong>
+                                    ₹${transaction.jobAmount}
+                                </strong>
+
+                                <br>
+                                📊 Commission:
+                                <strong>
+                                    ${transaction.commissionPercent}%
+                                    (₹${transaction.commissionAmount})
+                                </strong>
+                            `
+                            : ""
+                    }
+
+                </p>
+            `;
+
+            transactionList.appendChild(
+                card
+            );
+
+        });
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
 /* ================================
    FINDVIA COMMISSION SYSTEM
 ================================ */
