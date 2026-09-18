@@ -342,7 +342,102 @@ function hasSufficientCreditsForJob(job) {
     return currentCredits >= estimatedCommission;
 }
 
+function isJobAvailableForFindWork(job) {
 
+    if (!job) {
+        return false;
+    }
+
+    // Job open honi chahiye
+    if (job.status !== "open") {
+        return false;
+    }
+
+    // Already matched job available nahi hai
+    if (job.matchStatus === "matched") {
+        return false;
+    }
+
+    // Confirmed / completed job available nahi hai
+    if (
+        job.jobStatus === "confirmed" ||
+        job.jobStatus === "completed"
+    ) {
+        return false;
+    }
+
+    /*
+     * Fixed-time expiry:
+     *
+     * Today     → aaj raat 11:59:59 PM tak
+     * Tomorrow  → kal raat 11:59:59 PM tak
+     * This week → current week ke end tak
+     *
+     * As soon as possible / Flexible
+     * → fixed expiry nahi.
+     */
+
+    const now = new Date();
+
+    if (job.timing === "Today") {
+
+        const endOfToday =
+            new Date();
+
+        endOfToday.setHours(
+            23, 59, 59, 999
+        );
+
+        if (now > endOfToday) {
+            return false;
+        }
+    }
+
+    if (job.timing === "Tomorrow") {
+
+        const endOfTomorrow =
+            new Date();
+
+        endOfTomorrow.setDate(
+            endOfTomorrow.getDate() + 1
+        );
+
+        endOfTomorrow.setHours(
+            23, 59, 59, 999
+        );
+
+        if (now > endOfTomorrow) {
+            return false;
+        }
+    }
+
+    if (job.timing === "Within this week") {
+
+        const endOfWeek =
+            new Date();
+
+        const day =
+            endOfWeek.getDay();
+
+        const daysUntilSunday =
+            7 - day;
+
+        endOfWeek.setDate(
+            endOfWeek.getDate() +
+            daysUntilSunday
+        );
+
+        endOfWeek.setHours(
+            23, 59, 59, 999
+        );
+
+        if (now > endOfWeek) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 function showPostedJobs() {
 
@@ -356,10 +451,12 @@ function showPostedJobs() {
         localStorage.getItem("findviaJobs") || "[]"
     );
 
-    const openJobs = jobs.filter(function(job) {
-        return job.status === "open";
-    });
+    
+const openJobs = jobs.filter(function(job) {
 
+    return isJobAvailableForFindWork(job);
+
+});
     if (openJobs.length === 0) {
 
         resultsBox.innerHTML = `
@@ -489,6 +586,16 @@ function respondToJob(jobId) {
         return;
     }
 
+if (!isJobAvailableForFindWork(job)) {
+
+    alert(
+        "Ye job ab available nahi hai.\n\n" +
+        "Job expire, match ya complete ho chuki ho sakti hai."
+    );
+
+    return;
+}
+    
     const workerProfile = JSON.parse(
         localStorage.getItem("findviaWorkerProfile") || "null"
     );
