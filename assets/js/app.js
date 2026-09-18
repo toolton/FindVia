@@ -1967,15 +1967,7 @@ function selectWorkerForJob(jobId, responseIndex) {
                     continueWorkerSelection();
                 }
             },
-            {
-                text: "Cancel",
-                icon: "↩️",
-                action: function() {
-
-                    closeFindViaActionModal();
-
-                }
-            }
+            
         ]
     );
 }
@@ -2270,15 +2262,7 @@ function openCustomerPriceResponse(jobId) {
                         showMyJobs();
                     }
                 },
-                {
-                    text: "Cancel",
-                    icon: "↩️",
-                    action: function() {
-
-                        closeFindViaActionModal();
-
-                    }
-                }
+                
             ]
         );
 
@@ -2360,15 +2344,7 @@ function confirmJob(jobId) {
                     showMyJobs();
                 }
             },
-            {
-                text: "Cancel",
-                icon: "↩️",
-                action: function() {
-
-                    closeFindViaActionModal();
-
-                }
-            }
+          
         ]
     );
 }
