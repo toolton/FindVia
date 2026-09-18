@@ -662,149 +662,161 @@ function closeScreens() {
     });
 }
 
-function selectWorkerCategory(category) {
 
-    const workers = {
-        "Electrician": [
-            {
-                name: "Raj Electric Services",
-                area: "Nearby",
-                rating: "4.8",
-                experience: "5+ years",
-                jobs: "127"
-            },
-            {
-                name: "Sharma Electrical Works",
-                area: "Nearby",
-                rating: "4.6",
-                experience: "3+ years",
-                jobs: "89"
+           function selectWorkerCategory(category) {
+
+    const workerProfiles = JSON.parse(
+        localStorage.getItem("findviaWorkerProfiles") || "[]"
+    );
+
+    const approvedWorkers = [];
+
+    workerProfiles.forEach(function(profileData) {
+
+        try {
+
+            const worker =
+                typeof profileData === "string"
+                    ? JSON.parse(profileData)
+                    : profileData;
+
+            if (
+                worker &&
+                worker.verificationStatus === "approved" &&
+                worker.service === category
+            ) {
+
+                approvedWorkers.push(worker);
+
             }
-        ],
 
-        "Plumber": [
-            {
-                name: "QuickFix Plumbing",
-                area: "Nearby",
-                rating: "4.7",
-                experience: "6+ years",
-                jobs: "143"
-            },
-            {
-                name: "Local Plumbing Service",
-                area: "Nearby",
-                rating: "4.5",
-                experience: "4+ years",
-                jobs: "76"
-            }
-        ],
+        } catch (error) {
 
-        "AC Repair": [
-            {
-                name: "CoolCare AC Service",
-                area: "Nearby",
-                rating: "4.8",
-                experience: "5+ years",
-                jobs: "156"
-            },
-            {
-                name: "Fast AC Repair",
-                area: "Nearby",
-                rating: "4.6",
-                experience: "3+ years",
-                jobs: "94"
-            }
-        ],
+            console.log(
+                "Invalid worker profile skipped."
+            );
 
-        "Contractor": [
-            {
-                name: "Reliable Construction",
-                area: "Nearby",
-                rating: "4.7",
-                experience: "8+ years",
-                jobs: "210"
-            }
-        ],
+        }
 
-        "Painter": [
-            {
-                name: "Perfect Paint Works",
-                area: "Nearby",
-                rating: "4.6",
-                experience: "5+ years",
-                jobs: "118"
-            }
-        ],
+    });
 
-        "Other": [
-            {
-                name: "Local Service Professional",
-                area: "Nearby",
-                rating: "4.5",
-                experience: "3+ years",
-                jobs: "65"
-            }
-        ]
-    };
-
-    const selectedWorkers = workers[category] || [];
+    const selectedWorkers =
+        approvedWorkers;
 
     let html = `
         <div class="worker-results-header">
+
             <div>
-                <span class="results-label">AVAILABLE NEAR YOU</span>
-                <h3>${category} Professionals</h3>
+
+                <span class="results-label">
+                    AVAILABLE NEAR YOU
+                </span>
+
+                <h3>
+                    ${escapeHTML(category)} Professionals
+                </h3>
+
             </div>
-            <span class="results-count">${selectedWorkers.length} found</span>
+
+            <span class="results-count">
+                ${selectedWorkers.length} found
+            </span>
+
         </div>
     `;
 
+    if (selectedWorkers.length === 0) {
+
+        html += `
+            <div class="empty-state">
+
+                <div style="font-size:40px;">
+                    👷
+                </div>
+
+                <h3>
+                    No approved workers found
+                </h3>
+
+                <p>
+                    Is service ke liye abhi koi approved worker available nahi hai.
+                </p>
+
+            </div>
+        `;
+
+        document.getElementById(
+            "workerResults"
+        ).innerHTML = html;
+
+        return;
+    }
+
     selectedWorkers.forEach(function(worker) {
+
+        const workerName =
+            worker.name || "Worker";
+
+        const workerInitial =
+            workerName.charAt(0).toUpperCase();
 
         html += `
             <div class="worker-card premium-worker-card">
 
                 <div class="worker-avatar">
-                    ${worker.name.charAt(0)}
+                    ${escapeHTML(workerInitial)}
                 </div>
 
                 <div class="worker-info">
 
                     <div class="worker-name-row">
-                        <h4>${worker.name}</h4>
-                        <span class="verified-badge">✓ Verified</span>
+
+                        <h4>
+                            ${escapeHTML(workerName)}
+                        </h4>
+
+                        <span class="verified-badge">
+                            ✓ Verified
+                        </span>
+
                     </div>
 
                     <div class="worker-status">
+
                         <span class="online-dot"></span>
-                        Available now
+
+                        ${escapeHTML(
+                            worker.availability || "Available"
+                        )}
+
                     </div>
 
-                    <p>📍 ${worker.area}</p>
+                    <p>
+                        📍 ${escapeHTML(
+                            worker.area || "Area not specified"
+                        )}
+                    </p>
 
                     <div class="worker-stats">
-                        <span>⭐ ${worker.rating}</span>
-                        <span>•</span>
-                        <span>${worker.jobs} jobs</span>
-                        <span>•</span>
-                        <span>${worker.experience}</span>
+
+                        <span>
+                            💼 ${escapeHTML(
+                                worker.experience || "Experience not specified"
+                            )}
+                        </span>
+
                     </div>
 
                 </div>
-
-                <button
-                    class="primary-btn worker-request-btn"
-                    onclick="requestWorker('${worker.name}')"
-                >
-                    Request
-                </button>
 
             </div>
         `;
     });
 
-    document.getElementById("workerResults").innerHTML = html;
-}
+    document.getElementById(
+        "workerResults"
+    ).innerHTML = html;
+           }     
     
     
 
