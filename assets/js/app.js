@@ -577,7 +577,7 @@ hideWorkerTransactionScreen();
     document.getElementById("findWorkScreen").classList.remove("active");
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("searchScreen").classList.remove("active");
-    document.getElementById("profileScreen").classList.add("active");
+    openFindViaScreen("profileScreen");
 document.getElementById("workerProfileScreen").classList.remove("active");
 document.getElementById("postJobScreen").classList.remove("active");
  document.getElementById("myJobsScreen").style.display = "none"; 
@@ -2852,6 +2852,24 @@ function hideWorkerTransactionScreen() {
         transactionScreen.style.display = "none";
     }
 }
+
+
+function openFindViaScreen(screenId) {
+
+    const screen =
+        document.getElementById(screenId);
+
+    if (!screen) {
+        return;
+    }
+
+    screen.classList.remove("active");
+
+    void screen.offsetWidth;
+
+    screen.classList.add("active");
+}
+
 
 function openAdminWorkers() {
 
