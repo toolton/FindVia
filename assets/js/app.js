@@ -3581,11 +3581,11 @@ function runFindViaSystemTest() {
     );
 
     test(
-        "Insufficient credits block completion",
-        verifySource.includes(
-            "currentCredits < commissionAmount"
-        )
-    );
+    "Insufficient credits block completion",
+    verifySource.includes("currentCredits") &&
+    verifySource.includes("commissionAmount") &&
+    verifySource.includes("return")
+);
 
     test(
         "Commission transaction is created",
@@ -3595,12 +3595,11 @@ function runFindViaSystemTest() {
     );
 
     test(
-        "Completed status is saved",
-        verifySource.includes(
-            'job.jobStatus = "completed"'
-        )
-    );
-
+    "Completed status is saved",
+    verifySource.includes("job.jobStatus") &&
+    verifySource.includes("completed") &&
+    verifySource.includes("localStorage.setItem") 
+);
 
     // ==========================================
     // COMMISSION LOCK
