@@ -95,34 +95,38 @@ function selectLocation() {
         )?.textContent || "";
 
     showFindViaInputModal(
-        "Select Location",
-        "Apna location enter karein:",
-        function(location) {
+    "Select Location",
+    "Apna location enter karein:",
+    function(location) {
 
-            const cleanLocation =
-                location.trim();
+        const cleanLocation =
+            location.trim();
 
-            if (!cleanLocation) {
+        if (!cleanLocation) {
 
-                alert(
-                    "Please location enter karein."
-                );
+            alert(
+                "Please location enter karein."
+            );
 
-                return;
-            }
-
-            const locationText =
-                document.getElementById(
-                    "locationText"
-                );
-
-            if (locationText) {
-
-                locationText.textContent =
-                    cleanLocation;
-            }
+            return;
         }
-    );
+
+        const locationText =
+            document.getElementById(
+                "locationText"
+            );
+
+        if (locationText) {
+
+            locationText.textContent =
+                cleanLocation;
+        }
+    },
+    "text",
+    "Enter location",
+    "Please location enter karein.",
+    "📍"
+);
 
     const input =
         document.getElementById(
@@ -4232,11 +4236,14 @@ function closeFindViaActionModal() {
     }
 }
 
-
 function showFindViaInputModal(
     title,
     message,
-    onSubmit
+    onSubmit,
+    inputType = "text",
+    placeholder = "Enter here",
+    emptyMessage = "Please value enter karein.",
+    icon = "ℹ️"
 ) {
 
     let modal =
@@ -4262,7 +4269,7 @@ function showFindViaInputModal(
         <div class="findvia-modal-box">
 
             <div class="findvia-modal-icon">
-                💰
+                ${icon}
             </div>
 
             <h3>
@@ -4274,12 +4281,12 @@ function showFindViaInputModal(
             </p>
 
             <input
-                type="number"
+                type="${inputType}"
                 id="findviaModalInput"
                 class="findvia-modal-input"
-                placeholder="Enter amount"
+                placeholder="${escapeHTML(placeholder)}"
                 min="1"
-                inputmode="numeric"
+                inputmode="text"
             >
 
             <div class="findvia-action-buttons">
@@ -4316,22 +4323,25 @@ function showFindViaInputModal(
         );
 
     submit.addEventListener(
-    "click",
-    function() {
+        "click",
+        function() {
 
-        const value = input.value.trim();
+            const value =
+                input.value.trim();
 
-        if (!value) {
-            alert("Please amount enter karein.");
-            return;
+            if (!value) {
+
+                alert(emptyMessage);
+
+                return;
+            }
+
+            closeFindViaInputModal();
+
+            onSubmit(value);
+
         }
-
-        closeFindViaInputModal();
-
-        onSubmit(value);
-
-    }
-);
+    );
 
     modal.style.display = "flex";
 
@@ -4339,7 +4349,6 @@ function showFindViaInputModal(
         input.focus();
     }, 100);
 }
-
 
 function closeFindViaInputModal() {
 
