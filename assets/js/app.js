@@ -102,7 +102,7 @@ function selectLocation() {
 function findWork() {
 
 hideAdminScreens();
-
+hideWorkerTransactionScreen();
     
 document.getElementById("homeContent").style.display = "none";
 
@@ -125,7 +125,7 @@ behavior: "smooth"
 function findWorkers() {
 
 hideAdminScreens();
-    
+ hideWorkerTransactionScreen();   
 document.getElementById("homeContent").style.display = "none";
 
 document.getElementById("searchScreen").classList.remove("active");
@@ -142,7 +142,7 @@ behavior: "smooth"
 
 
 function postJob() {
-
+hideWorkerTransactionScreen();
     const currentRole = localStorage.getItem("findviaUserRole");
 
     if (currentRole !== "customer") {
@@ -547,6 +547,7 @@ function respondToJob(jobId) {
 
 function goHome() {
 hideAdminScreens();
+  hideWorkerTransactionScreen();  
     document.getElementById("findWorkScreen").classList.remove("active");
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("searchScreen").classList.remove("active");
@@ -569,6 +570,8 @@ document.getElementById("postJobScreen").classList.remove("active");
 
 function showProfile() {
 hideAdminScreens();
+hideWorkerTransactionScreen();
+    
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen").classList.remove("active");
@@ -802,7 +805,7 @@ function searchWorkers() {
 function openSearch() {
 
 hideAdminScreens();
-    
+ hideWorkerTransactionScreen();   
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen").classList.remove("active");
@@ -1149,7 +1152,7 @@ if (verificationElement) {
 
 
 function showMyJobs() {
-
+hideWorkerTransactionScreen();
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen").classList.remove("active");
@@ -1600,7 +1603,7 @@ ${
 function showJobResponses(jobId) {
 
     hideAdminScreens();
-
+hideWorkerTransactionScreen();
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen")?.classList.remove("active");
@@ -2838,7 +2841,17 @@ function hideAdminScreens() {
     }
 }
 
+function hideWorkerTransactionScreen() {
 
+    const transactionScreen =
+        document.getElementById(
+            "workerTransactionHistoryScreen"
+        );
+
+    if (transactionScreen) {
+        transactionScreen.style.display = "none";
+    }
+}
 
 function openAdminWorkers() {
 
@@ -3206,6 +3219,8 @@ ${
 
 
 function openWorkerTransactionHistory() {
+
+    hideAdminScreens();
 
     const workerProfile =
         localStorage.getItem(
