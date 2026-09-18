@@ -1861,92 +1861,125 @@ function loadJobResponses(jobId) {
 }
 
 
-
 function selectWorkerForJob(jobId, responseIndex) {
 
-    const confirmMatch = confirm(
-        "Kya aap is worker ko is job ke liye select karna chahte hain?\n\n" +
-        "Select karne ke baad worker ke saath private pricing process shuru hogi."
-    );
+    function continueWorkerSelection() {
 
-    if (!confirmMatch) {
-        return;
-    }
-
-    let jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
-
-    let responses = JSON.parse(
-        localStorage.getItem("findviaJobResponses") || "[]"
-    );
-
-    let job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
-
-    if (!job) {
-        alert("Job nahi mili.");
-        return;
-    }
-
-
-    if (job.matchStatus === "matched") {
-    alert(
-        "Ye job already kisi worker ke saath matched hai."
-    );
-    return;
-    }
-
-    let jobResponses = responses.filter(function(response) {
-        return response.jobId === jobId;
-    });
-
-    let selectedResponse = jobResponses[responseIndex];
-
-    if (!selectedResponse) {
-        alert("Worker response nahi mili.");
-        return;
-    }
-
-    job.matchedWorker = selectedResponse.workerProfile;
-    job.matchStatus = "matched";
-    job.matchedAt = new Date().toISOString();
-
-    localStorage.setItem(
-        "findviaJobs",
-        JSON.stringify(jobs)
-    );
-
-    selectedResponse.status = "matched";
-
-    let globalResponseIndex = responses.findIndex(function(response) {
-
-        return (
-            response.jobId === jobId &&
-            response.createdAt === selectedResponse.createdAt
+        let jobs = JSON.parse(
+            localStorage.getItem("findviaJobs") || "[]"
         );
 
-    });
+        let responses = JSON.parse(
+            localStorage.getItem("findviaJobResponses") || "[]"
+        );
 
-    if (globalResponseIndex !== -1) {
+        let job = jobs.find(function(item) {
+            return item.id === jobId;
+        });
 
-        responses[globalResponseIndex].status = "matched";
+        if (!job) {
+            alert("Job nahi mili.");
+            return;
+        }
 
+        if (job.matchStatus === "matched") {
+
+            alert(
+                "Ye job already kisi worker ke saath matched hai."
+            );
+
+            return;
+        }
+
+        let jobResponses = responses.filter(function(response) {
+            return response.jobId === jobId;
+        });
+
+        let selectedResponse =
+            jobResponses[responseIndex];
+
+        if (!selectedResponse) {
+            alert("Worker response nahi mili.");
+            return;
+        }
+
+        job.matchedWorker =
+            selectedResponse.workerProfile;
+
+        job.matchStatus =
+            "matched";
+
+        job.matchedAt =
+            new Date().toISOString();
+
+        localStorage.setItem(
+            "findviaJobs",
+            JSON.stringify(jobs)
+        );
+
+        selectedResponse.status =
+            "matched";
+
+        let globalResponseIndex =
+            responses.findIndex(function(response) {
+
+                return (
+                    response.jobId === jobId &&
+                    response.createdAt ===
+                        selectedResponse.createdAt
+                );
+
+            });
+
+        if (globalResponseIndex !== -1) {
+
+            responses[
+                globalResponseIndex
+            ].status = "matched";
+
+        }
+
+        localStorage.setItem(
+            "findviaJobResponses",
+            JSON.stringify(responses)
+        );
+
+        alert(
+            "Worker successfully matched! ✅\n\n" +
+            "Ab next step mein private pricing process shuru hoga."
+        );
+
+        showMyJobs();
     }
 
-    localStorage.setItem(
-        "findviaJobResponses",
-        JSON.stringify(responses)
-    );
+    showFindViaActionModal(
+        "Select Worker",
+        "Kya aap is worker ko is job ke liye select karna chahte hain?\n\n" +
+        "Select karne ke baad worker ke saath private pricing process shuru hogi.",
+        [
+            {
+                text: "Select Worker",
+                icon: "👷",
+                action: function() {
 
-    alert(
-        "Worker successfully matched! ✅\n\n" +
-        "Ab next step mein private pricing process shuru hoga."
-    );
+                    closeFindViaActionModal();
 
-    showMyJobs();
+                    continueWorkerSelection();
+                }
+            },
+            {
+                text: "Cancel",
+                icon: "↩️",
+                action: function() {
+
+                    closeFindViaActionModal();
+
+                }
+            }
+        ]
+    );
 }
+
 
 function openPricingForJob(jobId) {
 
@@ -2162,8 +2195,6 @@ closeFindViaActionModal();
    }     
 
 
-
-
 function openCustomerPriceResponse(jobId) {
 
     const jobs = JSON.parse(
@@ -2200,41 +2231,66 @@ function openCustomerPriceResponse(jobId) {
 
     if (job.priceStatus === "counter_offer") {
 
-        const workerOffer = job.workerOffer;
+        const workerOffer =
+            job.workerOffer;
 
-        const choice = confirm(
+        showFindViaActionModal(
+            "Worker Counter Offer",
             "Worker ka counter offer: ₹" +
             workerOffer +
             "\n\n" +
-            "OK = Counter offer accept karein\n" +
-            "Cancel = Abhi accept na karein"
+            "Kya aap ye offer accept karna chahte hain?",
+            [
+                {
+                    text: "Accept Offer",
+                    icon: "✅",
+                    action: function() {
+
+                        job.customerOffer =
+                            workerOffer;
+
+                        job.priceStatus =
+                            "accepted";
+
+                        job.priceUpdatedAt =
+                            new Date().toISOString();
+
+                        localStorage.setItem(
+                            "findviaJobs",
+                            JSON.stringify(jobs)
+                        );
+
+                        closeFindViaActionModal();
+
+                        alert(
+                            "Worker ka offer accept ho gaya! ✅\n\n" +
+                            "Agla step job confirmation hoga."
+                        );
+
+                        showMyJobs();
+                    }
+                },
+                {
+                    text: "Cancel",
+                    icon: "↩️",
+                    action: function() {
+
+                        closeFindViaActionModal();
+
+                    }
+                }
+            ]
         );
-
-        if (choice) {
-
-            job.customerOffer = workerOffer;
-            job.priceStatus = "accepted";
-            job.priceUpdatedAt = new Date().toISOString();
-
-            localStorage.setItem(
-                "findviaJobs",
-                JSON.stringify(jobs)
-            );
-
-            alert(
-                "Worker ka offer accept ho gaya! ✅\n\n" +
-                "Agla step job confirmation hoga."
-            );
-
-            showMyJobs();
-
-        }
 
         return;
     }
 
-    alert("Abhi koi worker price response nahi hai.");
+    alert(
+        "Abhi koi worker price response nahi hai."
+    );
 }
+
+
 
 function confirmJob(jobId) {
 
@@ -2252,46 +2308,69 @@ function confirmJob(jobId) {
     }
 
     if (job.priceStatus !== "accepted") {
+
         alert(
             "Pehle price agreement complete karein."
         );
+
         return;
     }
 
     if (job.jobStatus === "confirmed") {
+
         alert(
             "Ye job already confirmed hai."
         );
+
         return;
     }
 
-    const confirmJob = confirm(
+    showFindViaActionModal(
+        "Confirm Job",
         "Job confirm karna hai?\n\n" +
         "Agreed Price: ₹" +
         job.customerOffer +
         "\n\n" +
-        "Confirm karne ke baad job officially active ho jayegi."
+        "Confirm karne ke baad job officially active ho jayegi.",
+        [
+            {
+                text: "Confirm Job",
+                icon: "✅",
+                action: function() {
+
+                    job.jobStatus =
+                        "confirmed";
+
+                    job.confirmedAt =
+                        new Date().toISOString();
+
+                    localStorage.setItem(
+                        "findviaJobs",
+                        JSON.stringify(jobs)
+                    );
+
+                    closeFindViaActionModal();
+
+                    alert(
+                        "Job successfully confirmed! ✅\n\n" +
+                        "Agreed Price: ₹" +
+                        job.customerOffer
+                    );
+
+                    showMyJobs();
+                }
+            },
+            {
+                text: "Cancel",
+                icon: "↩️",
+                action: function() {
+
+                    closeFindViaActionModal();
+
+                }
+            }
+        ]
     );
-
-    if (!confirmJob) {
-        return;
-    }
-
-    job.jobStatus = "confirmed";
-    job.confirmedAt = new Date().toISOString();
-
-    localStorage.setItem(
-        "findviaJobs",
-        JSON.stringify(jobs)
-    );
-
-    alert(
-        "Job successfully confirmed! ✅\n\n" +
-        "Agreed Price: ₹" +
-        job.customerOffer
-    );
-
-    showMyJobs();
 }
 
 
