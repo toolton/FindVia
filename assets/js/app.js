@@ -1,93 +1,175 @@
-let hindiMode = false;
+let hindiMode =
+    localStorage.getItem("findviaLanguage") === "hi";
 
-function toggleLanguage() {
 
-    hindiMode = !hindiMode;
+const findViaTranslations = {
 
-    const translations = {
+    en: {
 
-        en: {
-            welcomeTitle: "Find Work. Find Workers.",
-            welcomeText:
-                "Find trusted local work and workers near you.",
+        welcomeTitle:
+            "Find Work. Find Workers.",
 
-            findWorkTitle: "Find Work",
-            findWorkText:
-                "Discover local jobs and work opportunities.",
+        welcomeText:
+            "Find trusted local work and workers near you.",
 
-            findWorkersTitle: "Find Workers",
-            findWorkersText:
-                "Find people for your work or service.",
+        findWorkTitle:
+            "Find Work",
 
-            postTitle: "Need someone for a job?",
-            postText:
-                "Post your work requirement and find the right person.",
+        findWorkText:
+            "Discover local jobs and work opportunities.",
 
-            postButton: "+ Post a Job",
+        findWorkersTitle:
+            "Find Workers",
 
-            homeNav: "Home",
-            searchNav: "Search",
-            postNav: "Post",
-            profileNav: "Profile"
-        },
+        findWorkersText:
+            "Find people for your work or service.",
 
-        hi: {
-            welcomeTitle:
-                "काम खोजें। काम देने वाले खोजें।",
+        postTitle:
+            "Need someone for a job?",
 
-            welcomeText:
-                "अपने आसपास काम और भरोसेमंद workers आसानी से खोजें।",
+        postText:
+            "Post your work requirement and find the right person.",
 
-            findWorkTitle:
-                "काम खोजें",
+        postButton:
+            "+ Post a Job",
 
-            findWorkText:
-                "अपने आसपास उपलब्ध काम खोजें।",
+        homeNav:
+            "Home",
 
-            findWorkersTitle:
-                "काम करने वाले खोजें",
+        searchNav:
+            "Search",
 
-            findWorkersText:
-                "अपने काम या सेवा के लिए सही व्यक्ति खोजें।",
+        postNav:
+            "Post",
 
-            postTitle:
-                "काम के लिए किसी की जरूरत है?",
+        profileNav:
+            "Profile"
+    },
 
-            postText:
-                "अपनी जरूरत पोस्ट करें और सही व्यक्ति खोजें।",
 
-            postButton:
-                "+ काम पोस्ट करें",
+    hi: {
 
-            homeNav:
-                "होम",
+        welcomeTitle:
+            "काम खोजें। काम देने वाले खोजें।",
 
-            searchNav:
-                "खोजें",
+        welcomeText:
+            "अपने आसपास काम और भरोसेमंद कामगार खोजें।",
 
-            postNav:
-                "पोस्ट",
+        findWorkTitle:
+            "काम खोजें",
 
-            profileNav:
-                "प्रोफाइल"
-        }
+        findWorkText:
+            "अपने आसपास उपलब्ध काम और रोजगार के अवसर खोजें।",
 
-    };
+        findWorkersTitle:
+            "कामगार खोजें",
+
+        findWorkersText:
+            "अपने काम या सेवा के लिए सही कामगार खोजें।",
+
+        postTitle:
+            "काम के लिए किसी की जरूरत है?",
+
+        postText:
+            "अपनी काम की जरूरत पोस्ट करें और सही व्यक्ति खोजें।",
+
+        postButton:
+            "+ काम पोस्ट करें",
+
+        homeNav:
+            "होम",
+
+        searchNav:
+            "खोजें",
+
+        postNav:
+            "पोस्ट",
+
+        profileNav:
+            "प्रोफाइल"
+    }
+
+};
+
+
+/*
+ * Central translation helper
+ *
+ * Example:
+ * t("welcomeTitle")
+ */
+function t(key) {
 
     const language =
-        hindiMode ? translations.hi : translations.en;
+        hindiMode ? "hi" : "en";
 
-    Object.keys(language).forEach(function(id) {
+    return (
+        findViaTranslations[language][key] ||
+        findViaTranslations.en[key] ||
+        key
+    );
+}
+
+
+/*
+ * Set text safely by element ID.
+ */
+function setFindViaText(
+    elementId,
+    translationKey
+) {
+
+    const element =
+        document.getElementById(elementId);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        t(translationKey);
+}
+
+
+/*
+ * Apply all currently registered
+ * static translations.
+ */
+function applyFindViaLanguage() {
+
+    Object.keys(
+        findViaTranslations.en
+    ).forEach(function(key) {
 
         const element =
-            document.getElementById(id);
+            document.getElementById(key);
 
-        if (element) {
-            element.textContent =
-                language[id];
+        if (!element) {
+            return;
         }
 
+        element.textContent =
+            t(key);
+
     });
+
+}
+
+
+/*
+ * Main language switch.
+ */
+function toggleLanguage() {
+
+    hindiMode =
+        !hindiMode;
+
+    localStorage.setItem(
+        "findviaLanguage",
+        hindiMode ? "hi" : "en"
+    );
+
+    applyFindViaLanguage();
 }
 
 function selectLocation() {
