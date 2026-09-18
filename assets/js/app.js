@@ -1968,39 +1968,53 @@ function openPricingForJob(jobId) {
         return;
     }
 
-    const price = prompt(
-        "Is job ke liye aap kitna price offer karna chahte hain?\n\n" +
-        "Ye offer private rahega."
+    showFindViaInputModal(
+        "Private Price Offer",
+        "Is job ke liye aap kitna price offer karna chahte hain?\n\nYe offer private rahega.",
+        function(price) {
+
+            const amount =
+                Number(price);
+
+            if (
+                !Number.isFinite(amount) ||
+                amount <= 0
+            ) {
+
+                alert(
+                    "Please ek valid amount enter karein."
+                );
+
+                return;
+            }
+
+            job.customerOffer =
+                amount;
+
+            job.priceStatus =
+                "customer_offer_sent";
+
+            job.priceUpdatedAt =
+                new Date().toISOString();
+
+            localStorage.setItem(
+                "findviaJobs",
+                JSON.stringify(jobs)
+            );
+
+            alert(
+                "Private price offer save ho gaya. ✅\n\n" +
+                "Next step mein worker is offer ko dekhkar apna response dega."
+            );
+
+            showMyJobs();
+        },
+        "number",
+        "Enter amount",
+        "Please amount enter karein.",
+        "💰"
     );
-
-    if (price === null) {
-        return;
-    }
-
-    const amount = Number(price);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Please ek valid amount enter karein.");
-        return;
-    }
-
-    job.customerOffer = amount;
-    job.priceStatus = "customer_offer_sent";
-    job.priceUpdatedAt = new Date().toISOString();
-
-    localStorage.setItem(
-        "findviaJobs",
-        JSON.stringify(jobs)
-    );
-
-    alert(
-        "Private price offer save ho gaya. ✅\n\n" +
-        "Next step mein worker is offer ko dekhkar apna response dega."
-    );
-
-    showMyJobs();
 }
-
 
 
    function openWorkerOffer(jobId) {
