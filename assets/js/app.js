@@ -297,6 +297,348 @@ function translateFindViaMessage(message) {
 
     return translated;
 }
+
+
+function applyFindViaStaticLanguage() {
+
+    const translations = {
+
+        en: {
+            "Your Location": "Your Location",
+            "Select your location": "Select your location",
+            "Change": "Change",
+
+            "Find Work": "Find Work",
+            "Find local work opportunities near you.":
+                "Find local work opportunities near you.",
+            "Search work...": "Search work...",
+            "Search": "Search",
+            "Other Work": "Other Work",
+            "No work selected yet.":
+                "No work selected yet.",
+
+            "Find Workers": "Find Workers",
+            "Find skilled workers near your location.":
+                "Find skilled workers near your location.",
+            "Search workers...": "Search workers...",
+            "Other Worker": "Other Worker",
+            "No worker category selected yet.":
+                "No worker category selected yet.",
+
+            "Search FindVia": "Search FindVia",
+            "Find local work opportunities and skilled workers near you.":
+                "Find local work opportunities and skilled workers near you.",
+            "Search work or workers...":
+                "Search work or workers...",
+            "Find available work opportunities":
+                "Find available work opportunities",
+            "Find skilled workers near you":
+                "Find skilled workers near you",
+            "Search results will appear here.":
+                "Search results will appear here.",
+
+            "My Profile": "My Profile",
+            "Choose how you want to use FindVia.":
+                "Choose how you want to use FindVia.",
+            "Your FindVia Role": "Your FindVia Role",
+            "I'm looking for work": "I'm looking for work",
+            "I need a worker": "I need a worker",
+            "Worker Profile Setup": "Worker Profile Setup",
+            "My Posted Jobs": "My Posted Jobs",
+            "My Transactions": "My Transactions",
+            "Admin Access": "Admin Access",
+            "Worker Profile": "Worker Profile",
+            "Your professional details":
+                "Your professional details",
+            "Edit": "Edit",
+            "Name": "Name",
+            "Service": "Service",
+            "Experience": "Experience",
+            "Area": "Area",
+            "Availability": "Availability",
+            "Verification": "Verification",
+
+            "Post a Job": "Post a Job",
+            "Apni work requirement share karein.":
+                "Share your work requirement.",
+            "काम का नाम": "Job title",
+            "काम की category": "Job category",
+            "Category चुनें": "Select category",
+            "काम की जानकारी": "Job details",
+            "काम कहाँ करना है?": "Where is the work?",
+            "काम कब चाहिए?": "When do you need the work?",
+            "Timing चुनें": "Select timing",
+            "आपका maximum budget": "Your maximum budget",
+            "काम की photo (optional)": "Job photo (optional)",
+            "Post Job": "Post Job",
+
+            "My Jobs": "My Jobs",
+            "Aapki posted work requirements.":
+                "Your posted work requirements.",
+            "Loading your jobs...": "Loading your jobs...",
+
+            "Interested Workers": "Interested Workers",
+            "Is job mein interested workers.":
+                "Workers interested in this job.",
+            "Loading responses...": "Loading responses...",
+
+            "Apne kaam ke baare mein basic information dein.":
+                "Provide basic information about your work.",
+            "आप कौन सा काम करते हैं?":
+                "What type of work do you do?",
+            "Service चुनें": "Select service",
+            "Experience चुनें": "Select experience",
+            "आप किस area में काम करते हैं?":
+                "Which area do you work in?",
+            "Availability चुनें": "Select availability",
+            "Save Worker Profile": "Save Worker Profile",
+
+            "Admin Login": "Admin Login",
+            "Authorized access only": "Authorized access only",
+            "ADMIN ACCESS": "ADMIN ACCESS",
+            "FindVia Administration": "FindVia Administration",
+            "Admin credentials enter karke dashboard access karein.":
+                "Enter admin credentials to access the dashboard.",
+            "Admin password": "Admin password",
+            "Login to Admin Panel": "Login to Admin Panel",
+
+            "Admin Panel": "Admin Panel",
+            "FindVia system management":
+                "FindVia system management",
+            "MANAGEMENT": "MANAGEMENT",
+            "Worker Management": "Worker Management",
+            "Workers, credits aur verification ko manage karein.":
+                "Manage workers, credits and verification.",
+            "Manage Workers": "Manage Workers",
+            "FINANCE": "FINANCE",
+            "Credits & Commission": "Credits & Commission",
+            "Worker credits aur FindVia commission settings yahan manage hongi.":
+                "Manage worker credits and FindVia commission settings here.",
+            "FindVia Commission (%)": "FindVia Commission (%)",
+            "Current commission:": "Current commission:",
+            "Save Commission": "Save Commission",
+            "SYSTEM": "SYSTEM",
+            "Platform Overview": "Platform Overview",
+            "Active": "Active",
+            "FindVia ke important system controls.":
+                "Important FindVia system controls.",
+            "Run System Test": "Run System Test",
+
+            "My Transactions": "My Transactions",
+            "आपके FindVia credit transactions":
+                "Your FindVia credit transactions",
+            "FindVia workers management":
+                "FindVia worker management",
+            "Transaction History": "Transaction History",
+            "Worker transactions": "Worker transactions",
+            "OK": "OK"
+        },
+
+        hi: {
+            "Your Location": "आपका स्थान",
+            "Select your location": "अपना स्थान चुनें",
+            "Change": "बदलें",
+
+            "Find Work": "काम खोजें",
+            "Find local work opportunities near you.":
+                "अपने आसपास उपलब्ध काम खोजें।",
+            "Search work...": "काम खोजें...",
+            "Search": "खोजें",
+            "Other Work": "अन्य काम",
+            "No work selected yet.":
+                "अभी कोई काम नहीं चुना गया है।",
+
+            "Find Workers": "कामगार खोजें",
+            "Find skilled workers near your location.":
+                "अपने आसपास कुशल कामगार खोजें।",
+            "Search workers...": "कामगार खोजें...",
+            "Other Worker": "अन्य कामगार",
+            "No worker category selected yet.":
+                "अभी कोई कामगार श्रेणी नहीं चुनी गई है।",
+
+            "Search FindVia": "FindVia पर खोजें",
+            "Find local work opportunities and skilled workers near you.":
+                "अपने आसपास काम और कुशल कामगार खोजें।",
+            "Search work or workers...":
+                "काम या कामगार खोजें...",
+            "Find available work opportunities":
+                "उपलब्ध काम खोजें",
+            "Find skilled workers near you":
+                "अपने आसपास कुशल कामगार खोजें",
+            "Search results will appear here.":
+                "खोज के परिणाम यहाँ दिखाई देंगे।",
+
+            "My Profile": "मेरी प्रोफाइल",
+            "Choose how you want to use FindVia.":
+                "चुनें कि आप FindVia का उपयोग कैसे करना चाहते हैं।",
+            "Your FindVia Role": "आपकी FindVia भूमिका",
+            "I'm looking for work": "मुझे काम चाहिए",
+            "I need a worker": "मुझे कामगार चाहिए",
+            "Worker Profile Setup": "कामगार प्रोफाइल सेट करें",
+            "My Posted Jobs": "मेरे पोस्ट किए गए काम",
+            "My Transactions": "मेरे लेन-देन",
+            "Admin Access": "Admin Access",
+            "Worker Profile": "कामगार प्रोफाइल",
+            "Your professional details":
+                "आपकी काम से जुड़ी जानकारी",
+            "Edit": "बदलें",
+            "Name": "नाम",
+            "Service": "सेवा",
+            "Experience": "अनुभव",
+            "Area": "क्षेत्र",
+            "Availability": "उपलब्धता",
+            "Verification": "सत्यापन",
+
+            "Post a Job": "काम पोस्ट करें",
+            "Apni work requirement share karein.":
+                "अपनी काम की जरूरत साझा करें।",
+            "काम का नाम": "काम का नाम",
+            "काम की category": "काम की श्रेणी",
+            "Category चुनें": "श्रेणी चुनें",
+            "काम की जानकारी": "काम की जानकारी",
+            "काम कहाँ करना है?": "काम कहाँ करना है?",
+            "काम कब चाहिए?": "काम कब चाहिए?",
+            "Timing चुनें": "समय चुनें",
+            "आपका maximum budget": "आपका अधिकतम बजट",
+            "काम की photo (optional)":
+                "काम की फोटो (वैकल्पिक)",
+            "Post Job": "काम पोस्ट करें",
+
+            "My Jobs": "मेरे काम",
+            "Aapki posted work requirements.":
+                "आपके द्वारा पोस्ट की गई काम की जरूरतें।",
+            "Loading your jobs...":
+                "आपके काम लोड हो रहे हैं...",
+
+            "Interested Workers": "इच्छुक कामगार",
+            "Is job mein interested workers.":
+                "इस काम में रुचि रखने वाले कामगार।",
+            "Loading responses...":
+                "प्रतिक्रियाएँ लोड हो रही हैं...",
+
+            "Apne kaam ke baare mein basic information dein.":
+                "अपने काम के बारे में मूल जानकारी दें।",
+            "आप कौन सा काम करते हैं?":
+                "आप कौन सा काम करते हैं?",
+            "Service चुनें": "सेवा चुनें",
+            "Experience चुनें": "अनुभव चुनें",
+            "आप किस area में काम करते हैं?":
+                "आप किस क्षेत्र में काम करते हैं?",
+            "Availability चुनें": "उपलब्धता चुनें",
+            "Save Worker Profile": "कामगार प्रोफाइल सेव करें",
+
+            "Admin Login": "Admin Login",
+            "Authorized access only":
+                "केवल अधिकृत लोगों के लिए",
+            "ADMIN ACCESS": "ADMIN ACCESS",
+            "FindVia Administration": "FindVia Administration",
+            "Admin credentials enter karke dashboard access karein.":
+                "Dashboard खोलने के लिए Admin credentials दर्ज करें।",
+            "Admin password": "Admin password",
+            "Login to Admin Panel":
+                "Admin Panel में लॉगिन करें",
+
+            "Admin Panel": "Admin Panel",
+            "FindVia system management":
+                "FindVia system management",
+            "MANAGEMENT": "प्रबंधन",
+            "Worker Management": "कामगार प्रबंधन",
+            "Workers, credits aur verification ko manage karein.":
+                "कामगार, credits और सत्यापन प्रबंधित करें।",
+            "Manage Workers": "कामगार प्रबंधित करें",
+            "FINANCE": "वित्त",
+            "Credits & Commission": "Credits और Commission",
+            "Worker credits aur FindVia commission settings yahan manage hongi.":
+                "कामगार credits और FindVia commission settings यहाँ प्रबंधित होंगी।",
+            "FindVia Commission (%)":
+                "FindVia Commission (%)",
+            "Current commission:": "वर्तमान commission:",
+            "Save Commission": "Commission सेव करें",
+            "SYSTEM": "सिस्टम",
+            "Platform Overview": "Platform Overview",
+            "Active": "सक्रिय",
+            "FindVia ke important system controls.":
+                "FindVia के महत्वपूर्ण system controls।",
+            "Run System Test": "System Test चलाएँ",
+
+            "My Transactions": "मेरे लेन-देन",
+            "आपके FindVia credit transactions":
+                "आपके FindVia credit लेन-देन",
+            "FindVia workers management":
+                "FindVia कामगार प्रबंधन",
+            "Transaction History": "लेन-देन इतिहास",
+            "Worker transactions":
+                "कामगार के लेन-देन",
+            "OK": "ठीक है"
+        }
+    };
+
+    const language =
+        hindiMode ? "hi" : "en";
+
+    const dictionary =
+        translations[language];
+
+    const walker =
+        document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT
+        );
+
+    const textNodes = [];
+
+    while (walker.nextNode()) {
+        textNodes.push(walker.currentNode);
+    }
+
+    textNodes.forEach(function(node) {
+
+        const original =
+            node.textContent.trim();
+
+        if (!original) {
+            return;
+        }
+
+        if (
+            dictionary[original] !== undefined
+        ) {
+            node.textContent =
+                node.textContent.replace(
+                    original,
+                    dictionary[original]
+                );
+        }
+
+    });
+
+    document
+        .querySelectorAll(
+            "input[placeholder], textarea[placeholder]"
+        )
+        .forEach(function(input) {
+
+            const original =
+                input.getAttribute(
+                    "placeholder"
+                );
+
+            if (
+                original &&
+                dictionary[original]
+            ) {
+                input.setAttribute(
+                    "placeholder",
+                    dictionary[original]
+                );
+            }
+
+        });
+
+}
+
+
+
 /*
  * Set text safely by element ID.
  */
@@ -356,6 +698,7 @@ function toggleLanguage() {
     );
 
     applyFindViaLanguage();
+    applyFindViaStaticLanguage();
 }
 
 function selectLocation() {
