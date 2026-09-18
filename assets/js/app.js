@@ -5345,6 +5345,60 @@ function showFindViaActionModal(
         document.body.appendChild(modal);
     }
 
+    const cancelText =
+        hindiMode
+            ? "रद्द करें"
+            : "Cancel";
+
+    const localizedActions =
+        actions.map(function(item) {
+
+            const actionTranslations = {
+
+                "Select Worker": {
+                    en: "Select Worker",
+                    hi: "Worker चुनें"
+                },
+
+                "Accept Offer": {
+                    en: "Accept Offer",
+                    hi: "Offer स्वीकार करें"
+                },
+
+                "Counter Offer": {
+                    en: "Counter Offer",
+                    hi: "Counter Offer दें"
+                },
+
+                "Reject Offer": {
+                    en: "Reject Offer",
+                    hi: "Offer अस्वीकार करें"
+                },
+
+                "Confirm Job": {
+                    en: "Confirm Job",
+                    hi: "Job confirm करें"
+                }
+
+            };
+
+            const translation =
+                actionTranslations[item.text];
+
+            return {
+                ...item,
+                text:
+                    translation
+                    ? (
+                        hindiMode
+                        ? translation.hi
+                        : translation.en
+                    )
+                    : item.text
+            };
+
+        });
+
     modal.innerHTML = `
         <div class="findvia-modal-box">
 
@@ -5353,35 +5407,44 @@ function showFindViaActionModal(
             </div>
 
             <h3>
-                ${escapeHTML(title)}
+                ${escapeHTML(
+                    title
+                )}
             </h3>
 
             <p>
-                ${escapeHTML(message)}
+                ${escapeHTML(
+                    message
+                )}
             </p>
 
             <div class="findvia-action-buttons">
 
-                ${actions.map(function(item) {
+                ${
+                    localizedActions
+                    .map(function(item, index) {
 
-                    return `
-                        <button
-                            type="button"
-                            class="primary-btn"
-                            data-action-index="${actions.indexOf(item)}"
-                        >
-                            ${item.icon} ${item.text}
-                        </button>
-                    `;
+                        return `
+                            <button
+                                type="button"
+                                class="primary-btn"
+                                data-action-index="${index}"
+                            >
+                                ${item.icon}
+                                ${item.text}
+                            </button>
+                        `;
 
-                }).join("")}
+                    })
+                    .join("")
+                }
 
                 <button
                     type="button"
                     class="back-btn"
                     onclick="closeFindViaActionModal()"
                 >
-                    Cancel
+                    ${cancelText}
                 </button>
 
             </div>
@@ -5389,21 +5452,25 @@ function showFindViaActionModal(
         </div>
     `;
 
-    actions.forEach(function(item, index) {
+    localizedActions.forEach(
+        function(item, index) {
 
-        const button =
-            modal.querySelector(
-                `[data-action-index="${index}"]`
-            );
+            const button =
+                modal.querySelector(
+                    `[data-action-index="${index}"]`
+                );
 
-        if (button) {
+            if (button) {
 
-            button.addEventListener(
-                "click",
-                item.action
-            );
+                button.addEventListener(
+                    "click",
+                    item.action
+                );
+
+            }
+
         }
-    });
+    );
 
     modal.style.display = "flex";
 }
@@ -5450,6 +5517,16 @@ function showFindViaInputModal(
         document.body.appendChild(modal);
     }
 
+    const continueText =
+        hindiMode
+            ? "आगे बढ़ें"
+            : "Continue";
+
+    const cancelText =
+        hindiMode
+            ? "रद्द करें"
+            : "Cancel";
+
     modal.innerHTML = `
         <div class="findvia-modal-box">
 
@@ -5481,7 +5558,7 @@ function showFindViaInputModal(
                     class="primary-btn"
                     id="findviaInputSubmit"
                 >
-                    Continue
+                    ${continueText}
                 </button>
 
                 <button
@@ -5489,7 +5566,7 @@ function showFindViaInputModal(
                     class="back-btn"
                     onclick="closeFindViaInputModal()"
                 >
-                    Cancel
+                    ${cancelText}
                 </button>
 
             </div>
@@ -5507,47 +5584,46 @@ function showFindViaInputModal(
             "findviaInputSubmit"
         );
 
+    submit.addEventListener(
+        "click",
+        function() {
 
-submit.addEventListener(
-    "click",
-    function() {
+            const value =
+                input.value.trim();
 
-        const value =
-            input.value.trim();
+            if (!value) {
 
-        if (!value) {
+                alert(emptyMessage);
 
-            alert(emptyMessage);
+                return;
+            }
 
-            return;
+            closeFindViaInputModal();
+
+            onSubmit(value);
         }
+    );
 
-        closeFindViaInputModal();
+    input.addEventListener(
+        "keydown",
+        function(event) {
 
-        onSubmit(value);
-    }
-);
+            if (event.key !== "Enter") {
+                return;
+            }
 
-input.addEventListener(
-    "keydown",
-    function(event) {
+            event.preventDefault();
 
-        if (event.key !== "Enter") {
-            return;
+            submit.click();
         }
-
-        event.preventDefault();
-
-        submit.click();
-    }
-);
-
-    
+    );
 
     modal.style.display = "flex";
 
     setTimeout(function() {
+
         input.focus();
+
     }, 100);
 }
 
