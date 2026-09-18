@@ -1,91 +1,94 @@
 let hindiMode = false;
 
 function toggleLanguage() {
+
     hindiMode = !hindiMode;
 
-    if (hindiMode) {
-        document.getElementById("welcomeTitle").textContent =
-            "काम खोजें। काम देने वाले खोजें।";
+    const translations = {
 
-        document.getElementById("welcomeText").textContent =
-            "अपने आसपास काम और भरोसेमंद workers आसानी से खोजें।";
+        en: {
+            welcomeTitle: "Find Work. Find Workers.",
+            welcomeText:
+                "Find trusted local work and workers near you.",
 
-        document.getElementById("findWorkTitle").textContent =
-            "काम खोजें";
+            findWorkTitle: "Find Work",
+            findWorkText:
+                "Discover local jobs and work opportunities.",
 
-        document.getElementById("findWorkText").textContent =
-            "अपने आसपास उपलब्ध काम खोजें।";
+            findWorkersTitle: "Find Workers",
+            findWorkersText:
+                "Find people for your work or service.",
 
-        document.getElementById("findWorkersTitle").textContent =
-            "Workers खोजें";
+            postTitle: "Need someone for a job?",
+            postText:
+                "Post your work requirement and find the right person.",
 
-        document.getElementById("findWorkersText").textContent =
-            "अपने काम के लिए सही व्यक्ति खोजें।";
+            postButton: "+ Post a Job",
 
-        document.getElementById("postTitle").textContent =
-            "काम के लिए किसी की जरूरत है?";
+            homeNav: "Home",
+            searchNav: "Search",
+            postNav: "Post",
+            profileNav: "Profile"
+        },
 
-        document.getElementById("postText").textContent =
-            "अपनी जरूरत पोस्ट करें और सही व्यक्ति खोजें।";
+        hi: {
+            welcomeTitle:
+                "काम खोजें। काम देने वाले खोजें।",
 
-        document.getElementById("postButton").textContent =
-            "+ काम पोस्ट करें";
+            welcomeText:
+                "अपने आसपास काम और भरोसेमंद workers आसानी से खोजें।",
 
-        document.getElementById("homeNav").textContent =
-            "होम";
+            findWorkTitle:
+                "काम खोजें",
 
-        document.getElementById("searchNav").textContent =
-            "खोजें";
+            findWorkText:
+                "अपने आसपास उपलब्ध काम खोजें।",
 
-        document.getElementById("postNav").textContent =
-            "पोस्ट";
+            findWorkersTitle:
+                "काम करने वाले खोजें",
 
-        document.getElementById("profileNav").textContent =
-            "प्रोफाइल";
+            findWorkersText:
+                "अपने काम या सेवा के लिए सही व्यक्ति खोजें।",
 
-    } else {
+            postTitle:
+                "काम के लिए किसी की जरूरत है?",
 
-        document.getElementById("welcomeTitle").textContent =
-            "Find Work. Find Workers.";
+            postText:
+                "अपनी जरूरत पोस्ट करें और सही व्यक्ति खोजें।",
 
-        document.getElementById("welcomeText").textContent =
-            "Find trusted local work and workers near you.";
+            postButton:
+                "+ काम पोस्ट करें",
 
-        document.getElementById("findWorkTitle").textContent =
-            "Find Work";
+            homeNav:
+                "होम",
 
-        document.getElementById("findWorkText").textContent =
-            "Discover local jobs and work opportunities.";
+            searchNav:
+                "खोजें",
 
-        document.getElementById("findWorkersTitle").textContent =
-            "Find Workers";
+            postNav:
+                "पोस्ट",
 
-        document.getElementById("findWorkersText").textContent =
-            "Find people for your work or service.";
+            profileNav:
+                "प्रोफाइल"
+        }
 
-        document.getElementById("postTitle").textContent =
-            "Need someone for a job?";
+    };
 
-        document.getElementById("postText").textContent =
-            "Post your work requirement and find the right person.";
+    const language =
+        hindiMode ? translations.hi : translations.en;
 
-        document.getElementById("postButton").textContent =
-            "+ Post a Job";
+    Object.keys(language).forEach(function(id) {
 
-        document.getElementById("homeNav").textContent =
-            "Home";
+        const element =
+            document.getElementById(id);
 
-        document.getElementById("searchNav").textContent =
-            "Search";
+        if (element) {
+            element.textContent =
+                language[id];
+        }
 
-        document.getElementById("postNav").textContent =
-            "Post";
-
-        document.getElementById("profileNav").textContent =
-            "Profile";
-    }
+    });
 }
-
 
 function selectLocation() {
 
