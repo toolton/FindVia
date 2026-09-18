@@ -345,10 +345,19 @@ main {
     padding: 22px;
     margin-top: 10px;
     box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+
+        opacity: 0;
+    transform: translateY(8px);
 }
 
 .app-screen.active {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
+
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease;
 }
 
 .app-screen h2 {
