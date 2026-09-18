@@ -888,6 +888,26 @@ if (myJobsButton) {
     }
 }
 
+
+
+    const workerTransactionsBox =
+    document.getElementById(
+        "workerTransactionsBox"
+    );
+
+if (workerTransactionsBox) {
+
+    if (role === "worker") {
+
+        workerTransactionsBox.style.display =
+            "block";
+
+    } else {
+
+        workerTransactionsBox.style.display =
+            "none";
+    }
+}
     const workerCard = document.getElementById("workerRoleCard");
     const customerCard = document.getElementById("customerRoleCard");
 
