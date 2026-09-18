@@ -439,9 +439,10 @@ function isJobAvailableForFindWork(job) {
     return true;
 }
 
-function showPostedJobs() {
+function showPostedJobs(categoryFilter = "") {
 
-    const resultsBox = document.getElementById("workResults");
+    const resultsBox =
+        document.getElementById("workResults");
 
     if (!resultsBox) {
         return;
@@ -451,18 +452,43 @@ function showPostedJobs() {
         localStorage.getItem("findviaJobs") || "[]"
     );
 
-    
-const openJobs = jobs.filter(function(job) {
+    let availableJobs = jobs.filter(function(job) {
+        return isJobAvailableForFindWork(job);
+    });
 
-    return isJobAvailableForFindWork(job);
+    if (categoryFilter) {
 
-});
-    if (openJobs.length === 0) {
+        availableJobs =
+            availableJobs.filter(function(job) {
+
+                return (
+                    job.category === categoryFilter
+                );
+
+            });
+    }
+
+    if (availableJobs.length === 0) {
 
         resultsBox.innerHTML = `
             <div class="empty-state">
-                <strong>No jobs available yet.</strong>
-                <p>New local work opportunities will appear here.</p>
+
+                <strong>
+                    ${
+                        categoryFilter
+                        ? "No jobs found in this category."
+                        : "No jobs available yet."
+                    }
+                </strong>
+
+                <p>
+                    ${
+                        categoryFilter
+                        ? "Is category mein abhi koi available job nahi hai."
+                        : "New local work opportunities will appear here."
+                    }
+                </p>
+
             </div>
         `;
 
@@ -471,18 +497,31 @@ const openJobs = jobs.filter(function(job) {
 
     let html = `
         <div class="worker-results-header">
+
             <div>
-                <span class="results-label">LOCAL OPPORTUNITIES</span>
-                <h3>Available Jobs</h3>
+
+                <span class="results-label">
+                    LOCAL OPPORTUNITIES
+                </span>
+
+                <h3>
+                    ${
+                        categoryFilter
+                        ? escapeHTML(categoryFilter) + " Jobs"
+                        : "Available Jobs"
+                    }
+                </h3>
+
             </div>
 
             <span class="results-count">
-                ${openJobs.length} found
+                ${availableJobs.length} found
             </span>
+
         </div>
     `;
 
-    openJobs.forEach(function(job) {
+    availableJobs.forEach(function(job) {
 
         html += `
             <div class="job-card">
@@ -490,11 +529,15 @@ const openJobs = jobs.filter(function(job) {
                 <div class="job-card-top">
 
                     <div>
+
                         <span class="job-category">
-                            ${job.category}
+                            ${escapeHTML(job.category)}
                         </span>
 
-                        <h3>${escapeHTML(job.title)}</h3>
+                        <h3>
+                            ${escapeHTML(job.title)}
+                        </h3>
+
                     </div>
 
                     <span class="job-status">
@@ -508,17 +551,26 @@ const openJobs = jobs.filter(function(job) {
                 </p>
 
                 <div class="job-meta">
-                    <span>📍 ${escapeHTML(job.area)}</span>
-                    <span>🕒 ${escapeHTML(job.timing)}</span>
+
+                    <span>
+                        📍 ${escapeHTML(job.area)}
+                    </span>
+
+                    <span>
+                        🕒 ${escapeHTML(job.timing)}
+                    </span>
+
                 </div>
 
                 ${
                     job.photo
-                    ? `<img
-                        class="job-photo"
-                        src="${job.photo}"
-                        alt="Job photo"
-                    >`
+                    ? `
+                        <img
+                            class="job-photo"
+                            src="${job.photo}"
+                            alt="Job photo"
+                        >
+                    `
                     : ""
                 }
 
@@ -526,34 +578,36 @@ const openJobs = jobs.filter(function(job) {
                     🔒 Customer budget is hidden until the appropriate match stage.
                 </div>
 
+                ${
+                    job.matchedWorker &&
+                    job.matchedWorker ===
+                        localStorage.getItem(
+                            "findviaWorkerProfile"
+                        ) &&
+                    job.customerOffer
+                    ? `
+                        <button
+                            class="primary-btn"
+                            onclick="openWorkerOffer(${job.id})"
+                        >
+                            💰 View Private Offer
+                        </button>
+                    `
+                    : ""
+                }
 
-${
-    job.matchedWorker &&
-    job.matchedWorker === localStorage.getItem("findviaWorkerProfile") &&
-    job.customerOffer
-    ? `
-        <button
-            class="primary-btn"
-            onclick="openWorkerOffer(${job.id})"
-        >
-            💰 View Private Offer
-        </button>
-    `
-    : ""
-}
-
-              ${
-    hasSufficientCreditsForJob(job)
-    ? `
-        <button
-            class="primary-btn job-interest-btn"
-            onclick="respondToJob(${job.id})"
-        >
-            I'm Interested
-        </button>
-    `
-    : ""
-              }  
+                ${
+                    hasSufficientCreditsForJob(job)
+                    ? `
+                        <button
+                            class="primary-btn job-interest-btn"
+                            onclick="respondToJob(${job.id})"
+                        >
+                            I'm Interested
+                        </button>
+                    `
+                    : ""
+                }
 
             </div>
         `;
@@ -561,6 +615,21 @@ ${
 
     resultsBox.innerHTML = html;
 }
+
+
+function selectWorkCategory(category) {
+
+    const searchInput =
+        document.getElementById("workSearch");
+
+    if (searchInput) {
+        searchInput.value = "";
+    }
+
+    showPostedJobs(category);
+}
+
+
 
 function escapeHTML(value) {
 
