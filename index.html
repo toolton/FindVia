@@ -318,7 +318,18 @@
         📋 My Posted Jobs
     </button>
 </div>
-
+<div
+    id="workerTransactionsBox"
+    style="display:none; margin-top:10px;"
+>
+    <button
+        type="button"
+        class="primary-btn"
+        onclick="openWorkerTransactionHistory()"
+    >
+        📋 My Transactions
+    </button>
+</div>
   <!-- Admin Access -->
 
 <div
@@ -646,7 +657,7 @@
 
     </nav>
 
-<script src="assets/js/app.js?v=56"></script>
+<script src="assets/js/app.js?v=57"></script>
 
 <!-- =========================
      FINDVIA ADMIN LOGIN
@@ -880,7 +891,43 @@
 
 </section>
 
+<!-- Worker Transaction History -->
 
+<section
+    id="workerTransactionHistoryScreen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        onclick="showProfile()"
+    >
+        ← Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            📋
+        </div>
+
+        <div>
+            <h2>My Transactions</h2>
+            <p>आपके FindVia credit transactions</p>
+        </div>
+
+    </div>
+
+    <div
+        class="results-box"
+        id="workerTransactionHistoryList"
+    >
+        <!-- Worker transactions will appear here -->
+    </div>
+
+</section>
+
+    
     <!-- Admin Workers Screen -->
 
 <section id="adminWorkersScreen" style="display:none;">
