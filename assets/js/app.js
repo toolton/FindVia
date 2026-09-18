@@ -5330,26 +5330,42 @@ function showFindViaInputModal(
             "findviaInputSubmit"
         );
 
-    submit.addEventListener(
-        "click",
-        function() {
 
-            const value =
-                input.value.trim();
+submit.addEventListener(
+    "click",
+    function() {
 
-            if (!value) {
+        const value =
+            input.value.trim();
 
-                alert(emptyMessage);
+        if (!value) {
 
-                return;
-            }
+            alert(emptyMessage);
 
-            closeFindViaInputModal();
-
-            onSubmit(value);
-
+            return;
         }
-    );
+
+        closeFindViaInputModal();
+
+        onSubmit(value);
+    }
+);
+
+input.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key !== "Enter") {
+            return;
+        }
+
+        event.preventDefault();
+
+        submit.click();
+    }
+);
+
+    
 
     modal.style.display = "flex";
 
@@ -5370,3 +5386,56 @@ function closeFindViaInputModal() {
     }
 }
 
+
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key !== "Enter" ||
+            event.target.tagName !== "INPUT"
+        ) {
+            return;
+        }
+
+        const inputId =
+            event.target.id;
+
+        if (inputId === "workSearch") {
+
+            event.preventDefault();
+
+            searchWork();
+
+            return;
+        }
+
+        if (inputId === "workerSearch") {
+
+            event.preventDefault();
+
+            searchWorkers();
+
+            return;
+        }
+
+        if (inputId === "globalSearch") {
+
+            event.preventDefault();
+
+            globalSearch();
+
+            return;
+        }
+
+        if (inputId === "adminPasswordInput") {
+
+            event.preventDefault();
+
+            adminLogin();
+
+            return;
+        }
+    }
+);
