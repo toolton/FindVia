@@ -1006,18 +1006,183 @@ function requestWorker(workerName) {
 }
 
 
-
 function searchWork() {
 
-    const search = document.getElementById("workSearch").value.trim();
+    const searchInput =
+        document.getElementById("workSearch");
+
+    const search =
+        searchInput
+        ? searchInput.value.trim().toLowerCase()
+        : "";
 
     if (search === "") {
-        alert("Please enter what type of work you are looking for.");
+
+        showPostedJobs();
+
         return;
     }
 
-    document.getElementById("workResults").innerHTML =
-        "<strong>Searching for:</strong><br>" + search;
+    const jobs = JSON.parse(
+        localStorage.getItem("findviaJobs") || "[]"
+    );
+
+    const matchedJobs =
+        jobs.filter(function(job) {
+
+            if (!isJobAvailableForFindWork(job)) {
+                return false;
+            }
+
+            const title =
+                String(job.title || "").toLowerCase();
+
+            const category =
+                String(job.category || "").toLowerCase();
+
+            const description =
+                String(job.description || "").toLowerCase();
+
+            const area =
+                String(job.area || "").toLowerCase();
+
+            return (
+                title.includes(search) ||
+                category.includes(search) ||
+                description.includes(search) ||
+                area.includes(search)
+            );
+
+        });
+
+    const resultsBox =
+        document.getElementById("workResults");
+
+    if (!resultsBox) {
+        return;
+    }
+
+    if (matchedJobs.length === 0) {
+
+        resultsBox.innerHTML = `
+            <div class="empty-state">
+
+                <strong>
+                    No matching jobs found.
+                </strong>
+
+                <p>
+                    Is search ke liye abhi koi available job nahi mili.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    /*
+     * Matched jobs ko temporarily render karne ke liye
+     * same job-card structure use kar rahe hain.
+     */
+
+    let html = `
+        <div class="worker-results-header">
+
+            <div>
+
+                <span class="results-label">
+                    SEARCH RESULTS
+                </span>
+
+                <h3>
+                    Matching Jobs
+                </h3>
+
+            </div>
+
+            <span class="results-count">
+                ${matchedJobs.length} found
+            </span>
+
+        </div>
+    `;
+
+    matchedJobs.forEach(function(job) {
+
+        html += `
+            <div class="job-card">
+
+                <div class="job-card-top">
+
+                    <div>
+
+                        <span class="job-category">
+                            ${escapeHTML(job.category)}
+                        </span>
+
+                        <h3>
+                            ${escapeHTML(job.title)}
+                        </h3>
+
+                    </div>
+
+                    <span class="job-status">
+                        Open
+                    </span>
+
+                </div>
+
+                <p class="job-description">
+                    ${escapeHTML(job.description)}
+                </p>
+
+                <div class="job-meta">
+
+                    <span>
+                        📍 ${escapeHTML(job.area)}
+                    </span>
+
+                    <span>
+                        🕒 ${escapeHTML(job.timing)}
+                    </span>
+
+                </div>
+
+                ${
+                    job.photo
+                    ? `
+                        <img
+                            class="job-photo"
+                            src="${job.photo}"
+                            alt="Job photo"
+                        >
+                    `
+                    : ""
+                }
+
+                <div class="job-private-note">
+                    🔒 Customer budget is hidden until the appropriate match stage.
+                </div>
+
+                ${
+                    hasSufficientCreditsForJob(job)
+                    ? `
+                        <button
+                            class="primary-btn job-interest-btn"
+                            onclick="respondToJob(${job.id})"
+                        >
+                            I'm Interested
+                        </button>
+                    `
+                    : ""
+                }
+
+            </div>
+        `;
+    });
+
+    resultsBox.innerHTML = html;
 }
 
 
