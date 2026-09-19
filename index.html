@@ -290,23 +290,26 @@
                 <span class="role-check" id="workerRoleCheck">○</span>
             </button>
 
+<button
+    type="button"
+    class="role-card"
+    id="customerRoleCard"
+    onclick="selectUserRole('customer')"
+>
+    <img
+        src="assets/icons/costumer.png"
+        class="findvia-icon"
+        alt="Customer"
+    >
 
-            <button
-                type="button"
-                class="role-card"
-                id="customerRoleCard"
-                onclick="selectUserRole('customer')"
-            >
-                
+    <div class="role-content">
+        <strong>काम करवाना है</strong>
+        <small>I need a worker</small>
+    </div>
 
-                <div class="role-content">
-                    <strong>काम करवाना है</strong>
-                    <small>I need a worker</small>
-                </div>
-
-                <span class="role-check" id="customerRoleCheck">○</span>
-            </button>
-
+    <span class="role-check" id="customerRoleCheck">○</span>
+</button>
+            
             <button
                 type="button"
                 class="primary-btn worker-profile-btn"
@@ -690,7 +693,7 @@
 
     </nav>
 
-<script src="assets/js/app.js?v=84"></script>
+<script src="assets/js/app.js?v=85"></script>
 
     <script>
 document.addEventListener(
