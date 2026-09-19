@@ -6779,3 +6779,381 @@ document.addEventListener(
         }
     }
 );
+
+
+/* =========================================
+   FindVia Automatic Icon Normalizer
+   ========================================= */
+
+function normalizeFindViaIconImage(
+    image,
+    targetSize = 128
+) {
+
+    if (!image || !image.naturalWidth) {
+        return;
+    }
+
+    const sourceCanvas =
+        document.createElement("canvas");
+
+    sourceCanvas.width =
+        image.naturalWidth;
+
+    sourceCanvas.height =
+        image.naturalHeight;
+
+    const sourceContext =
+        sourceCanvas.getContext("2d", {
+            willReadFrequently: true
+        });
+
+    sourceContext.drawImage(
+        image,
+        0,
+        0
+    );
+
+    const imageData =
+        sourceContext.getImageData(
+            0,
+            0,
+            sourceCanvas.width,
+            sourceCanvas.height
+        );
+
+    const pixels =
+        imageData.data;
+
+    let minX =
+        sourceCanvas.width;
+
+    let minY =
+        sourceCanvas.height;
+
+    let maxX = -1;
+
+    let maxY = -1;
+
+    for (
+        let y = 0;
+        y < sourceCanvas.height;
+        y++
+    ) {
+
+        for (
+            let x = 0;
+            x < sourceCanvas.width;
+            x++
+        ) {
+
+            const alpha =
+                pixels[
+                    (y * sourceCanvas.width + x) * 4 + 3
+                ];
+
+            if (alpha > 8) {
+
+                if (x < minX) {
+                    minX = x;
+                }
+
+                if (y < minY) {
+                    minY = y;
+                }
+
+                if (x > maxX) {
+                    maxX = x;
+                }
+
+                if (y > maxY) {
+                    maxY = y;
+                }
+            }
+        }
+    }
+
+    if (maxX < minX || maxY < minY) {
+        return;
+    }
+
+    const cropWidth =
+        maxX - minX + 1;
+
+    const cropHeight =
+        maxY - minY + 1;
+
+    const padding =
+        Math.round(targetSize * 0.14);
+
+    const finalCanvas =
+        document.createElement("canvas");
+
+    finalCanvas.width =
+        targetSize;
+
+    finalCanvas.height =
+        targetSize;
+
+    const finalContext =
+        finalCanvas.getContext("2d");
+
+    const availableSize =
+        targetSize - padding * 2;
+
+    const scale =
+        Math.min(
+            availableSize / cropWidth,
+            availableSize / cropHeight
+        );
+
+    const drawWidth =
+        cropWidth * scale;
+
+    const drawHeight =
+        cropHeight * scale;
+
+    const drawX =
+        (targetSize - drawWidth) / 2;
+
+    const drawY =
+        (targetSize - drawHeight) / 2;
+
+    finalContext.drawImage(
+        sourceCanvas,
+        minX,
+        minY,
+        cropWidth,
+        cropHeight,
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight
+    );
+
+    image.src =
+        finalCanvas.toDataURL("image/png");
+}
+
+
+function normalizeFindViaIcons() {
+
+    const icons =
+        document.querySelectorAll(
+            "img.findvia-icon, img.findvia-icon-nav, img.findvia-icon-action"
+        );
+
+    icons.forEach(function(image) {
+
+        if (
+            image.dataset.findviaNormalized === "true"
+        ) {
+            return;
+        }
+
+        image.dataset.findviaNormalized =
+            "true";
+
+        if (image.complete) {
+
+            normalizeFindViaIconImage(
+                image
+            );
+
+        } else {
+
+            image.addEventListener(
+                "load",
+                function() {
+
+                    normalizeFindViaIconImage(
+                        image
+                    );
+
+                },
+                {
+                    once: true
+                }
+            );
+        }
+    });
+}
+
+
+function normalizeFindViaBackIcon() {
+
+    const backButtons =
+        document.querySelectorAll(
+            ".back-btn"
+        );
+
+    if (!backButtons.length) {
+        return;
+    }
+
+    const backImage =
+        new Image();
+
+    backImage.onload =
+        function() {
+
+            const canvas =
+                document.createElement("canvas");
+
+            canvas.width =
+                backImage.naturalWidth;
+
+            canvas.height =
+                backImage.naturalHeight;
+
+            const context =
+                canvas.getContext("2d", {
+                    willReadFrequently: true
+                });
+
+            context.drawImage(
+                backImage,
+                0,
+                0
+            );
+
+            const imageData =
+                context.getImageData(
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+            const pixels =
+                imageData.data;
+
+            let minX =
+                canvas.width;
+
+            let minY =
+                canvas.height;
+
+            let maxX = -1;
+
+            let maxY = -1;
+
+            for (
+                let y = 0;
+                y < canvas.height;
+                y++
+            ) {
+
+                for (
+                    let x = 0;
+                    x < canvas.width;
+                    x++
+                ) {
+
+                    const alpha =
+                        pixels[
+                            (y * canvas.width + x) * 4 + 3
+                        ];
+
+                    if (alpha > 8) {
+
+                        minX =
+                            Math.min(minX, x);
+
+                        minY =
+                            Math.min(minY, y);
+
+                        maxX =
+                            Math.max(maxX, x);
+
+                        maxY =
+                            Math.max(maxY, y);
+                    }
+                }
+            }
+
+            if (
+                maxX < minX ||
+                maxY < minY
+            ) {
+                return;
+            }
+
+            const cropWidth =
+                maxX - minX + 1;
+
+            const cropHeight =
+                maxY - minY + 1;
+
+            const finalSize =
+                128;
+
+            const finalCanvas =
+                document.createElement("canvas");
+
+            finalCanvas.width =
+                finalSize;
+
+            finalCanvas.height =
+                finalSize;
+
+            const finalContext =
+                finalCanvas.getContext("2d");
+
+            const padding =
+                16;
+
+            const available =
+                finalSize - padding * 2;
+
+            const scale =
+                Math.min(
+                    available / cropWidth,
+                    available / cropHeight
+                );
+
+            const width =
+                cropWidth * scale;
+
+            const height =
+                cropHeight * scale;
+
+            finalContext.drawImage(
+                canvas,
+                minX,
+                minY,
+                cropWidth,
+                cropHeight,
+                (finalSize - width) / 2,
+                (finalSize - height) / 2,
+                width,
+                height
+            );
+
+            const normalizedIcon =
+                finalCanvas.toDataURL(
+                    "image/png"
+                );
+
+            backButtons.forEach(
+                function(button) {
+
+                    button.style.setProperty(
+                        "--findvia-back-icon",
+                        `url("${normalizedIcon}")`
+                    );
+
+                }
+            );
+        };
+
+    backImage.src =
+        "assets/icons/back.png";
+}
+
+
+function initializeFindViaIconSystem() {
+
+    normalizeFindViaIcons();
+    normalizeFindViaBackIcon();
+}
