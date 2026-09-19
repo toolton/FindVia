@@ -2652,6 +2652,227 @@ verificationStatus:
 }
 
 
+function openWorkerVerification() {
+
+    const currentRole =
+        localStorage.getItem("findviaUserRole");
+
+    if (currentRole !== "worker") {
+        alert(
+            "Please select the Worker role first."
+        );
+        return;
+    }
+
+    const savedProfile =
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        );
+
+    if (!savedProfile) {
+        alert(
+            "Please complete your Worker Profile first."
+        );
+        return;
+    }
+
+    document
+        .getElementById("profileScreen")
+        .classList.remove("active");
+
+    document
+        .getElementById("workerProfileScreen")
+        .classList.remove("active");
+
+    document
+        .getElementById("workerVerificationScreen")
+        .classList.add("active");
+
+    loadWorkerVerification();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function loadWorkerVerification() {
+
+    const savedProfile =
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        );
+
+    if (!savedProfile) {
+        return;
+    }
+
+    const profile =
+        JSON.parse(savedProfile);
+
+    const consent =
+        document.getElementById(
+            "workerVerificationConsent"
+        );
+
+    if (consent) {
+        consent.checked =
+            profile.verificationSubmitted === true;
+    }
+}
+
+
+function submitWorkerVerification() {
+
+    const governmentId =
+        document.getElementById(
+            "workerGovernmentId"
+        );
+
+    const selfie =
+        document.getElementById(
+            "workerSelfie"
+        );
+
+    const skillProof =
+        document.getElementById(
+            "workerSkillProof"
+        );
+
+    const consent =
+        document.getElementById(
+            "workerVerificationConsent"
+        );
+
+    if (
+        !governmentId ||
+        !governmentId.files.length
+    ) {
+        alert(
+            "Please upload your Government ID."
+        );
+        return;
+    }
+
+    if (
+        !selfie ||
+        !selfie.files.length
+    ) {
+        alert(
+            "Please upload your recent photo or selfie."
+        );
+        return;
+    }
+
+    if (
+        !consent ||
+        !consent.checked
+    ) {
+        alert(
+            "Please confirm the verification consent."
+        );
+        return;
+    }
+
+    const savedProfile =
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        );
+
+    if (!savedProfile) {
+        alert(
+            "Worker profile not found."
+        );
+        return;
+    }
+
+    const profile =
+        JSON.parse(savedProfile);
+
+    profile.verificationStatus =
+        "pending";
+
+    profile.verificationSubmitted =
+        true;
+
+    profile.verificationSubmittedAt =
+        new Date().toISOString();
+
+    profile.verificationDocuments = {
+        governmentId: governmentId.files[0].name,
+        selfie: selfie.files[0].name,
+        skillProof:
+            skillProof &&
+            skillProof.files.length
+                ? skillProof.files[0].name
+                : ""
+    };
+
+    const profileString =
+        JSON.stringify(profile);
+
+    localStorage.setItem(
+        "findviaWorkerProfile",
+        profileString
+    );
+
+    let workerProfiles =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaWorkerProfiles"
+            ) || "[]"
+        );
+
+    const oldProfile =
+        workerProfiles.findIndex(
+            function(item) {
+
+                try {
+
+                    const worker =
+                        typeof item === "string"
+                            ? JSON.parse(item)
+                            : item;
+
+                    return (
+                        worker &&
+                        worker.name === profile.name
+                    );
+
+                } catch (error) {
+
+                    return false;
+                }
+            }
+        );
+
+    if (oldProfile !== -1) {
+
+        workerProfiles[oldProfile] =
+            profileString;
+
+    } else {
+
+        workerProfiles.push(
+            profileString
+        );
+    }
+
+    localStorage.setItem(
+        "findviaWorkerProfiles",
+        JSON.stringify(workerProfiles)
+    );
+
+    alert(
+        "Verification request submitted successfully.\n\n" +
+        "Your documents are now pending admin verification."
+    );
+
+    showProfile();
+}
+
+
 function loadWorkerProfile() {
 
     const savedProfile = localStorage.getItem("findviaWorkerProfile");
@@ -2743,7 +2964,18 @@ if (verificationElement) {
             "🟡 Pending Verification";
     }
 }
-    
+    const verificationButton =
+    document.getElementById(
+        "workerVerificationButton"
+    );
+
+if (verificationButton) {
+
+    verificationButton.style.display =
+        profile.verificationStatus === "approved"
+            ? "none"
+            : "block";
+}
 
     summaryBox.style.display = "block";
 }
