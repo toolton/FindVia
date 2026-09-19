@@ -796,6 +796,7 @@ function findWork() {
 
 hideAdminScreens();
 hideWorkerTransactionScreen();
+    hideWorkerRechargeScreen();
  hideWorkerVerificationScreen();   
 document.getElementById("homeContent").style.display = "none";
 
@@ -818,6 +819,7 @@ behavior: "smooth"
 function findWorkers() {
 hideWorkerVerificationScreen();
 hideAdminScreens();
+   hideWorkerRechargeScreen(); 
  hideWorkerTransactionScreen();   
 document.getElementById("homeContent").style.display = "none";
 
@@ -836,6 +838,9 @@ behavior: "smooth"
 
 function postJob() {
 hideWorkerTransactionScreen();
+hideWorkerRechargeScreen();
+
+    
 hideWorkerVerificationScreen();
     
     const currentRole = localStorage.getItem("findviaUserRole");
@@ -1419,6 +1424,8 @@ if (!isJobAvailableForFindWork(job)) {
 function goHome() {
 hideAdminScreens();
   hideWorkerTransactionScreen();  
+hideWorkerRechargeScreen();
+    
 hideWorkerVerificationScreen();
     
     document.getElementById("findWorkScreen").classList.remove("active");
@@ -1444,6 +1451,7 @@ document.getElementById("postJobScreen").classList.remove("active");
 function showProfile() {
 hideAdminScreens();
 hideWorkerTransactionScreen();
+hideWorkerRechargeScreen();    
 hideWorkerVerificationScreen();
     
     
@@ -1473,6 +1481,7 @@ loadWorkerProfileSummary();
 function closeScreens() {
 
 hideWorkerVerificationScreen();
+   hideWorkerRechargeScreen(); 
     
     document.getElementById("findWorkScreen").classList.remove("active");
     document.getElementById("findWorkersScreen").classList.remove("active");
@@ -2062,8 +2071,8 @@ function openSearch() {
 
 
    hideWorkerVerificationScreen(); 
-
 hideAdminScreens();
+hideWorkerRechargeScreen();    
  hideWorkerTransactionScreen();   
     document.getElementById("homeContent").style.display = "none";
 
@@ -2552,6 +2561,27 @@ if (workerTransactionsBox) {
             "none";
     }
 }
+
+const workerRechargeBox =
+    document.getElementById(
+        "workerRechargeBox"
+    );
+
+if (workerRechargeBox) {
+
+    if (role === "worker") {
+
+        workerRechargeBox.style.display =
+            "block";
+
+    } else {
+
+        workerRechargeBox.style.display =
+            "none";
+    }
+}
+
+    
     const workerCard = document.getElementById("workerRoleCard");
     const customerCard = document.getElementById("customerRoleCard");
 
@@ -3033,6 +3063,7 @@ if (verificationButton) {
 
 function showMyJobs() {
 hideWorkerTransactionScreen();
+    hideWorkerRechargeScreen();
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen").classList.remove("active");
@@ -3484,6 +3515,8 @@ function showJobResponses(jobId) {
 
     hideAdminScreens();
 hideWorkerTransactionScreen();
+hideWorkerRechargeScreen();
+    
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("findWorkScreen")?.classList.remove("active");
@@ -4812,6 +4845,24 @@ function hideWorkerTransactionScreen() {
     }
 }
 
+function hideWorkerRechargeScreen() {
+
+    const rechargeScreen =
+        document.getElementById(
+            "workerRechargeScreen"
+        );
+
+    if (!rechargeScreen) {
+        return;
+    }
+
+    rechargeScreen.classList.remove(
+        "active"
+    );
+
+    rechargeScreen.style.display =
+        "none";
+}
 
 function hideWorkerVerificationScreen() {
 
@@ -5474,6 +5525,237 @@ function rejectWorkerFromVerification(index) {
 
 }
 
+function openWorkerRecharge() {
+
+    hideAdminScreens();
+    hideWorkerTransactionScreen();
+    hideWorkerVerificationScreen();
+
+
+    const profileScreen =
+        document.getElementById(
+            "profileScreen"
+        );
+
+    const rechargeScreen =
+        document.getElementById(
+            "workerRechargeScreen"
+        );
+
+
+    if (!rechargeScreen) {
+
+        alert(
+            "Recharge screen nahi mili."
+        );
+
+        return;
+    }
+
+
+    if (profileScreen) {
+
+        profileScreen.classList.remove(
+            "active"
+        );
+
+    }
+
+
+    rechargeScreen.style.display =
+        "block";
+
+
+    rechargeScreen.classList.add(
+        "active"
+    );
+
+
+    const amountInput =
+        document.getElementById(
+            "rechargeAmount"
+        );
+
+    const transactionInput =
+        document.getElementById(
+            "rechargeTransactionId"
+        );
+
+
+    if (amountInput) {
+        amountInput.value = "";
+    }
+
+
+    if (transactionInput) {
+        transactionInput.value = "";
+    }
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function submitWorkerRechargeRequest() {
+
+    const workerProfile =
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        );
+
+
+    if (!workerProfile) {
+
+        alert(
+            "Pehle worker profile setup karein."
+        );
+
+        return;
+    }
+
+
+    const amountInput =
+        document.getElementById(
+            "rechargeAmount"
+        );
+
+    const transactionInput =
+        document.getElementById(
+            "rechargeTransactionId"
+        );
+
+
+    if (
+        !amountInput ||
+        !transactionInput
+    ) {
+
+        alert(
+            "Recharge form nahi mila."
+        );
+
+        return;
+    }
+
+
+    const amount =
+        Number(
+            amountInput.value
+        );
+
+
+    const transactionId =
+        transactionInput.value.trim();
+
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+
+        alert(
+            "Please valid payment amount enter karein."
+        );
+
+        return;
+    }
+
+
+    if (!transactionId) {
+
+        alert(
+            "Please payment transaction ID / UTR enter karein."
+        );
+
+        return;
+    }
+
+
+    const requests =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaRechargeRequests"
+            ) || "[]"
+        );
+
+
+    const alreadyPending =
+        requests.some(
+            function(request) {
+
+                return (
+                    request.workerProfile ===
+                        workerProfile &&
+                    request.transactionId ===
+                        transactionId &&
+                    request.status ===
+                        "pending"
+                );
+
+            }
+        );
+
+
+    if (alreadyPending) {
+
+        alert(
+            "This payment is already pending verification."
+        );
+
+        return;
+    }
+
+
+    const request = {
+
+        id:
+            Date.now(),
+
+        workerProfile:
+            workerProfile,
+
+        amount:
+            amount,
+
+        transactionId:
+            transactionId,
+
+        status:
+            "pending",
+
+        createdAt:
+            new Date().toISOString()
+
+    };
+
+
+    requests.push(
+        request
+    );
+
+
+    localStorage.setItem(
+        "findviaRechargeRequests",
+        JSON.stringify(requests)
+    );
+
+
+    amountInput.value = "";
+
+    transactionInput.value = "";
+
+
+    alert(
+        "Recharge request submitted successfully.\n\n" +
+        "FindVia admin will verify your payment."
+    );
+
+
+    showProfile();
+}
 
 
 function openWorkerTransactionHistory() {
