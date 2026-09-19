@@ -1211,7 +1211,46 @@
 
             
         </div>
+<div class="job-card">
 
+    <div class="job-card-top">
+
+        <div>
+
+            <span class="job-category">
+                FINANCE
+            </span>
+
+            <h3>
+                <img
+                    src="assets/icons/credit.png"
+                    class="findvia-icon"
+                    alt="Recharge"
+                >
+                Recharge Requests
+            </h3>
+
+        </div>
+
+        <span class="job-status">
+            Admin
+        </span>
+
+    </div>
+
+    <p class="job-description">
+        Review worker payment requests and approve credits.
+    </p>
+
+    <button
+        class="primary-btn"
+        style="margin-top:12px;"
+        onclick="openAdminRechargeRequests()"
+    >
+        Review Recharge Requests
+    </button>
+
+</div>
 
         <div class="job-card">
 
@@ -1378,7 +1417,52 @@
 
 </section>
 
+<!-- Admin Recharge Requests Screen -->
 
+<section
+    id="adminRechargeRequestsScreen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        onclick="openAdminPanel()"
+    >
+        Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            <img
+                src="assets/icons/credit.png"
+                class="findvia-icon"
+                alt="Recharge"
+            >
+        </div>
+
+        <div>
+
+            <h2>
+                Recharge Requests
+            </h2>
+
+            <p>
+                Worker payment verification
+            </p>
+
+        </div>
+
+    </div>
+
+    <div
+        class="results-box"
+        id="adminRechargeRequestsList"
+    >
+        <!-- Recharge requests will appear here -->
+    </div>
+
+</section>
 <!-- FindVia Custom Notification -->
 <div
     id="findviaModal"
@@ -1415,7 +1499,7 @@
     </div>
 </div>
 
-<script src="assets/js/app.js?v=93"></script>
+<script src="assets/js/app.js?v=94"></script>
 
 <script>
 document.addEventListener(
