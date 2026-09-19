@@ -4988,7 +4988,6 @@ function hideWorkerVerificationScreen() {
     screen.classList.remove("active");
     screen.style.display = "none";
 }
-
 function openAdminRechargeRequests() {
 
     hideAdminScreens();
@@ -5049,42 +5048,22 @@ function openAdminRechargeRequests() {
         return;
     }
 
-    const pendingRequests =
-        requests.filter(
-            function(request) {
-                return request.status === "pending";
-            }
-        );
-
-    if (pendingRequests.length === 0) {
-
-        rechargeList.innerHTML = `
-            <div class="job-card">
-
-                <h3>
-                    No pending requests
-                </h3>
-
-                <p class="job-description">
-                    All recharge requests have been processed.
-                </p>
-
-            </div>
-        `;
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-
-        return;
-    }
-
     rechargeList.innerHTML = "";
 
-    pendingRequests
+    requests
         .slice()
-        .reverse()
+        .sort(function(a, b) {
+
+            return (
+                new Date(
+                    b.createdAt || 0
+                ) -
+                new Date(
+                    a.createdAt || 0
+                )
+            );
+
+        })
         .forEach(
             function(request) {
 
@@ -5109,12 +5088,44 @@ function openAdminRechargeRequests() {
 
                 }
 
-                const date =
+                const submittedDate =
                     request.createdAt
                         ? new Date(
                             request.createdAt
                         ).toLocaleString()
                         : "Date unavailable";
+
+                const processedDate =
+                    request.processedAt
+                        ? new Date(
+                            request.processedAt
+                        ).toLocaleString()
+                        : "-";
+
+                const amount =
+                    Number(
+                        request.amount
+                    ) || 0;
+
+                let statusText =
+                    "Pending";
+
+                if (
+                    request.status ===
+                    "approved"
+                ) {
+
+                    statusText =
+                        "Approved";
+
+                } else if (
+                    request.status ===
+                    "rejected"
+                ) {
+
+                    statusText =
+                        "Rejected";
+                }
 
                 const card =
                     document.createElement(
@@ -5141,7 +5152,7 @@ function openAdminRechargeRequests() {
                         </div>
 
                         <span class="job-status">
-                            Pending
+                            ${statusText}
                         </span>
 
                     </div>
@@ -5150,7 +5161,7 @@ function openAdminRechargeRequests() {
 
                         💰 Amount:
                         <strong>
-                            ₹${Number(request.amount) || 0}
+                            ₹${amount}
                         </strong>
 
                         <br>
@@ -5164,26 +5175,53 @@ function openAdminRechargeRequests() {
 
                         📅 Submitted:
                         <strong>
-                            ${date}
+                            ${submittedDate}
+                        </strong>
+
+                        <br>
+
+                        🕒 Processed:
+                        <strong>
+                            ${processedDate}
                         </strong>
 
                     </p>
 
-                    <button
-                        class="primary-btn"
-                        style="margin-top:12px;"
-                        onclick="approveWorkerRecharge(${request.id})"
-                    >
-                        Approve & Add Credits
-                    </button>
+                    ${
+                        request.status ===
+                        "pending"
+                        ? `
+                            <button
+                                class="primary-btn"
+                                style="margin-top:12px;"
+                                onclick="approveWorkerRecharge(${request.id})"
+                            >
+                                Approve & Add Credits
+                            </button>
 
-                    <button
-                        class="primary-btn"
-                        style="margin-top:8px;"
-                        onclick="rejectWorkerRecharge(${request.id})"
-                    >
-                        Reject Request
-                    </button>
+                            <button
+                                class="primary-btn"
+                                style="margin-top:8px;"
+                                onclick="rejectWorkerRecharge(${request.id})"
+                            >
+                                Reject Request
+                            </button>
+                        `
+                        : `
+                            <div
+                                style="
+                                    margin-top:12px;
+                                    padding:10px;
+                                    border-radius:10px;
+                                    background:#f5f5f5;
+                                    text-align:center;
+                                    font-weight:600;
+                                "
+                            >
+                                Request processed
+                            </div>
+                        `
+                    }
 
                 `;
 
