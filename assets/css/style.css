@@ -1414,5 +1414,5 @@ main.screen-open .app-screen.active {
 
 /* Home icon visual size adjustment */
 .bottom-nav .findvia-icon-nav[src*="home.png"] {
-    transform: scale(1.75);
+    transform: scale(2);
 }
