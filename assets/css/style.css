@@ -1416,3 +1416,11 @@ main.screen-open .app-screen.active {
 .bottom-nav .findvia-icon-nav[src*="home.png"] {
     transform: scale(2);
 }
+/* Search and Profile icon visual size adjustment */
+.bottom-nav .findvia-icon-nav[src*="search.png"] {
+    transform: scale(2);
+}
+
+.bottom-nav .findvia-icon-nav[src*="profile.png"] {
+    transform: scale(2.2);
+}
