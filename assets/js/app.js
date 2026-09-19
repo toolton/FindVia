@@ -445,7 +445,7 @@ function applyFindViaStaticLanguage() {
 "Skill / Experience Proof (Optional)":
     "Skill / Experience Proof (Optional)",
 "Submit for Verification":
-    "Submit for Verification"
+    "Submit for Verification",
             "OK": "OK"
         },
 
