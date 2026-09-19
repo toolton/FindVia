@@ -1444,6 +1444,7 @@ main.screen-open .app-screen.active {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
+    transform: scale(2);
     flex-shrink: 0;
 }
 
