@@ -1411,3 +1411,8 @@ main.screen-open .app-screen.active {
     display: inline-block;
     flex-shrink: 0;
 }
+
+/* Home icon visual size adjustment */
+.bottom-nav .findvia-icon-nav[src*="home.png"] {
+    transform: scale(1.75);
+}
