@@ -42,7 +42,11 @@
 
         <!-- Location -->
         <section class="location-box">
-            <span>📍</span>
+            <img
+    src="assets/icons/location.png"
+    class="findvia-icon"
+    alt="Location"
+>
             <div>
                 <small>Your Location</small>
                 <strong id="locationText">Select your location</strong>
@@ -56,7 +60,11 @@
         <section class="action-grid">
 
             <button class="action-card" onclick="findWork()">
-                <span class="action-icon">🔎</span>
+                <img
+    src="assets/icons/find-work.png"
+    class="findvia-icon-action"
+    alt="Find Work"
+>
                 <h2 id="findWorkTitle">Find Work</h2>
                 <p id="findWorkText">
                     Discover local jobs and work opportunities.
@@ -236,8 +244,14 @@
     <button class="back-btn" onclick="closeScreens()">Back</button>
 
     <div class="profile-header">
-        <div class="profile-avatar">👤</div>
-
+        
+<div class="profile-avatar">
+    <img
+        src="assets/icons/profile.png"
+        class="findvia-icon"
+        alt="Profile"
+    >
+</div>
         <div>
             <h2>My Profile</h2>
             <p>Choose how you want to use FindVia.</p>
@@ -260,7 +274,13 @@
                 id="workerRoleCard"
                 onclick="selectUserRole('worker')"
             >
-                <span class="role-icon">👷</span>
+                <span class="role-icon">
+    <img
+        src="assets/icons/worker.png"
+        class="findvia-icon"
+        alt="Worker"
+    >
+                </span>
 
                 <div class="role-content">
                     <strong>काम ढूँढना है</strong>
@@ -670,7 +690,7 @@
 
     </nav>
 
-<script src="assets/js/app.js?v=83"></script>
+<script src="assets/js/app.js?v=84"></script>
 
     <script>
 document.addEventListener(
