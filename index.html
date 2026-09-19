@@ -278,11 +278,7 @@
                 onclick="selectUserRole('customer')"
             >
                 
-<img
-    src="assets/icons/home.png"
-    class="role-icon findvia-icon"
-    alt="Customer"
->
+
                 <div class="role-content">
                     <strong>काम करवाना है</strong>
                     <small>I need a worker</small>
@@ -640,10 +636,15 @@
     <nav class="bottom-nav">
 
         <button onclick="goHome()">
-            
-            <small id="homeNav">Home</small>
+    <img
+        src="assets/icons/home.png"
+        class="findvia-icon-nav"
+        alt="Home"
+    >
+    <small id="homeNav">Home</small>
         </button>
 
+        
         <button type="button" onclick="openSearch()">
     <span>🔎</span>
     <small id="searchNav">Search</small>
@@ -661,7 +662,7 @@
 
     </nav>
 
-<script src="assets/js/app.js?v=74"></script>
+<script src="assets/js/app.js?v=75"></script>
 
     <script>
 document.addEventListener(
