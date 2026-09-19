@@ -7577,7 +7577,8 @@ function runFindViaSystemTest() {
         "findviaUserRole",
         "findviaWorkerProfile",
         "findviaCreditTransactions",
-        "findviaCommissionPercent"
+        "findviaCommissionPercent",
+        "findviaRechargeRequests"
     ];
 
     requiredStorageKeys.forEach(
@@ -7591,10 +7592,153 @@ function runFindViaSystemTest() {
         }
     );
 
+// ==========================================
+// 18. WORKER RECHARGE SYSTEM
+// ==========================================
 
-    // ==========================================
-    // 18. FINAL RESULT
-    // ==========================================
+test(
+    "Worker recharge function exists",
+    typeof openWorkerRecharge === "function"
+);
+
+test(
+    "Worker recharge screen can be hidden",
+    typeof hideWorkerRechargeScreen === "function"
+);
+
+test(
+    "Recharge request submission function exists",
+    typeof submitWorkerRechargeRequest === "function"
+);
+
+test(
+    "Recharge requests use dedicated storage",
+    sourceHas(
+        "submitWorkerRechargeRequest",
+        "findviaRechargeRequests"
+    )
+);
+
+test(
+    "Recharge request stores payment amount",
+    sourceHas(
+        "submitWorkerRechargeRequest",
+        "amount"
+    )
+);
+
+test(
+    "Recharge request stores transaction ID",
+    sourceHas(
+        "submitWorkerRechargeRequest",
+        "transactionId"
+    )
+);
+
+test(
+    "Recharge request starts as pending",
+    sourceHas(
+        "submitWorkerRechargeRequest",
+        'status: "pending"'
+    )
+);
+
+test(
+    "Admin recharge requests screen exists",
+    typeof openAdminRechargeRequests === "function"
+);
+
+test(
+    "Admin recharge approval function exists",
+    typeof approveWorkerRecharge === "function"
+);
+
+test(
+    "Admin recharge approval adds credits",
+    sourceHas(
+        "approveWorkerRecharge",
+        "setWorkerCreditsForProfile"
+    )
+);
+
+test(
+    "Approved recharge creates transaction",
+    sourceHas(
+        "approveWorkerRecharge",
+        "addWorkerCreditTransaction"
+    )
+);
+
+test(
+    "Approved recharge status is saved",
+    sourceHas(
+        "approveWorkerRecharge",
+        'request.status = "approved"'
+    )
+);
+
+test(
+    "Approved recharge saves processed time",
+    sourceHas(
+        "approveWorkerRecharge",
+        "request.processedAt"
+    )
+);
+
+test(
+    "Admin recharge rejection function exists",
+    typeof rejectWorkerRecharge === "function"
+);
+
+test(
+    "Rejected recharge status is saved",
+    sourceHas(
+        "rejectWorkerRecharge",
+        'request.status = "rejected"'
+    )
+);
+
+test(
+    "Rejected recharge saves processed time",
+    sourceHas(
+        "rejectWorkerRecharge",
+        "request.processedAt"
+    )
+);
+
+test(
+    "Recharge requests are protected from duplicate pending UTR",
+    sourceHas(
+        "submitWorkerRechargeRequest",
+        "alreadyPending"
+    )
+);
+
+test(
+    "Admin screens hide recharge requests screen",
+    sourceHas(
+        "hideAdminScreens",
+        "adminRechargeRequestsScreen"
+    )
+);
+
+test(
+    "Recharge request screen can reopen after processing",
+    sourceHas(
+        "approveWorkerRecharge",
+        "openAdminRechargeRequests"
+    ) &&
+    sourceHas(
+        "rejectWorkerRecharge",
+        "openAdminRechargeRequests"
+    )
+);
+
+
+// ==========================================
+// 19. FINAL RESULT
+// ==========================================
+    
 
     const passed =
         results.filter(
