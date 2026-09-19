@@ -358,6 +358,25 @@
     My Transactions
     </button>
 </div>
+
+<div
+    id="workerRechargeBox"
+    style="display:none; margin-top:10px;"
+>
+    <button
+        type="button"
+        class="primary-btn"
+        onclick="openWorkerRecharge()"
+    >
+        <img
+            src="assets/icons/credit.png"
+            class="findvia-icon"
+            alt="Credits"
+        >
+        Recharge Credits
+    </button>
+</div>
+        
   <!-- Admin Access -->
 
 <div
@@ -775,7 +794,181 @@
     </div>
 
 </section>
-        
+        <!-- Worker Credit Recharge Screen -->
+
+<section
+    id="workerRechargeScreen"
+    class="app-screen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        onclick="showProfile()"
+    >
+        Back
+    </button>
+
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+
+            <img
+                src="assets/icons/credit.png"
+                class="findvia-icon"
+                alt="Credits"
+            >
+
+        </div>
+
+        <div>
+
+            <h2>
+                Recharge Credits
+            </h2>
+
+            <p>
+                Add credits to your FindVia wallet.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="profile-form-box">
+
+        <div class="job-card">
+
+            <span class="job-category">
+                FINDVIA CREDITS
+            </span>
+
+            <h3>
+                Recharge your credits
+            </h3>
+
+            <p class="job-description">
+                Scan the QR code below and make your payment.
+            </p>
+
+
+            <!-- QR CODE PLACEHOLDER -->
+
+            <div
+                style="
+                    width:100%;
+                    max-width:280px;
+                    height:280px;
+                    margin:20px auto;
+                    border:2px dashed #bbb;
+                    border-radius:16px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    text-align:center;
+                    box-sizing:border-box;
+                    background:#fafafa;
+                "
+            >
+
+                <div>
+
+                    <div style="font-size:42px;">
+                        <img
+                            src="assets/icons/credit.png"
+                            class="findvia-icon"
+                            alt="Credits"
+                        >
+                    </div>
+
+                    <strong>
+                        PAYMENT QR
+                    </strong>
+
+                    <p
+                        style="
+                            margin:8px 0 0;
+                            font-size:13px;
+                            color:#777;
+                        "
+                    >
+                        QR code will be added before deployment.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <p class="form-note">
+
+                <strong>
+                    Payment Instructions
+                </strong>
+
+                <br><br>
+
+                1. Scan the FindVia payment QR.
+                <br>
+                2. Pay the amount you want to add.
+                <br>
+                3. Enter the exact amount paid below.
+                <br>
+                4. Enter your payment transaction ID / UTR.
+                <br>
+                5. Submit the recharge request.
+
+            </p>
+
+
+            <label for="rechargeAmount">
+                Amount Paid
+            </label>
+
+            <input
+                type="number"
+                id="rechargeAmount"
+                placeholder="₹ Enter amount"
+                min="1"
+                step="1"
+            >
+
+
+            <label
+                for="rechargeTransactionId"
+                style="margin-top:14px;"
+            >
+                Payment Transaction ID / UTR
+            </label>
+
+            <input
+                type="text"
+                id="rechargeTransactionId"
+                placeholder="Enter UTR / transaction ID"
+            >
+
+
+            <button
+                type="button"
+                class="primary-btn"
+                onclick="submitWorkerRechargeRequest()"
+                style="margin-top:18px;"
+            >
+                Submit Recharge Request
+            </button>
+
+
+            <p class="form-note">
+                Credits will be added after payment verification.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
     </main>
 
 
@@ -1222,7 +1415,7 @@
     </div>
 </div>
 
-<script src="assets/js/app.js?v=92"></script>
+<script src="assets/js/app.js?v=93"></script>
 
 <script>
 document.addEventListener(
