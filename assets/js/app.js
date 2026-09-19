@@ -4913,6 +4913,10 @@ function hideAdminScreens() {
     const adminVerificationScreen = document.getElementById(
     "adminWorkerVerificationScreen"
 );
+    const adminRechargeRequestsScreen =
+    document.getElementById(
+        "adminRechargeRequestsScreen"
+    );
 
     if (adminLoginScreen) {
         adminLoginScreen.style.display = "none";
@@ -4933,7 +4937,9 @@ function hideAdminScreens() {
 if (adminVerificationScreen) {
     adminVerificationScreen.style.display = "none";
 }
-
+if (adminRechargeRequestsScreen) {
+    adminRechargeRequestsScreen.style.display = "none";
+}
     
 }
 
@@ -4982,6 +4988,389 @@ function hideWorkerVerificationScreen() {
     screen.classList.remove("active");
     screen.style.display = "none";
 }
+
+function openAdminRechargeRequests() {
+
+    hideAdminScreens();
+
+    const rechargeScreen =
+        document.getElementById(
+            "adminRechargeRequestsScreen"
+        );
+
+    const rechargeList =
+        document.getElementById(
+            "adminRechargeRequestsList"
+        );
+
+    if (
+        !rechargeScreen ||
+        !rechargeList
+    ) {
+
+        alert(
+            "Recharge requests screen not found."
+        );
+
+        return;
+    }
+
+    rechargeScreen.style.display =
+        "block";
+
+    const requests =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaRechargeRequests"
+            ) || "[]"
+        );
+
+    if (requests.length === 0) {
+
+        rechargeList.innerHTML = `
+            <div class="job-card">
+
+                <h3>
+                    No recharge requests
+                </h3>
+
+                <p class="job-description">
+                    There are no worker recharge requests yet.
+                </p>
+
+            </div>
+        `;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        return;
+    }
+
+    const pendingRequests =
+        requests.filter(
+            function(request) {
+                return request.status === "pending";
+            }
+        );
+
+    if (pendingRequests.length === 0) {
+
+        rechargeList.innerHTML = `
+            <div class="job-card">
+
+                <h3>
+                    No pending requests
+                </h3>
+
+                <p class="job-description">
+                    All recharge requests have been processed.
+                </p>
+
+            </div>
+        `;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        return;
+    }
+
+    rechargeList.innerHTML = "";
+
+    pendingRequests
+        .slice()
+        .reverse()
+        .forEach(
+            function(request) {
+
+                let workerName =
+                    "Worker";
+
+                try {
+
+                    const worker =
+                        JSON.parse(
+                            request.workerProfile
+                        );
+
+                    workerName =
+                        worker.name ||
+                        "Worker";
+
+                } catch (error) {
+
+                    workerName =
+                        "Worker";
+
+                }
+
+                const date =
+                    request.createdAt
+                        ? new Date(
+                            request.createdAt
+                        ).toLocaleString()
+                        : "Date unavailable";
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+                card.className =
+                    "job-card";
+
+                card.innerHTML = `
+
+                    <div class="job-card-top">
+
+                        <div>
+
+                            <span class="job-category">
+                                RECHARGE REQUEST
+                            </span>
+
+                            <h3>
+                                ${workerName}
+                            </h3>
+
+                        </div>
+
+                        <span class="job-status">
+                            Pending
+                        </span>
+
+                    </div>
+
+                    <p class="job-description">
+
+                        💰 Amount:
+                        <strong>
+                            ₹${Number(request.amount) || 0}
+                        </strong>
+
+                        <br>
+
+                        🧾 Transaction ID / UTR:
+                        <strong>
+                            ${request.transactionId || "-"}
+                        </strong>
+
+                        <br>
+
+                        📅 Submitted:
+                        <strong>
+                            ${date}
+                        </strong>
+
+                    </p>
+
+                    <button
+                        class="primary-btn"
+                        style="margin-top:12px;"
+                        onclick="approveWorkerRecharge(${request.id})"
+                    >
+                        Approve & Add Credits
+                    </button>
+
+                    <button
+                        class="primary-btn"
+                        style="margin-top:8px;"
+                        onclick="rejectWorkerRecharge(${request.id})"
+                    >
+                        Reject Request
+                    </button>
+
+                `;
+
+                rechargeList.appendChild(
+                    card
+                );
+
+            }
+        );
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function approveWorkerRecharge(requestId) {
+
+    const requests =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaRechargeRequests"
+            ) || "[]"
+        );
+
+    const requestIndex =
+        requests.findIndex(
+            function(request) {
+                return (
+                    Number(request.id) ===
+                    Number(requestId)
+                );
+            }
+        );
+
+    if (requestIndex === -1) {
+
+        alert(
+            "Recharge request not found."
+        );
+
+        return;
+    }
+
+    const request =
+        requests[requestIndex];
+
+    if (
+        request.status !== "pending"
+    ) {
+
+        alert(
+            "This recharge request has already been processed."
+        );
+
+        return;
+    }
+
+    const amount =
+        Number(request.amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+
+        alert(
+            "Invalid recharge amount."
+        );
+
+        return;
+    }
+
+    const workerProfile =
+        request.workerProfile;
+
+    const currentBalance =
+        getWorkerCreditsForProfile(
+            workerProfile
+        );
+
+    const newBalance =
+        currentBalance + amount;
+
+    setWorkerCreditsForProfile(
+        workerProfile,
+        newBalance
+    );
+
+    addWorkerCreditTransaction(
+        workerProfile,
+        amount,
+        "recharge",
+        "Worker recharge approved. UTR: " +
+            request.transactionId
+    );
+
+    request.status =
+        "approved";
+
+    request.processedAt =
+        new Date().toISOString();
+
+    requests[requestIndex] =
+        request;
+
+    localStorage.setItem(
+        "findviaRechargeRequests",
+        JSON.stringify(requests)
+    );
+
+    alert(
+        "Recharge approved successfully.\n\n" +
+        "Credits added: ₹" +
+        amount +
+        "\n" +
+        "New balance: ₹" +
+        newBalance
+    );
+
+    openAdminRechargeRequests();
+}
+
+
+function rejectWorkerRecharge(requestId) {
+
+    const requests =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaRechargeRequests"
+            ) || "[]"
+        );
+
+    const requestIndex =
+        requests.findIndex(
+            function(request) {
+                return (
+                    Number(request.id) ===
+                    Number(requestId)
+                );
+            }
+        );
+
+    if (requestIndex === -1) {
+
+        alert(
+            "Recharge request not found."
+        );
+
+        return;
+    }
+
+    const request =
+        requests[requestIndex];
+
+    if (
+        request.status !== "pending"
+    ) {
+
+        alert(
+            "This recharge request has already been processed."
+        );
+
+        return;
+    }
+
+    request.status =
+        "rejected";
+
+    request.processedAt =
+        new Date().toISOString();
+
+    requests[requestIndex] =
+        request;
+
+    localStorage.setItem(
+        "findviaRechargeRequests",
+        JSON.stringify(requests)
+    );
+
+    alert(
+        "Recharge request rejected."
+    );
+
+    openAdminRechargeRequests();
+}
+
 
 
 function openAdminWorkers() {
