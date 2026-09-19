@@ -1394,8 +1394,8 @@ main.screen-open .app-screen.active {
 }
 
 .findvia-icon-nav {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
     object-position: center;
     display: block;
