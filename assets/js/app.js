@@ -762,7 +762,7 @@ function findWork() {
 
 hideAdminScreens();
 hideWorkerTransactionScreen();
-    
+ hideWorkerVerificationScreen();   
 document.getElementById("homeContent").style.display = "none";
 
 document.getElementById("searchScreen").classList.remove("active");
@@ -782,7 +782,7 @@ behavior: "smooth"
 }
 
 function findWorkers() {
-
+hideWorkerVerificationScreen();
 hideAdminScreens();
  hideWorkerTransactionScreen();   
 document.getElementById("homeContent").style.display = "none";
@@ -802,6 +802,8 @@ behavior: "smooth"
 
 function postJob() {
 hideWorkerTransactionScreen();
+hideWorkerVerificationScreen();
+    
     const currentRole = localStorage.getItem("findviaUserRole");
 
     if (currentRole !== "customer") {
@@ -1383,6 +1385,8 @@ if (!isJobAvailableForFindWork(job)) {
 function goHome() {
 hideAdminScreens();
   hideWorkerTransactionScreen();  
+hideWorkerVerificationScreen();
+    
     document.getElementById("findWorkScreen").classList.remove("active");
     document.getElementById("findWorkersScreen").classList.remove("active");
     document.getElementById("searchScreen").classList.remove("active");
@@ -1406,6 +1410,8 @@ document.getElementById("postJobScreen").classList.remove("active");
 function showProfile() {
 hideAdminScreens();
 hideWorkerTransactionScreen();
+hideWorkerVerificationScreen();
+    
     
     document.getElementById("homeContent").style.display = "none";
 
@@ -1432,7 +1438,7 @@ loadWorkerProfileSummary();
 
 function closeScreens() {
 
-
+hideWorkerVerificationScreen();
     
     document.getElementById("findWorkScreen").classList.remove("active");
     document.getElementById("findWorkersScreen").classList.remove("active");
@@ -2019,6 +2025,9 @@ function searchWorkers() {
 }
 
 function openSearch() {
+
+
+   hideWorkerVerificationScreen(); 
 
 hideAdminScreens();
  hideWorkerTransactionScreen();   
@@ -4753,7 +4762,20 @@ function hideWorkerTransactionScreen() {
 }
 
 
+function hideWorkerVerificationScreen() {
 
+    const screen =
+        document.getElementById(
+            "workerVerificationScreen"
+        );
+
+    if (!screen) {
+        return;
+    }
+
+    screen.classList.remove("active");
+    screen.style.display = "none";
+}
 
 
 function openAdminWorkers() {
