@@ -1379,3 +1379,35 @@ main.screen-open .app-screen.active {
     box-shadow:
         0 0 0 3px rgba(37, 99, 235, 0.10);
 }
+
+
+/* FindVia Custom Icons */
+
+.findvia-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    object-position: center;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.findvia-icon-nav {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    margin: 0 auto;
+    flex-shrink: 0;
+}
+
+.findvia-icon-action {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    object-position: center;
+    display: inline-block;
+    flex-shrink: 0;
+}
