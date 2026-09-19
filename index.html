@@ -455,7 +455,15 @@
     <span id="summaryWorkerVerification"></span>
 </div>
     </div>
-
+<button
+    type="button"
+    id="workerVerificationButton"
+    class="primary-btn"
+    onclick="openWorkerVerification()"
+    style="margin-top:12px;"
+>
+    Complete Verification
+</button>
 </div>
         
 </section>
@@ -664,6 +672,109 @@
     </div>
 
 </section>
+
+
+        <!-- Worker Verification Screen -->
+
+<section
+    id="workerVerificationScreen"
+    class="app-screen"
+>
+
+    <button
+        class="back-btn"
+        onclick="showProfile()"
+    >
+        Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            ✓
+        </div>
+
+        <div>
+            <h2>Worker Verification</h2>
+            <p>
+                Complete your verification to work on FindVia.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="profile-form-box">
+
+        <p class="form-note">
+            Please submit the following documents for verification.
+            Your documents will only be used for FindVia verification.
+        </p>
+
+        <label for="workerGovernmentId">
+            Government ID
+        </label>
+
+        <input
+            type="file"
+            id="workerGovernmentId"
+            accept="image/*,.pdf"
+        >
+
+        <label for="workerSelfie">
+            Recent Photo / Selfie
+        </label>
+
+        <input
+            type="file"
+            id="workerSelfie"
+            accept="image/*"
+        >
+
+        <label for="workerSkillProof">
+            Skill / Experience Proof (Optional)
+        </label>
+
+        <input
+            type="file"
+            id="workerSkillProof"
+            accept="image/*,.pdf"
+        >
+
+        <label
+            style="
+                display:flex;
+                gap:10px;
+                align-items:flex-start;
+                margin-top:16px;
+            "
+        >
+
+            <input
+                type="checkbox"
+                id="workerVerificationConsent"
+                style="width:auto; margin-top:4px;"
+            >
+
+            <span>
+                I confirm that the information and documents
+                submitted by me are genuine and may be used
+                for FindVia verification.
+            </span>
+
+        </label>
+
+        <button
+            type="button"
+            class="primary-btn"
+            onclick="submitWorkerVerification()"
+            style="margin-top:18px;"
+        >
+            Submit for Verification
+        </button>
+
+    </div>
+
+</section>
         
     </main>
 
@@ -706,7 +817,7 @@
 
     </nav>
 
-<script src="assets/js/app.js?v=86"></script>
+<script src="assets/js/app.js?v=87"></script>
 
     <script>
 document.addEventListener(
