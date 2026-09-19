@@ -431,6 +431,21 @@ function applyFindViaStaticLanguage() {
                 "FindVia worker management",
             "Transaction History": "Transaction History",
             "Worker transactions": "Worker transactions",
+            "Worker Verification": "Worker Verification",
+"Complete your verification to work on FindVia.":
+    "Complete your verification to work on FindVia.",
+"Please submit the following documents for verification.":
+    "Please submit the following documents for verification.",
+"Your documents will only be used for FindVia verification.":
+    "Your documents will only be used for FindVia verification.",
+"Government ID (Aadhaar Card, Voter ID, Driving Licence, etc.)":
+    "Government ID (Aadhaar Card, Voter ID, Driving Licence, etc.)",
+"Recent Photo / Selfie":
+    "Recent Photo / Selfie",
+"Skill / Experience Proof (Optional)":
+    "Skill / Experience Proof (Optional)",
+"Submit for Verification":
+    "Submit for Verification"
             "OK": "OK"
         },
 
@@ -569,6 +584,25 @@ function applyFindViaStaticLanguage() {
             "Transaction History": "लेन-देन इतिहास",
             "Worker transactions":
                 "कामगार के लेन-देन",
+
+
+"Worker Verification":
+    "कामगार सत्यापन",
+"Complete your verification to work on FindVia.":
+    "FindVia पर काम करने के लिए अपना सत्यापन पूरा करें।",
+"Please submit the following documents for verification.":
+    "सत्यापन के लिए नीचे दिए गए दस्तावेज़ जमा करें।",
+"Your documents will only be used for FindVia verification.":
+    "आपके दस्तावेज़ केवल FindVia सत्यापन के लिए उपयोग किए जाएंगे।",
+"Government ID (Aadhaar Card, Voter ID, Driving Licence, etc.)":
+    "सरकारी पहचान पत्र (आधार कार्ड, वोटर आईडी, ड्राइविंग लाइसेंस आदि)",
+"Recent Photo / Selfie":
+    "हाल की फोटो / सेल्फी",
+"Skill / Experience Proof (Optional)":
+    "कौशल / अनुभव प्रमाण (वैकल्पिक)",
+"Submit for Verification":
+    "सत्यापन के लिए जमा करें"
+                    
             "OK": "ठीक है"
         }
     };
@@ -2693,10 +2727,17 @@ function openWorkerVerification() {
         .getElementById("workerProfileScreen")
         .classList.remove("active");
 
-    document
-        .getElementById("workerVerificationScreen")
-        .classList.add("active");
+ 
+const verificationScreen =
+    document.getElementById(
+        "workerVerificationScreen"
+    );
 
+if (verificationScreen) {
+
+    verificationScreen.style.display = "block";
+    verificationScreen.classList.add("active");
+}
     loadWorkerVerification();
 
     window.scrollTo({
