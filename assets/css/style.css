@@ -1424,3 +1424,30 @@ main.screen-open .app-screen.active {
 .bottom-nav .findvia-icon-nav[src*="profile.png"] {
     transform: scale(2.2);
 }
+
+/* FindVia Back Button */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn {
+    font-size: 0;
+}
+
+.back-btn::before {
+    content: "";
+    width: 28px;
+    height: 28px;
+    background-image: url("../icons/back.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    flex-shrink: 0;
+}
+
+.back-btn::after {
+    content: "Back";
+    font-size: 15px;
+}
