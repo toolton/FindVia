@@ -478,6 +478,26 @@ function applyFindViaStaticLanguage() {
     "Skill / Experience Proof (Optional)",
 "Submit for Verification":
     "Submit for Verification",
+            "Please set up your worker profile first.":
+    "Please set up your worker profile first.",
+
+"Recharge form could not be found.":
+    "Recharge form could not be found.",
+
+"Please enter a valid payment amount.":
+    "Please enter a valid payment amount.",
+
+"Please enter the payment transaction ID / UTR.":
+    "Please enter the payment transaction ID / UTR.",
+
+"This payment is already pending verification.":
+    "This payment is already pending verification.",
+
+"Recharge request submitted successfully.":
+    "Recharge request submitted successfully.",
+
+"Your payment will be verified by FindVia admin.":
+    "Your payment will be verified by FindVia admin.",
             "OK": "OK"
         },
 
@@ -666,6 +686,26 @@ function applyFindViaStaticLanguage() {
     "कौशल / अनुभव प्रमाण (वैकल्पिक)",
 "Submit for Verification":
     "सत्यापन के लिए जमा करें",
+            "Please set up your worker profile first.":
+    "कृपया पहले अपना कामगार प्रोफाइल सेट करें।",
+
+"Recharge form could not be found.":
+    "रिचार्ज फॉर्म नहीं मिल सका।",
+
+"Please enter a valid payment amount.":
+    "कृपया भुगतान की सही राशि दर्ज करें।",
+
+"Please enter the payment transaction ID / UTR.":
+    "कृपया भुगतान Transaction ID / UTR दर्ज करें।",
+
+"This payment is already pending verification.":
+    "यह भुगतान पहले से सत्यापन के लिए लंबित है।",
+
+"Recharge request submitted successfully.":
+    "रिचार्ज अनुरोध सफलतापूर्वक जमा हो गया है।",
+
+"Your payment will be verified by FindVia admin.":
+    "आपके भुगतान का सत्यापन FindVia एडमिन द्वारा किया जाएगा।",
                     
             "OK": "ठीक है"
         }
@@ -5674,8 +5714,8 @@ function submitWorkerRechargeRequest() {
     if (!workerProfile) {
 
         alert(
-            "Pehle worker profile setup karein."
-        );
+    t("Please set up your worker profile first.")
+);
 
         return;
     }
@@ -5698,8 +5738,8 @@ function submitWorkerRechargeRequest() {
     ) {
 
         alert(
-            "Recharge form nahi mila."
-        );
+    t("Recharge form could not be found.")
+);
 
         return;
     }
@@ -5721,8 +5761,8 @@ function submitWorkerRechargeRequest() {
     ) {
 
         alert(
-            "Please valid payment amount enter karein."
-        );
+    t("Please enter a valid payment amount.")
+);
 
         return;
     }
@@ -5731,8 +5771,8 @@ function submitWorkerRechargeRequest() {
     if (!transactionId) {
 
         alert(
-            "Please payment transaction ID / UTR enter karein."
-        );
+    t("Please enter the payment transaction ID / UTR.")
+);
 
         return;
     }
@@ -5813,9 +5853,10 @@ function submitWorkerRechargeRequest() {
 
 
     alert(
-        "Recharge request submitted successfully.\n\n" +
-        "FindVia admin will verify your payment."
-    );
+    t("Recharge request submitted successfully.") +
+    "\n\n" +
+    t("Your payment will be verified by FindVia admin.")
+);
 
 
     showProfile();
