@@ -4773,6 +4773,10 @@ function hideAdminScreens() {
         "adminWorkerTransactionsScreen"
     );
 
+    const adminVerificationScreen = document.getElementById(
+    "adminWorkerVerificationScreen"
+);
+
     if (adminLoginScreen) {
         adminLoginScreen.style.display = "none";
     }
@@ -4788,6 +4792,12 @@ function hideAdminScreens() {
     if (adminTransactionsScreen) {
         adminTransactionsScreen.style.display = "none";
     }
+
+if (adminVerificationScreen) {
+    adminVerificationScreen.style.display = "none";
+}
+
+    
 }
 
 function hideWorkerTransactionScreen() {
@@ -4931,6 +4941,15 @@ if (
     onclick="openWorkerTransactions(${index})"
 >
     📋 Transaction History
+</button>
+
+
+<button
+    class="primary-btn"
+    style="margin-top:8px;"
+    onclick="openWorkerVerificationReview(${index})"
+>
+    🔍 View Verification
 </button>
 
 
@@ -5182,6 +5201,279 @@ ${
         behavior: "smooth"
     });
 }
+
+function openWorkerVerificationReview(index) {
+
+    const workerProfiles = JSON.parse(
+        localStorage.getItem(
+            "findviaWorkerProfiles"
+        ) || "[]"
+    );
+
+    const profileString =
+        workerProfiles[index];
+
+    if (!profileString) {
+
+        alert(
+            "Worker profile nahi mila."
+        );
+
+        return;
+    }
+
+    const worker =
+        JSON.parse(profileString);
+
+
+    const verificationScreen =
+        document.getElementById(
+            "adminWorkerVerificationScreen"
+        );
+
+    const detailsBox =
+        document.getElementById(
+            "adminWorkerVerificationDetails"
+        );
+
+    const workerName =
+        document.getElementById(
+            "adminVerificationWorkerName"
+        );
+
+
+    if (
+        !verificationScreen ||
+        !detailsBox ||
+        !workerName
+    ) {
+
+        alert(
+            "Verification screen nahi mili."
+        );
+
+        return;
+    }
+
+
+    hideAdminScreens();
+
+
+    verificationScreen.style.display =
+        "block";
+
+
+    workerName.textContent =
+        worker.name +
+        " • Verification";
+
+
+    const documents =
+        worker.verificationDocuments ||
+        {};
+
+
+    const status =
+        worker.verificationStatus ||
+        "pending";
+
+
+    const submittedAt =
+        worker.verificationSubmittedAt
+            ? new Date(
+                worker.verificationSubmittedAt
+            ).toLocaleString()
+            : "Not submitted";
+
+
+    const governmentId =
+        documents.governmentId ||
+        "Not submitted";
+
+
+    const selfie =
+        documents.selfie ||
+        "Not submitted";
+
+
+    const skillProof =
+        documents.skillProof ||
+        "Not provided";
+
+
+    const statusText =
+        status === "approved"
+            ? "Approved"
+            : status === "rejected"
+            ? "Rejected"
+            : "Pending";
+
+
+    detailsBox.innerHTML = `
+
+        <div class="job-card">
+
+            <div class="job-card-top">
+
+                <div>
+
+                    <span class="job-category">
+                        WORKER VERIFICATION
+                    </span>
+
+                    <h3>
+                        ${worker.name || "-"}
+                    </h3>
+
+                </div>
+
+                <span class="job-status">
+                    ${statusText}
+                </span>
+
+            </div>
+
+
+            <p class="job-description">
+
+                🔧 Service:
+                <strong>
+                    ${worker.service || "-"}
+                </strong>
+
+                <br>
+
+                📍 Area:
+                <strong>
+                    ${worker.area || "-"}
+                </strong>
+
+                <br>
+
+                ⭐ Experience:
+                <strong>
+                    ${worker.experience || "-"}
+                </strong>
+
+                <br>
+
+                📅 Submitted:
+                <strong>
+                    ${submittedAt}
+                </strong>
+
+            </p>
+
+        </div>
+
+
+        <div class="job-card">
+
+            <h3>
+                Verification Documents
+            </h3>
+
+
+            <div style="
+                margin-top:12px;
+                padding:12px;
+                border-radius:10px;
+                background:#f5f5f5;
+            ">
+
+                <strong>
+                    Government ID
+                </strong>
+
+                <br>
+
+                📄 ${governmentId}
+
+            </div>
+
+
+            <div style="
+                margin-top:10px;
+                padding:12px;
+                border-radius:10px;
+                background:#f5f5f5;
+            ">
+
+                <strong>
+                    Recent Photo / Selfie
+                </strong>
+
+                <br>
+
+                📷 ${selfie}
+
+            </div>
+
+
+            <div style="
+                margin-top:10px;
+                padding:12px;
+                border-radius:10px;
+                background:#f5f5f5;
+            ">
+
+                <strong>
+                    Skill / Experience Proof
+                </strong>
+
+                <br>
+
+                📄 ${skillProof}
+
+            </div>
+
+
+            ${
+                status !== "approved"
+                ? `
+                    <button
+                        class="primary-btn"
+                        style="margin-top:14px;"
+                        onclick="approveWorkerFromVerification(${index})"
+                    >
+                        ✅ Approve Worker
+                    </button>
+                `
+                : ""
+            }
+
+
+            <button
+                class="primary-btn"
+                style="margin-top:8px;"
+                onclick="rejectWorkerFromVerification(${index})"
+            >
+                ❌ Reject Worker
+            </button>
+
+        </div>
+
+    `;
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function approveWorkerFromVerification(index) {
+
+    approveWorker(index);
+
+}
+
+function rejectWorkerFromVerification(index) {
+
+    rejectWorker(index);
+
+}
+
 
 
 function openWorkerTransactionHistory() {
