@@ -1412,43 +1412,4 @@ main.screen-open .app-screen.active {
     flex-shrink: 0;
 }
 
-/* Home icon visual size adjustment */
-.bottom-nav .findvia-icon-nav[src*="home.png"] {
-    transform: scale(2);
-}
-/* Search and Profile icon visual size adjustment */
-.bottom-nav .findvia-icon-nav[src*="search.png"] {
-    transform: scale(2);
-}
 
-.bottom-nav .findvia-icon-nav[src*="profile.png"] {
-    transform: scale(2.2);
-}
-
-/* FindVia Back Button */
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.back-btn {
-    font-size: 0;
-}
-
-.back-btn::before {
-    content: "";
-    width: 28px;
-    height: 28px;
-    background-image: url("../icons/back.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    transform: scale(2);
-    flex-shrink: 0;
-}
-
-.back-btn::after {
-    content: "Back";
-    font-size: 15px;
-}
