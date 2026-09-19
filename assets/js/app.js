@@ -432,6 +432,38 @@ function applyFindViaStaticLanguage() {
             "Transaction History": "Transaction History",
             "Worker transactions": "Worker transactions",
             "Worker Verification": "Worker Verification",
+          "Recharge Credits": "Recharge Credits",
+"Add credits to your FindVia wallet.":
+    "Add credits to your FindVia wallet.",
+"Recharge your credits":
+    "Recharge your credits",
+"Scan the QR code below and make your payment.":
+    "Scan the QR code below and make your payment.",
+"FINDVIA CREDITS": "FINDVIA CREDITS",
+"Payment QR": "Payment QR",
+"QR code will be added before deployment.":
+    "QR code will be added before deployment.",
+"Payment Instructions": "Payment Instructions",
+"Scan the FindVia payment QR.":
+    "Scan the FindVia payment QR.",
+"Pay the amount you want to add.":
+    "Pay the amount you want to add.",
+"Enter the exact amount paid below.":
+    "Enter the exact amount paid below.",
+"Enter your payment transaction ID / UTR.":
+    "Enter your payment transaction ID / UTR.",
+"Submit the recharge request.":
+    "Submit the recharge request.",
+"Amount Paid": "Amount Paid",
+"₹ Enter amount": "₹ Enter amount",
+"Payment Transaction ID / UTR":
+    "Payment Transaction ID / UTR",
+"Enter UTR / transaction ID":
+    "Enter UTR / transaction ID",
+"Submit Recharge Request":
+    "Submit Recharge Request",
+"Credits will be added after payment verification.":
+    "Credits will be added after payment verification.",  
 "Complete your verification to work on FindVia.":
     "Complete your verification to work on FindVia.",
 "Please submit the following documents for verification.":
@@ -584,6 +616,38 @@ function applyFindViaStaticLanguage() {
             "Transaction History": "लेन-देन इतिहास",
             "Worker transactions":
                 "कामगार के लेन-देन",
+            "Recharge Credits": "क्रेडिट रिचार्ज करें",
+"Add credits to your FindVia wallet.":
+    "अपने FindVia वॉलेट में क्रेडिट जोड़ें।",
+"Recharge your credits":
+    "अपने क्रेडिट रिचार्ज करें",
+"Scan the QR code below and make your payment.":
+    "नीचे दिए गए QR कोड को स्कैन करके भुगतान करें।",
+"FINDVIA CREDITS": "FINDVIA क्रेडिट",
+"Payment QR": "भुगतान QR",
+"QR code will be added before deployment.":
+    "तैनाती से पहले वास्तविक QR कोड जोड़ा जाएगा।",
+"Payment Instructions": "भुगतान के निर्देश",
+"Scan the FindVia payment QR.":
+    "FindVia का भुगतान QR स्कैन करें।",
+"Pay the amount you want to add.":
+    "जितनी राशि जोड़नी है, उसका भुगतान करें।",
+"Enter the exact amount paid below.":
+    "नीचे भुगतान की गई सही राशि दर्ज करें।",
+"Enter your payment transaction ID / UTR.":
+    "अपना भुगतान Transaction ID / UTR दर्ज करें।",
+"Submit the recharge request.":
+    "रिचार्ज अनुरोध जमा करें।",
+"Amount Paid": "भुगतान की गई राशि",
+"₹ Enter amount": "₹ राशि दर्ज करें",
+"Payment Transaction ID / UTR":
+    "भुगतान Transaction ID / UTR",
+"Enter UTR / transaction ID":
+    "UTR / Transaction ID दर्ज करें",
+"Submit Recharge Request":
+    "रिचार्ज अनुरोध जमा करें",
+"Credits will be added after payment verification.":
+    "भुगतान सत्यापन के बाद क्रेडिट जोड़े जाएंगे।",
 
 
 "Worker Verification":
