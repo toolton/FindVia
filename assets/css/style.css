@@ -1381,11 +1381,11 @@ main.screen-open .app-screen.active {
 }
 
 
-/* FindVia Custom Icons */
 
+/* FindVia Custom Icons */
 .findvia-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
     object-position: center;
     display: inline-block;
@@ -1412,4 +1412,29 @@ main.screen-open .app-screen.active {
     flex-shrink: 0;
 }
 
+/* Automatically normalized Back icon */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
 
+.back-btn::before {
+    content: "";
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    flex-shrink: 0;
+    background-image: var(--findvia-back-icon);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.back-btn {
+    font-size: 15px;
+}
+
+.back-btn {
+    color: var(--primary);
+}
