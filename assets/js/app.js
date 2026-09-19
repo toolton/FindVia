@@ -601,7 +601,7 @@ function applyFindViaStaticLanguage() {
 "Skill / Experience Proof (Optional)":
     "कौशल / अनुभव प्रमाण (वैकल्पिक)",
 "Submit for Verification":
-    "सत्यापन के लिए जमा करें"
+    "सत्यापन के लिए जमा करें",
                     
             "OK": "ठीक है"
         }
