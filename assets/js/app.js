@@ -1,3 +1,19 @@
+
+const SUPABASE_URL =
+    "https://jvqwhbedyytgglorbava.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_wvJcS-DVrEIapJckmvVUtA__NBqACHY";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+
+
 let hindiMode =
     localStorage.getItem("findviaLanguage") === "hi";
 
