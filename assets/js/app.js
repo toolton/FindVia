@@ -1217,8 +1217,7 @@ function showPostedJobs(categoryFilter = "") {
 
     if (categoryFilter) {
 
-        availableJobs =
-            availableJobs.filter(function(job) {
+        availableJobs = availableJobs.filter(function(job) {
 
                 return (
                     job.category === categoryFilter
@@ -7639,7 +7638,7 @@ test(
     "Recharge request starts as pending",
     sourceHas(
         "submitWorkerRechargeRequest",
-        'status: "pending"'
+        /status\s*:\s*["']pending["']/
     )
 );
 
@@ -7673,7 +7672,7 @@ test(
     "Approved recharge status is saved",
     sourceHas(
         "approveWorkerRecharge",
-        'request.status = "approved"'
+        /request\.status\s*=\s*["']approved["']/
     )
 );
 
@@ -7694,10 +7693,9 @@ test(
     "Rejected recharge status is saved",
     sourceHas(
         "rejectWorkerRecharge",
-        'request.status = "rejected"'
+        /request\.status\s*=\s*["']rejected["']/
     )
 );
-
 test(
     "Rejected recharge saves processed time",
     sourceHas(
