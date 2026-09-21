@@ -1176,6 +1176,8 @@ function selectLocation() {
 
 function findWork() {
 
+    document.getElementById("authScreen").style.display = "none";
+
 hideAdminScreens();
 hideWorkerTransactionScreen();
     hideWorkerRechargeScreen();
@@ -1199,6 +1201,9 @@ behavior: "smooth"
 }
 
 function findWorkers() {
+
+document.getElementById("authScreen").style.display = "none";
+    
 hideWorkerVerificationScreen();
 hideAdminScreens();
    hideWorkerRechargeScreen(); 
@@ -1803,6 +1808,8 @@ if (!isJobAvailableForFindWork(job)) {
 
 
 function goHome() {
+document.getElementById("authScreen").style.display = "none";
+    
 hideAdminScreens();
   hideWorkerTransactionScreen();  
 hideWorkerRechargeScreen();
@@ -1830,6 +1837,10 @@ document.getElementById("postJobScreen").classList.remove("active");
 
 
 function showProfile() {
+
+document.getElementById("authScreen").style.display = "none";
+
+    
 hideAdminScreens();
 hideWorkerTransactionScreen();
 hideWorkerRechargeScreen();    
@@ -1860,6 +1871,9 @@ loadWorkerProfileSummary();
 
 
 function closeScreens() {
+
+document.getElementById("authScreen").style.display = "none";
+    
 
 hideWorkerVerificationScreen();
    hideWorkerRechargeScreen(); 
