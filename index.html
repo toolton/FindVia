@@ -376,6 +376,33 @@
         Recharge Credits
     </button>
 </div>
+
+
+
+
+
+
+        <!-- User Authentication -->
+<div
+    style="
+        margin-top:14px;
+        text-align:center;
+    "
+>
+    <button
+        type="button"
+        onclick="openAuthScreen()"
+        style="
+            border:none;
+            background:none;
+            color:#2563eb;
+            font-size:13px;
+            cursor:pointer;
+        "
+    >
+        🔐 Login / Sign Up
+    </button>
+</div>
         
   <!-- Admin Access -->
 
@@ -971,7 +998,106 @@
 </section>
     </main>
 
+<!-- =========================
+     FINDVIA USER AUTH
+========================= -->
 
+<section
+    id="authScreen"
+    class="app-screen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        type="button"
+        onclick="closeAuthScreen()"
+    >
+        Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            🔐
+        </div>
+
+        <div>
+            <h2 id="authTitle">
+                Login to FindVia
+            </h2>
+
+            <p id="authSubtitle">
+                Login or create your FindVia account.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="profile-form-box">
+
+        <label for="authEmail">
+            Email
+        </label>
+
+        <input
+            type="email"
+            id="authEmail"
+            placeholder="Enter your email"
+            autocomplete="email"
+        >
+
+
+        <label for="authPassword">
+            Password
+        </label>
+
+        <input
+            type="password"
+            id="authPassword"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+        >
+
+
+        <button
+            type="button"
+            class="primary-btn"
+            id="authMainButton"
+            onclick="handleFindViaAuth()"
+        >
+            Login
+        </button>
+
+
+        <button
+            type="button"
+            id="authToggleButton"
+            onclick="toggleFindViaAuthMode()"
+            style="
+                width:100%;
+                margin-top:12px;
+                padding:12px;
+                border:none;
+                background:none;
+                color:#2563eb;
+                cursor:pointer;
+            "
+        >
+            Create a new account
+        </button>
+
+
+        <p
+            id="authStatus"
+            class="form-note"
+            style="margin-top:15px;"
+        ></p>
+
+    </div>
+
+</section>
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
 
@@ -1499,7 +1625,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/app.js?v=100"></script>
+<script src="assets/js/app.js?v=101"></script>
 
 <script>
 
