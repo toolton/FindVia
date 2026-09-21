@@ -6413,7 +6413,7 @@ ${
     });
 }
 
-function openWorkerVerificationReview(index) {
+async function openWorkerVerificationReview(index) {
 
     const workerProfiles = JSON.parse(
         localStorage.getItem(
@@ -6433,9 +6433,90 @@ function openWorkerVerificationReview(index) {
         return;
     }
 
-    const worker =
+    const localWorker =
         JSON.parse(profileString);
 
+    const workerId =
+        localWorker.id;
+
+    if (!workerId) {
+
+        alert(
+            "Worker account ID nahi mila."
+        );
+
+        return;
+    }
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+
+        alert(
+            "Admin login required."
+        );
+
+        openAuthScreen();
+
+        return;
+    }
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (
+        adminError ||
+        !adminUser
+    ) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return;
+    }
+
+    const {
+        data: worker,
+        error: workerError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, service, experience, area, availability, verification_status, verification_submitted, verification_submitted_at, government_id_file, selfie_file, skill_proof_file"
+        )
+        .eq("id", workerId)
+        .maybeSingle();
+
+    if (workerError) {
+
+        console.error(
+            "Worker verification load error:",
+            workerError
+        );
+
+        alert(
+            "Worker verification data load nahi ho saki.\n\n" +
+            workerError.message
+        );
+
+        return;
+    }
+
+    if (!worker) {
+
+        alert(
+            "Worker profile Supabase mein nahi mili."
+        );
+
+        return;
+    }
 
     const verificationScreen =
         document.getElementById(
@@ -6452,7 +6533,6 @@ function openWorkerVerificationReview(index) {
             "adminVerificationWorkerName"
         );
 
-
     if (
         !verificationScreen ||
         !detailsBox ||
@@ -6466,51 +6546,18 @@ function openWorkerVerificationReview(index) {
         return;
     }
 
-
     hideAdminScreens();
-
 
     verificationScreen.style.display =
         "block";
 
-
     workerName.textContent =
-        worker.name +
+        (worker.name || "-") +
         " • Verification";
 
-
-    const documents =
-        worker.verificationDocuments ||
-        {};
-
-
     const status =
-        worker.verificationStatus ||
+        worker.verification_status ||
         "pending";
-
-
-    const submittedAt =
-        worker.verificationSubmittedAt
-            ? new Date(
-                worker.verificationSubmittedAt
-            ).toLocaleString()
-            : "Not submitted";
-
-
-    const governmentId =
-        documents.governmentId ||
-        "Not submitted";
-
-
-    const selfie =
-        documents.selfie ||
-        "Not submitted";
-
-
-    const skillProof =
-        documents.skillProof ||
-        "Not provided";
-
 
     const statusText =
         status === "approved"
@@ -6519,6 +6566,252 @@ function openWorkerVerificationReview(index) {
             ? "Rejected"
             : "Pending";
 
+    const submittedAt =
+        worker.verification_submitted_at
+            ? new Date(
+                worker.verification_submitted_at
+            ).toLocaleString()
+            : "Not submitted";
+
+    let governmentIdUrl = null;
+    let selfieUrl = null;
+    let skillProofUrl = null;
+
+    if (worker.government_id_file) {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.storage
+                .from(
+                    "worker-verification"
+                )
+                .createSignedUrl(
+                    worker.government_id_file,
+                    3600
+                );
+
+        if (error) {
+
+            console.error(
+                "Government ID signed URL error:",
+                error
+            );
+
+        } else if (data) {
+
+            governmentIdUrl =
+                data.signedUrl;
+
+        }
+    }
+
+    if (worker.selfie_file) {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.storage
+                .from(
+                    "worker-verification"
+                )
+                .createSignedUrl(
+                    worker.selfie_file,
+                    3600
+                );
+
+        if (error) {
+
+            console.error(
+                "Selfie signed URL error:",
+                error
+            );
+
+        } else if (data) {
+
+            selfieUrl =
+                data.signedUrl;
+
+        }
+    }
+
+    if (worker.skill_proof_file) {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.storage
+                .from(
+                    "worker-verification"
+                )
+                .createSignedUrl(
+                    worker.skill_proof_file,
+                    3600
+                );
+
+        if (error) {
+
+            console.error(
+                "Skill proof signed URL error:",
+                error
+            );
+
+        } else if (data) {
+
+            skillProofUrl =
+                data.signedUrl;
+
+        }
+    }
+
+    function documentPreview(
+        label,
+        icon,
+        filePath,
+        signedUrl
+    ) {
+
+        if (!filePath) {
+
+            return `
+                <div
+                    style="
+                        margin-top:10px;
+                        padding:12px;
+                        border-radius:10px;
+                        background:#f5f5f5;
+                    "
+                >
+                    <strong>
+                        ${icon} ${label}
+                    </strong>
+
+                    <br>
+
+                    <span>
+                        Not submitted
+                    </span>
+                </div>
+            `;
+        }
+
+        if (!signedUrl) {
+
+            return `
+                <div
+                    style="
+                        margin-top:10px;
+                        padding:12px;
+                        border-radius:10px;
+                        background:#f5f5f5;
+                    "
+                >
+                    <strong>
+                        ${icon} ${label}
+                    </strong>
+
+                    <br>
+
+                    <span>
+                        File uploaded, but secure preview
+                        could not be generated.
+                    </span>
+                </div>
+            `;
+        }
+
+        const lowerPath =
+            filePath.toLowerCase();
+
+        const isImage =
+            lowerPath.endsWith(".jpg") ||
+            lowerPath.endsWith(".jpeg") ||
+            lowerPath.endsWith(".png") ||
+            lowerPath.endsWith(".webp") ||
+            lowerPath.endsWith(".gif");
+
+        if (isImage) {
+
+            return `
+                <div
+                    style="
+                        margin-top:10px;
+                        padding:12px;
+                        border-radius:10px;
+                        background:#f5f5f5;
+                    "
+                >
+                    <strong>
+                        ${icon} ${label}
+                    </strong>
+
+                    <div style="margin-top:10px;">
+                        <img
+                            src="${signedUrl}"
+                            alt="${label}"
+                            style="
+                                width:100%;
+                                max-width:420px;
+                                max-height:420px;
+                                object-fit:contain;
+                                border-radius:10px;
+                                border:1px solid #ddd;
+                                background:#fff;
+                            "
+                        >
+                    </div>
+
+                    <a
+                        href="${signedUrl}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="primary-btn"
+                        style="
+                            display:inline-block;
+                            margin-top:10px;
+                            text-decoration:none;
+                        "
+                    >
+                        🔗 Open Full File
+                    </a>
+                </div>
+            `;
+        }
+
+        return `
+            <div
+                style="
+                    margin-top:10px;
+                    padding:12px;
+                    border-radius:10px;
+                    background:#f5f5f5;
+                "
+            >
+                <strong>
+                    ${icon} ${label}
+                </strong>
+
+                <br>
+
+                <a
+                    href="${signedUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="primary-btn"
+                    style="
+                        display:inline-block;
+                        margin-top:10px;
+                        text-decoration:none;
+                    "
+                >
+                    📄 Open Document
+                </a>
+            </div>
+        `;
+    }
 
     detailsBox.innerHTML = `
 
@@ -6544,7 +6837,6 @@ function openWorkerVerificationReview(index) {
 
             </div>
 
-
             <p class="job-description">
 
                 🔧 Service:
@@ -6568,6 +6860,13 @@ function openWorkerVerificationReview(index) {
 
                 <br>
 
+                🟢 Availability:
+                <strong>
+                    ${worker.availability || "-"}
+                </strong>
+
+                <br>
+
                 📅 Submitted:
                 <strong>
                     ${submittedAt}
@@ -6584,60 +6883,26 @@ function openWorkerVerificationReview(index) {
                 Verification Documents
             </h3>
 
+            ${documentPreview(
+                "Government ID",
+                "📄",
+                worker.government_id_file,
+                governmentIdUrl
+            )}
 
-            <div style="
-                margin-top:12px;
-                padding:12px;
-                border-radius:10px;
-                background:#f5f5f5;
-            ">
+            ${documentPreview(
+                "Recent Photo / Selfie",
+                "📷",
+                worker.selfie_file,
+                selfieUrl
+            )}
 
-                <strong>
-                    Government ID
-                </strong>
-
-                <br>
-
-                📄 ${governmentId}
-
-            </div>
-
-
-            <div style="
-                margin-top:10px;
-                padding:12px;
-                border-radius:10px;
-                background:#f5f5f5;
-            ">
-
-                <strong>
-                    Recent Photo / Selfie
-                </strong>
-
-                <br>
-
-                📷 ${selfie}
-
-            </div>
-
-
-            <div style="
-                margin-top:10px;
-                padding:12px;
-                border-radius:10px;
-                background:#f5f5f5;
-            ">
-
-                <strong>
-                    Skill / Experience Proof
-                </strong>
-
-                <br>
-
-                📄 ${skillProof}
-
-            </div>
-
+            ${documentPreview(
+                "Skill / Experience Proof",
+                "📄",
+                worker.skill_proof_file,
+                skillProofUrl
+            )}
 
             ${
                 status !== "approved"
@@ -6653,25 +6918,30 @@ function openWorkerVerificationReview(index) {
                 : ""
             }
 
-
-            <button
-                class="primary-btn"
-                style="margin-top:8px;"
-                onclick="rejectWorkerFromVerification(${index})"
-            >
-                ❌ Reject Worker
-            </button>
+            ${
+                status !== "rejected"
+                ? `
+                    <button
+                        class="primary-btn"
+                        style="margin-top:8px;"
+                        onclick="rejectWorkerFromVerification(${index})"
+                    >
+                        ❌ Reject Worker
+                    </button>
+                `
+                : ""
+            }
 
         </div>
 
     `;
-
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
 }
+
 
 function approveWorkerFromVerification(index) {
 
