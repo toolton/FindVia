@@ -12,7 +12,22 @@ const supabaseClient =
     );
 
 
+async function getFindViaCurrentUser() {
+    const {
+        data: { user },
+        error
+    } = await supabaseClient.auth.getUser();
 
+    if (error) {
+        console.error(
+            "FindVia Auth error:",
+            error
+        );
+        return null;
+    }
+
+    return user || null;
+}
 
 let hindiMode =
     localStorage.getItem("findviaLanguage") === "hi";
