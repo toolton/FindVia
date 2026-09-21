@@ -3051,21 +3051,90 @@ document.getElementById("jobResponsesScreen")?.classList.remove("active");
 }
 
 
-function saveWorkerProfile() {
-    const name = document.getElementById("workerName").value.trim();
-    const service = document.getElementById("workerService").value;
-    const experience = document.getElementById("workerExperience").value;
-    const area = document.getElementById("workerArea").value.trim();
-    const availability = document.getElementById("workerAvailability").value;
+async function saveWorkerProfile() {
+    const name =
+        document.getElementById("workerName").value.trim();
 
-    if (!name || !service || !experience || !area || !availability) {
+    const service =
+        document.getElementById("workerService").value;
+
+    const experience =
+        document.getElementById("workerExperience").value;
+
+    const area =
+        document.getElementById("workerArea").value.trim();
+
+    const availability =
+        document.getElementById("workerAvailability").value;
+
+    if (
+        !name ||
+        !service ||
+        !experience ||
+        !area ||
+        !availability
+    ) {
         alert("Please complete all worker profile details.");
         return;
     }
 
-    const existingProfile = JSON.parse(
-        localStorage.getItem("findviaWorkerProfile") || "null"
-    );
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        openAuthScreen();
+        return;
+    }
+
+    const existingProfile =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaWorkerProfile"
+            ) || "null"
+        );
+
+    const verificationStatus =
+        existingProfile?.verificationStatus === "approved"
+            ? "approved"
+            : "pending";
+
+    const profileData = {
+        id: user.id,
+        Name: name,
+        Service: service,
+        Experience: experience,
+        Area: area,
+        Availability: availability,
+        Verification_status:
+            verificationStatus,
+        Updated_at:
+            new Date().toISOString()
+    };
+
+    const {
+        error
+    } = await supabaseClient
+        .from("worker_profiles")
+        .upsert(
+            profileData,
+            {
+                onConflict: "id"
+            }
+        );
+
+    if (error) {
+        console.error(
+            "Worker profile save error:",
+            error
+        );
+
+        alert(
+            "Worker profile save nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
 
     const workerProfile = {
         name: name,
@@ -3073,54 +3142,21 @@ function saveWorkerProfile() {
         experience: experience,
         area: area,
         availability: availability,
-verificationStatus:
-    existingProfile?.verificationStatus === "approved"
-        ? "approved"
-        : "pending"
-        
+        verificationStatus:
+            verificationStatus
     };
-
-    const profileString = JSON.stringify(workerProfile);
 
     localStorage.setItem(
         "findviaWorkerProfile",
-        profileString
-    );
-
-    const workerProfiles = JSON.parse(
-        localStorage.getItem("findviaWorkerProfiles") || "[]"
-    );
-
-    const existingProfileString =
-        existingProfile
-            ? JSON.stringify(existingProfile)
-            : null;
-
-    const existingIndex =
-        existingProfileString
-            ? workerProfiles.indexOf(existingProfileString)
-            : -1;
-
-    if (existingIndex !== -1) {
-        workerProfiles[existingIndex] = profileString;
-    } else if (!workerProfiles.includes(profileString)) {
-        workerProfiles.push(profileString);
-    }
-
-    localStorage.setItem(
-        "findviaWorkerProfiles",
-        JSON.stringify(workerProfiles)
+        JSON.stringify(workerProfile)
     );
 
     alert(
-        "Worker profile saved successfully.\n\n" +
-        "Verification status: " +
-        workerProfile.verificationStatus
+        "Worker profile saved successfully."
     );
 
     showProfile();
 }
-
 
 function openWorkerVerification() {
 
@@ -3350,32 +3386,66 @@ function submitWorkerVerification() {
 }
 
 
-function loadWorkerProfile() {
+async function loadWorkerProfile() {
+    const user =
+        await getFindViaCurrentUser();
 
-    const savedProfile = localStorage.getItem("findviaWorkerProfile");
-
-    if (!savedProfile) {
+    if (!user) {
         return;
     }
 
-    const profile = JSON.parse(savedProfile);
+    const {
+        data: profile,
+        error
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, Name, Service, Experience, Area, Availability, Verification_status"
+        )
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error(
+            "Worker profile load error:",
+            error
+        );
+
+        return;
+    }
+
+    if (!profile) {
+        return;
+    }
 
     document.getElementById("workerName").value =
-        profile.name || "";
+        profile.Name || "";
 
     document.getElementById("workerService").value =
-        profile.service || "";
+        profile.Service || "";
 
     document.getElementById("workerExperience").value =
-        profile.experience || "";
+        profile.Experience || "";
 
     document.getElementById("workerArea").value =
-        profile.area || "";
+        profile.Area || "";
 
     document.getElementById("workerAvailability").value =
-        profile.availability || "";
-}
+        profile.Availability || "";
 
+    localStorage.setItem(
+        "findviaWorkerProfile",
+        JSON.stringify({
+            name: profile.Name || "",
+            service: profile.Service || "",
+            experience: profile.Experience || "",
+            area: profile.Area || "",
+            availability: profile.Availability || "",
+            verificationStatus:
+                profile.Verification_status || "pending"
+        })
+    );
+}
 
 /* ================================
    WORKER PROFILE SUMMARY
