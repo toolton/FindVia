@@ -211,13 +211,15 @@ async function handleFindViaAuth() {
 
 
     const {
-        data,
-        error
-    } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
-
+    data,
+    error
+} = await supabaseClient.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+        emailRedirectTo: "https://toolton.github.io/FindVia/"
+    }
+});
 
     if (error) {
 
