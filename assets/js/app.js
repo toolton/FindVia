@@ -3698,18 +3698,19 @@ document.getElementById("workerArea").value =
 
 document.getElementById("workerAvailability").value =
     profile.availability || "";
-    localStorage.setItem(
-        "findviaWorkerProfile",
-        JSON.stringify({
-          name: profile.name || "",
-service: profile.service || "",
-experience: profile.experience || "",
-area: profile.area || "",
-availability: profile.availability || "",
-verificationStatus:
-    profile.verification_status || "pending"  
-        })
-    );
+   localStorage.setItem(
+    "findviaWorkerProfile",
+    JSON.stringify({
+        id: profile.id || user.id,
+        name: profile.name || "",
+        service: profile.service || "",
+        experience: profile.experience || "",
+        area: profile.area || "",
+        availability: profile.availability || "",
+        verificationStatus:
+            profile.verification_status || "pending"
+    })
+); 
 }
 
 /* ================================
@@ -7270,8 +7271,7 @@ function saveAdminCommission() {
     );
 }
 
-
-function approveWorker(index) {
+async function approveWorker(index) {
 
     const workerProfiles = JSON.parse(
         localStorage.getItem("findviaWorkerProfiles") || "[]"
@@ -7284,9 +7284,59 @@ function approveWorker(index) {
 
     const worker = JSON.parse(workerProfiles[index]);
 
+    const workerId = worker.id;
+
+    if (!workerId) {
+        alert("Worker account ID nahi mila.");
+        return;
+    }
+
+    const user = await getFindViaCurrentUser();
+
+    if (!user) {
+        alert("Admin login required.");
+        openAuthScreen();
+        return;
+    }
+
+    const { data: adminUser, error: adminError } =
+        await supabaseClient
+            .from("admin_users")
+            .select("id")
+            .eq("id", user.id)
+            .maybeSingle();
+
+    if (adminError || !adminUser) {
+        alert("Admin access required.");
+        return;
+    }
+
+    const { error: updateError } =
+        await supabaseClient
+            .from("worker_profiles")
+            .update({
+                verification_status: "approved"
+            })
+            .eq("id", workerId);
+
+    if (updateError) {
+        console.error(
+            "Worker approval error:",
+            updateError
+        );
+
+        alert(
+            "Worker approve nahi ho saka.\n\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
     worker.verificationStatus = "approved";
 
-    workerProfiles[index] = JSON.stringify(worker);
+    workerProfiles[index] =
+        JSON.stringify(worker);
 
     localStorage.setItem(
         "findviaWorkerProfiles",
@@ -7294,14 +7344,17 @@ function approveWorker(index) {
     );
 
     const currentProfile = JSON.parse(
-        localStorage.getItem("findviaWorkerProfile") || "null"
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        ) || "null"
     );
 
     if (
         currentProfile &&
-        currentProfile.name === worker.name
+        currentProfile.id === workerId
     ) {
-        currentProfile.verificationStatus = "approved";
+        currentProfile.verificationStatus =
+            "approved";
 
         localStorage.setItem(
             "findviaWorkerProfile",
@@ -7317,7 +7370,7 @@ function approveWorker(index) {
 }
 
 
-function rejectWorker(index) {
+async function rejectWorker(index) {
 
     const workerProfiles = JSON.parse(
         localStorage.getItem("findviaWorkerProfiles") || "[]"
@@ -7330,9 +7383,60 @@ function rejectWorker(index) {
 
     const worker = JSON.parse(workerProfiles[index]);
 
-    worker.verificationStatus = "rejected";
+    const workerId = worker.id;
 
-    workerProfiles[index] = JSON.stringify(worker);
+    if (!workerId) {
+        alert("Worker account ID nahi mila.");
+        return;
+    }
+
+    const user = await getFindViaCurrentUser();
+
+    if (!user) {
+        alert("Admin login required.");
+        openAuthScreen();
+        return;
+    }
+
+    const { data: adminUser, error: adminError } =
+        await supabaseClient
+            .from("admin_users")
+            .select("id")
+            .eq("id", user.id)
+            .maybeSingle();
+
+    if (adminError || !adminUser) {
+        alert("Admin access required.");
+        return;
+    }
+
+    const { error: updateError } =
+        await supabaseClient
+            .from("worker_profiles")
+            .update({
+                verification_status: "rejected"
+            })
+            .eq("id", workerId);
+
+    if (updateError) {
+        console.error(
+            "Worker rejection error:",
+            updateError
+        );
+
+        alert(
+            "Worker reject nahi ho saka.\n\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+    worker.verificationStatus =
+        "rejected";
+
+    workerProfiles[index] =
+        JSON.stringify(worker);
 
     localStorage.setItem(
         "findviaWorkerProfiles",
@@ -7340,14 +7444,17 @@ function rejectWorker(index) {
     );
 
     const currentProfile = JSON.parse(
-        localStorage.getItem("findviaWorkerProfile") || "null"
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        ) || "null"
     );
 
     if (
         currentProfile &&
-        currentProfile.name === worker.name
+        currentProfile.id === workerId
     ) {
-        currentProfile.verificationStatus = "rejected";
+        currentProfile.verificationStatus =
+            "rejected";
 
         localStorage.setItem(
             "findviaWorkerProfile",
