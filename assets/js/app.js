@@ -2464,7 +2464,7 @@ function searchWorkers() {
 
 function openSearch() {
 
-
+document.getElementById("authScreen").style.display = "none";
    hideWorkerVerificationScreen(); 
 hideAdminScreens();
 hideWorkerRechargeScreen();    
