@@ -3235,7 +3235,7 @@ function loadWorkerVerification() {
 }
 
 
-function submitWorkerVerification() {
+async function submitWorkerVerification() {
 
     const governmentId =
         document.getElementById(
@@ -3257,6 +3257,7 @@ function submitWorkerVerification() {
             "workerVerificationConsent"
         );
 
+
     if (
         !governmentId ||
         !governmentId.files.length
@@ -3266,6 +3267,7 @@ function submitWorkerVerification() {
         );
         return;
     }
+
 
     if (
         !selfie ||
@@ -3277,6 +3279,7 @@ function submitWorkerVerification() {
         return;
     }
 
+
     if (
         !consent ||
         !consent.checked
@@ -3287,10 +3290,22 @@ function submitWorkerVerification() {
         return;
     }
 
+
+    const user =
+        await getFindViaCurrentUser();
+
+
+    if (!user) {
+        openAuthScreen();
+        return;
+    }
+
+
     const savedProfile =
         localStorage.getItem(
             "findviaWorkerProfile"
         );
+
 
     if (!savedProfile) {
         alert(
@@ -3299,89 +3314,341 @@ function submitWorkerVerification() {
         return;
     }
 
+
     const profile =
         JSON.parse(savedProfile);
 
-    profile.verificationStatus =
-        "pending";
 
-    profile.verificationSubmitted =
-        true;
+    const governmentFile =
+        governmentId.files[0];
 
-    profile.verificationSubmittedAt =
-        new Date().toISOString();
+    const selfieFile =
+        selfie.files[0];
 
-    profile.verificationDocuments = {
-        governmentId: governmentId.files[0].name,
-        selfie: selfie.files[0].name,
-        skillProof:
-            skillProof &&
-            skillProof.files.length
-                ? skillProof.files[0].name
-                : ""
-    };
+    const skillFile =
+        skillProof &&
+        skillProof.files.length
+            ? skillProof.files[0]
+            : null;
 
-    const profileString =
-        JSON.stringify(profile);
 
-    localStorage.setItem(
-        "findviaWorkerProfile",
-        profileString
-    );
+    const timestamp =
+        Date.now();
 
-    let workerProfiles =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaWorkerProfiles"
-            ) || "[]"
+
+    const governmentPath =
+        user.id +
+        "/government-id-" +
+        timestamp +
+        "-" +
+        encodeURIComponent(
+            governmentFile.name
         );
 
-    const oldProfile =
-        workerProfiles.findIndex(
-            function(item) {
 
-                try {
+    const selfiePath =
+        user.id +
+        "/selfie-" +
+        timestamp +
+        "-" +
+        encodeURIComponent(
+            selfieFile.name
+        );
 
-                    const worker =
-                        typeof item === "string"
-                            ? JSON.parse(item)
-                            : item;
 
-                    return (
-                        worker &&
-                        worker.name === profile.name
-                    );
+    const skillPath =
+        skillFile
+            ? user.id +
+              "/skill-proof-" +
+              timestamp +
+              "-" +
+              encodeURIComponent(
+                  skillFile.name
+              )
+            : null;
 
-                } catch (error) {
 
-                    return false;
+    try {
+
+        /*
+         * Government ID upload
+         */
+        const {
+            error:
+                governmentUploadError
+        } = await supabaseClient
+            .storage
+            .from("worker-verification")
+            .upload(
+                governmentPath,
+                governmentFile,
+                {
+                    upsert: false,
+                    contentType:
+                        governmentFile.type ||
+                        "application/octet-stream"
                 }
+            );
+
+
+        if (governmentUploadError) {
+
+            console.error(
+                "Government ID upload error:",
+                governmentUploadError
+            );
+
+            alert(
+                "Government ID upload nahi ho saki.\n\n" +
+                governmentUploadError.message
+            );
+
+            return;
+        }
+
+
+        /*
+         * Selfie upload
+         */
+        const {
+            error:
+                selfieUploadError
+        } = await supabaseClient
+            .storage
+            .from("worker-verification")
+            .upload(
+                selfiePath,
+                selfieFile,
+                {
+                    upsert: false,
+                    contentType:
+                        selfieFile.type ||
+                        "application/octet-stream"
+                }
+            );
+
+
+        if (selfieUploadError) {
+
+            console.error(
+                "Selfie upload error:",
+                selfieUploadError
+            );
+
+            alert(
+                "Selfie upload nahi ho saki.\n\n" +
+                selfieUploadError.message
+            );
+
+            return;
+        }
+
+
+        /*
+         * Optional skill proof upload
+         */
+        if (skillFile) {
+
+            const {
+                error:
+                    skillUploadError
+            } = await supabaseClient
+                .storage
+                .from("worker-verification")
+                .upload(
+                    skillPath,
+                    skillFile,
+                    {
+                        upsert: false,
+                        contentType:
+                            skillFile.type ||
+                            "application/octet-stream"
+                    }
+                );
+
+
+            if (skillUploadError) {
+
+                console.error(
+                    "Skill proof upload error:",
+                    skillUploadError
+                );
+
+                alert(
+                    "Skill proof upload nahi ho saki.\n\n" +
+                    skillUploadError.message
+                );
+
+                return;
             }
-        );
+        }
 
-    if (oldProfile !== -1) {
 
-        workerProfiles[oldProfile] =
-            profileString;
+        /*
+         * Save verification information
+         * in worker_profiles
+         */
+        const {
+            error:
+                profileUpdateError
+        } = await supabaseClient
+            .from("worker_profiles")
+            .update({
+                verification_status:
+                    "pending",
 
-    } else {
+                verification_submitted:
+                    true,
 
-        workerProfiles.push(
+                verification_submitted_at:
+                    new Date().toISOString(),
+
+                government_id_file:
+                    governmentPath,
+
+                selfie_file:
+                    selfiePath,
+
+                skill_proof_file:
+                    skillPath
+            })
+            .eq(
+                "id",
+                user.id
+            );
+
+
+        if (profileUpdateError) {
+
+            console.error(
+                "Worker verification save error:",
+                profileUpdateError
+            );
+
+            alert(
+                "Verification details save nahi ho sake.\n\n" +
+                profileUpdateError.message
+            );
+
+            return;
+        }
+
+
+        /*
+         * Keep local profile data
+         * for current frontend screens.
+         */
+        profile.verificationStatus =
+            "pending";
+
+        profile.verificationSubmitted =
+            true;
+
+        profile.verificationSubmittedAt =
+            new Date().toISOString();
+
+        profile.verificationDocuments = {
+
+            governmentId:
+                governmentPath,
+
+            selfie:
+                selfiePath,
+
+            skillProof:
+                skillPath || ""
+        };
+
+
+        const profileString =
+            JSON.stringify(profile);
+
+
+        localStorage.setItem(
+            "findviaWorkerProfile",
             profileString
         );
+
+
+        /*
+         * Keep existing admin/local
+         * verification list compatible.
+         */
+        let workerProfiles =
+            JSON.parse(
+                localStorage.getItem(
+                    "findviaWorkerProfiles"
+                ) || "[]"
+            );
+
+
+        const oldProfile =
+            workerProfiles.findIndex(
+                function(item) {
+
+                    try {
+
+                        const worker =
+                            typeof item === "string"
+                                ? JSON.parse(item)
+                                : item;
+
+                        return (
+                            worker &&
+                            worker.name ===
+                                profile.name
+                        );
+
+                    } catch (error) {
+
+                        return false;
+                    }
+                }
+            );
+
+
+        if (oldProfile !== -1) {
+
+            workerProfiles[oldProfile] =
+                profileString;
+
+        } else {
+
+            workerProfiles.push(
+                profileString
+            );
+        }
+
+
+        localStorage.setItem(
+            "findviaWorkerProfiles",
+            JSON.stringify(
+                workerProfiles
+            )
+        );
+
+
+        alert(
+            "Verification request submitted successfully.\n\n" +
+            "Your documents have been uploaded and are now pending admin verification."
+        );
+
+
+        showProfile();
+
+
+    } catch (error) {
+
+        console.error(
+            "Worker verification error:",
+            error
+        );
+
+        alert(
+            "Verification submit nahi ho saki.\n\n" +
+            error.message
+        );
     }
-
-    localStorage.setItem(
-        "findviaWorkerProfiles",
-        JSON.stringify(workerProfiles)
-    );
-
-    alert(
-        "Verification request submitted successfully.\n\n" +
-        "Your documents are now pending admin verification."
-    );
-
-    showProfile();
 }
 
 
