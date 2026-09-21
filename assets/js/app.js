@@ -29,6 +29,253 @@ async function getFindViaCurrentUser() {
     return user || null;
 }
 
+
+
+
+let findViaAuthMode = "login";
+
+
+function openAuthScreen() {
+
+    document.getElementById("homeContent").style.display = "none";
+
+    document.getElementById("findWorkScreen")?.classList.remove("active");
+    document.getElementById("findWorkersScreen")?.classList.remove("active");
+    document.getElementById("searchScreen")?.classList.remove("active");
+    document.getElementById("profileScreen")?.classList.remove("active");
+    document.getElementById("workerProfileScreen")?.classList.remove("active");
+    document.getElementById("postJobScreen")?.classList.remove("active");
+    document.getElementById("myJobsScreen").style.display = "none";
+
+    document.getElementById("authScreen").style.display = "block";
+
+    updateFindViaAuthUI();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+function closeAuthScreen() {
+
+    document.getElementById("authScreen").style.display = "none";
+
+    showProfile();
+}
+
+
+function toggleFindViaAuthMode() {
+
+    if (findViaAuthMode === "login") {
+        findViaAuthMode = "signup";
+    } else {
+        findViaAuthMode = "login";
+    }
+
+    updateFindViaAuthUI();
+}
+
+
+function updateFindViaAuthUI() {
+
+    const title =
+        document.getElementById("authTitle");
+
+    const subtitle =
+        document.getElementById("authSubtitle");
+
+    const mainButton =
+        document.getElementById("authMainButton");
+
+    const toggleButton =
+        document.getElementById("authToggleButton");
+
+    if (!title || !subtitle || !mainButton || !toggleButton) {
+        return;
+    }
+
+
+    if (findViaAuthMode === "login") {
+
+        title.textContent =
+            "Login to FindVia";
+
+        subtitle.textContent =
+            "Login to continue using your FindVia account.";
+
+        mainButton.textContent =
+            "Login";
+
+        toggleButton.textContent =
+            "Create a new account";
+
+    } else {
+
+        title.textContent =
+            "Create FindVia Account";
+
+        subtitle.textContent =
+            "Create your account using email and password.";
+
+        mainButton.textContent =
+            "Sign Up";
+
+        toggleButton.textContent =
+            "Already have an account? Login";
+
+    }
+}
+
+
+async function handleFindViaAuth() {
+
+    const emailInput =
+        document.getElementById("authEmail");
+
+    const passwordInput =
+        document.getElementById("authPassword");
+
+    const status =
+        document.getElementById("authStatus");
+
+    if (!emailInput || !passwordInput || !status) {
+        return;
+    }
+
+
+    const email =
+        emailInput.value.trim();
+
+    const password =
+        passwordInput.value;
+
+
+    if (!email || !password) {
+
+        status.textContent =
+            "Please enter email and password.";
+
+        return;
+    }
+
+
+    status.textContent =
+        "Please wait...";
+
+
+    if (findViaAuthMode === "signup") {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password
+        });
+
+
+        if (error) {
+
+            console.error(
+                "FindVia signup error:",
+                error
+            );
+
+            status.textContent =
+                error.message;
+
+            return;
+        }
+
+
+        if (data.user && !data.session) {
+
+            status.textContent =
+                "Account created. Please check your email and confirm your account before login.";
+
+            return;
+        }
+
+
+        status.textContent =
+            "Account created successfully.";
+
+        findViaAuthMode = "login";
+
+        updateFindViaAuthUI();
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+
+
+    if (error) {
+
+        console.error(
+            "FindVia login error:",
+            error
+        );
+
+        status.textContent =
+            error.message;
+
+        return;
+    }
+
+
+    if (!data.user) {
+
+        status.textContent =
+            "Login failed. Please try again.";
+
+        return;
+    }
+
+
+    status.textContent =
+        "Login successful.";
+
+    passwordInput.value = "";
+
+    setTimeout(function() {
+
+        closeAuthScreen();
+
+    }, 500);
+}
+
+
+async function signOutFindVia() {
+
+    const {
+        error
+    } = await supabaseClient.auth.signOut();
+
+
+    if (error) {
+
+        console.error(
+            "FindVia logout error:",
+            error
+        );
+
+        return false;
+    }
+
+
+    return true;
+}
+
 let hindiMode =
     localStorage.getItem("findviaLanguage") === "hi";
 
