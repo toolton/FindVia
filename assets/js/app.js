@@ -3099,18 +3099,17 @@ async function saveWorkerProfile() {
             : "pending";
 
     const profileData = {
-        id: user.id,
-        Name: name,
-        Service: service,
-        Experience: experience,
-        Area: area,
-        Availability: availability,
-        Verification_status:
-            verificationStatus,
-        Updated_at:
-            new Date().toISOString()
-    };
-
+    id: user.id,
+    name: name,
+    service: service,
+    experience: experience,
+    area: area,
+    availability: availability,
+    verification_status:
+        verificationStatus,
+    updated_at:
+        new Date().toISOString()
+};
     const {
         error
     } = await supabaseClient
@@ -3400,8 +3399,8 @@ async function loadWorkerProfile() {
     } = await supabaseClient
         .from("worker_profiles")
         .select(
-            "id, Name, Service, Experience, Area, Availability, Verification_status"
-        )
+    "id, name, service, experience, area, availability, verification_status"
+)
         .eq("id", user.id)
         .maybeSingle();
 
@@ -3419,30 +3418,29 @@ async function loadWorkerProfile() {
     }
 
     document.getElementById("workerName").value =
-        profile.Name || "";
+    profile.name || "";
 
-    document.getElementById("workerService").value =
-        profile.Service || "";
+document.getElementById("workerService").value =
+    profile.service || "";
 
-    document.getElementById("workerExperience").value =
-        profile.Experience || "";
+document.getElementById("workerExperience").value =
+    profile.experience || "";
 
-    document.getElementById("workerArea").value =
-        profile.Area || "";
+document.getElementById("workerArea").value =
+    profile.area || "";
 
-    document.getElementById("workerAvailability").value =
-        profile.Availability || "";
-
+document.getElementById("workerAvailability").value =
+    profile.availability || "";
     localStorage.setItem(
         "findviaWorkerProfile",
         JSON.stringify({
-            name: profile.Name || "",
-            service: profile.Service || "",
-            experience: profile.Experience || "",
-            area: profile.Area || "",
-            availability: profile.Availability || "",
-            verificationStatus:
-                profile.Verification_status || "pending"
+          name: profile.name || "",
+service: profile.service || "",
+experience: profile.experience || "",
+area: profile.area || "",
+availability: profile.availability || "",
+verificationStatus:
+    profile.verification_status || "pending"  
         })
     );
 }
