@@ -7029,19 +7029,17 @@ function openWorkerRecharge() {
 }
 
 
-function submitWorkerRechargeRequest() {
 
-    const workerProfile =
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        );
+async function submitWorkerRechargeRequest() {
 
+    const user =
+        await getFindViaCurrentUser();
 
-    if (!workerProfile) {
+    if (!user) {
 
         alert(
-    t("Please set up your worker profile first.")
-);
+            "Please login to continue."
+        );
 
         return;
     }
@@ -7064,8 +7062,8 @@ function submitWorkerRechargeRequest() {
     ) {
 
         alert(
-    t("Recharge form could not be found.")
-);
+            t("Recharge form could not be found.")
+        );
 
         return;
     }
@@ -7087,8 +7085,8 @@ function submitWorkerRechargeRequest() {
     ) {
 
         alert(
-    t("Please enter a valid payment amount.")
-);
+            t("Please enter a valid payment amount.")
+        );
 
         return;
     }
@@ -7097,80 +7095,132 @@ function submitWorkerRechargeRequest() {
     if (!transactionId) {
 
         alert(
-    t("Please enter the payment transaction ID / UTR.")
-);
+            t(
+                "Please enter the payment transaction ID / UTR."
+            )
+        );
 
         return;
     }
 
 
-    const requests =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaRechargeRequests"
-            ) || "[]"
+    /*
+     * Confirm that the logged-in user
+     * has a worker profile in Supabase.
+     */
+
+    const {
+        data: workerProfile,
+        error: profileError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+
+    if (profileError) {
+
+        console.error(
+            "FindVia worker profile check error:",
+            profileError
         );
-
-
-    const alreadyPending =
-        requests.some(
-            function(request) {
-
-                return (
-                    request.workerProfile ===
-                        workerProfile &&
-                    request.transactionId ===
-                        transactionId &&
-                    request.status ===
-                        "pending"
-                );
-
-            }
-        );
-
-
-    if (alreadyPending) {
 
         alert(
-            "This payment is already pending verification."
+            "Worker profile check failed. Please try again."
         );
 
         return;
     }
 
 
-    const request = {
+    if (!workerProfile) {
 
-        id:
-            Date.now(),
+        alert(
+            t(
+                "Please set up your worker profile first."
+            )
+        );
 
-        workerProfile:
-            workerProfile,
-
-        amount:
-            amount,
-
-        transactionId:
-            transactionId,
-
-        status:
-            "pending",
-
-        createdAt:
-            new Date().toISOString()
-
-    };
+        return;
+    }
 
 
-    requests.push(
-        request
-    );
+    /*
+     * Prevent duplicate pending request
+     * for the same UTR / transaction ID.
+     */
+
+    const {
+        data: existingRequest,
+        error: existingRequestError
+    } = await supabaseClient
+        .from("recharge_requests")
+        .select("id")
+        .eq("worker_id", user.id)
+        .eq("utr_number", transactionId)
+        .eq("status", "pending")
+        .maybeSingle();
 
 
-    localStorage.setItem(
-        "findviaRechargeRequests",
-        JSON.stringify(requests)
-    );
+    if (existingRequestError) {
+
+        console.error(
+            "FindVia recharge duplicate check error:",
+            existingRequestError
+        );
+
+        alert(
+            "Could not verify your previous recharge requests. Please try again."
+        );
+
+        return;
+    }
+
+
+    if (existingRequest) {
+
+        alert(
+            t(
+                "This payment is already pending verification."
+            )
+        );
+
+        return;
+    }
+
+
+    /*
+     * Create the recharge request in Supabase.
+     */
+
+    const {
+        error: insertError
+    } = await supabaseClient
+        .from("recharge_requests")
+        .insert([
+            {
+                worker_id: user.id,
+                amount: amount,
+                utr_number: transactionId,
+                status: "pending"
+            }
+        ]);
+
+
+    if (insertError) {
+
+        console.error(
+            "FindVia recharge request insert error:",
+            insertError
+        );
+
+        alert(
+            "Recharge request submit nahi ho saki. Please try again."
+        );
+
+        return;
+    }
 
 
     amountInput.value = "";
@@ -7179,14 +7229,22 @@ function submitWorkerRechargeRequest() {
 
 
     alert(
-    t("Recharge request submitted successfully.") +
-    "\n\n" +
-    t("Your payment will be verified by FindVia admin.")
-);
+        t(
+            "Recharge request submitted successfully."
+        ) +
+        "\n\n" +
+        t(
+            "Your payment will be verified by FindVia admin."
+        )
+    );
 
 
     showProfile();
+
 }
+
+    
+    
 
 
 function openWorkerTransactionHistory() {
