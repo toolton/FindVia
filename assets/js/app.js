@@ -5617,7 +5617,8 @@ function hideWorkerVerificationScreen() {
     screen.classList.remove("active");
     screen.style.display = "none";
 }
-function openAdminRechargeRequests() {
+
+async function openAdminRechargeRequests() {
 
     hideAdminScreens();
 
@@ -5631,6 +5632,7 @@ function openAdminRechargeRequests() {
             "adminRechargeRequestsList"
         );
 
+
     if (
         !rechargeScreen ||
         !rechargeList
@@ -5643,17 +5645,124 @@ function openAdminRechargeRequests() {
         return;
     }
 
+
     rechargeScreen.style.display =
         "block";
 
-    const requests =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaRechargeRequests"
-            ) || "[]"
+
+    rechargeList.innerHTML = `
+        <div class="job-card">
+            <h3>Loading recharge requests...</h3>
+            <p class="job-description">
+                Please wait.
+            </p>
+        </div>
+    `;
+
+
+    /*
+     * Make sure the current user
+     * is an authorized FindVia admin.
+     */
+
+    const user =
+        await getFindViaCurrentUser();
+
+
+    if (!user) {
+
+        alert(
+            "Please login to continue."
         );
 
-    if (requests.length === 0) {
+        return;
+    }
+
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+
+    if (adminError) {
+
+        console.error(
+            "FindVia admin check error:",
+            adminError
+        );
+
+        rechargeList.innerHTML = `
+            <div class="job-card">
+                <h3>Unable to verify admin access</h3>
+                <p class="job-description">
+                    Please try again.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (!adminUser) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return;
+    }
+
+
+    /*
+     * Load recharge requests from Supabase.
+     */
+
+    const {
+        data: requests,
+        error: requestsError
+    } = await supabaseClient
+        .from("recharge_requests")
+        .select(
+            "id, worker_id, amount, utr_number, status, admin_note, created_at, reviewed_at"
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (requestsError) {
+
+        console.error(
+            "FindVia recharge requests load error:",
+            requestsError
+        );
+
+        rechargeList.innerHTML = `
+            <div class="job-card">
+                <h3>Could not load recharge requests</h3>
+                <p class="job-description">
+                    ${requestsError.message}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (
+        !requests ||
+        requests.length === 0
+    ) {
 
         rechargeList.innerHTML = `
             <div class="job-card">
@@ -5669,6 +5778,7 @@ function openAdminRechargeRequests() {
             </div>
         `;
 
+
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -5677,367 +5787,653 @@ function openAdminRechargeRequests() {
         return;
     }
 
-    rechargeList.innerHTML = "";
 
-    requests
-        .slice()
-        .sort(function(a, b) {
+    /*
+     * Load worker names separately because
+     * recharge_requests.worker_id points to auth.users.
+     */
 
-            return (
-                new Date(
-                    b.createdAt || 0
-                ) -
-                new Date(
-                    a.createdAt || 0
+    const workerIds = [
+        ...new Set(
+            requests
+                .map(
+                    function(request) {
+                        return request.worker_id;
+                    }
                 )
+                .filter(Boolean)
+        )
+    ];
+
+
+    let workerMap = {};
+
+
+    if (workerIds.length > 0) {
+
+        const {
+            data: workers,
+            error: workersError
+        } = await supabaseClient
+            .from("worker_profiles")
+            .select(
+                "id, name, service, area"
+            )
+            .in(
+                "id",
+                workerIds
             );
 
-        })
-        .forEach(
-            function(request) {
 
-                let workerName =
-                    "Worker";
+        if (workersError) {
 
-                try {
+            console.error(
+                "FindVia worker profile load error:",
+                workersError
+            );
 
-                    const worker =
-                        JSON.parse(
-                            request.workerProfile
-                        );
+        } else {
 
-                    workerName =
-                        worker.name ||
-                        "Worker";
+            (workers || [])
+                .forEach(
+                    function(worker) {
 
-                } catch (error) {
+                        workerMap[
+                            worker.id
+                        ] = worker;
 
-                    workerName =
-                        "Worker";
+                    }
+                );
 
-                }
+        }
+    }
 
-                const submittedDate =
-                    request.createdAt
-                        ? new Date(
-                            request.createdAt
-                        ).toLocaleString()
-                        : "Date unavailable";
 
-                const processedDate =
-                    request.processedAt
-                        ? new Date(
-                            request.processedAt
-                        ).toLocaleString()
-                        : "-";
+    rechargeList.innerHTML = "";
 
-                const amount =
-                    Number(
-                        request.amount
-                    ) || 0;
 
-                let statusText =
-                    "Pending";
+    requests.forEach(
+        function(request) {
 
-                if (
-                    request.status ===
-                    "approved"
-                ) {
+            const worker =
+                workerMap[
+                    request.worker_id
+                ] || null;
 
-                    statusText =
-                        "Approved";
 
-                } else if (
-                    request.status ===
-                    "rejected"
-                ) {
+            const workerName =
+                worker &&
+                worker.name
+                    ? worker.name
+                    : "Worker";
 
-                    statusText =
-                        "Rejected";
-                }
 
-                const card =
-                    document.createElement(
-                        "div"
+            const workerService =
+                worker &&
+                worker.service
+                    ? worker.service
+                    : "-";
+
+
+            const workerArea =
+                worker &&
+                worker.area
+                    ? worker.area
+                    : "-";
+
+
+            const amount =
+                Number(
+                    request.amount
+                ) || 0;
+
+
+            const submittedDate =
+                request.created_at
+                    ? new Date(
+                        request.created_at
+                    ).toLocaleString()
+                    : "Date unavailable";
+
+
+            const reviewedDate =
+                request.reviewed_at
+                    ? new Date(
+                        request.reviewed_at
+                    ).toLocaleString()
+                    : "-";
+
+
+            let statusText =
+                "Pending";
+
+
+            if (
+                request.status ===
+                "approved"
+            ) {
+
+                statusText =
+                    "Approved";
+
+            } else if (
+                request.status ===
+                "rejected"
+            ) {
+
+                statusText =
+                    "Rejected";
+            }
+
+
+            const safeWorkerName =
+                String(workerName)
+                    .replace(
+                        /[&<>"']/g,
+                        function(character) {
+
+                            return {
+                                "&": "&amp;",
+                                "<": "&lt;",
+                                ">": "&gt;",
+                                '"': "&quot;",
+                                "'": "&#039;"
+                            }[character];
+
+                        }
                     );
 
-                card.className =
-                    "job-card";
 
-                card.innerHTML = `
+            const safeService =
+                String(workerService)
+                    .replace(
+                        /[&<>"']/g,
+                        function(character) {
 
-                    <div class="job-card-top">
+                            return {
+                                "&": "&amp;",
+                                "<": "&lt;",
+                                ">": "&gt;",
+                                '"': "&quot;",
+                                "'": "&#039;"
+                            }[character];
 
-                        <div>
+                        }
+                    );
 
-                            <span class="job-category">
-                                RECHARGE REQUEST
-                            </span>
 
-                            <h3>
-                                ${workerName}
-                            </h3>
+            const safeArea =
+                String(workerArea)
+                    .replace(
+                        /[&<>"']/g,
+                        function(character) {
 
-                        </div>
+                            return {
+                                "&": "&amp;",
+                                "<": "&lt;",
+                                ">": "&gt;",
+                                '"': "&quot;",
+                                "'": "&#039;"
+                            }[character];
 
-                        <span class="job-status">
-                            ${statusText}
+                        }
+                    );
+
+
+            const safeUtr =
+                String(
+                    request.utr_number || "-"
+                )
+                    .replace(
+                        /[&<>"']/g,
+                        function(character) {
+
+                            return {
+                                "&": "&amp;",
+                                "<": "&lt;",
+                                ">": "&gt;",
+                                '"': "&quot;",
+                                "'": "&#039;"
+                            }[character];
+
+                        }
+                    );
+
+
+            const safeNote =
+                String(
+                    request.admin_note || ""
+                )
+                    .replace(
+                        /[&<>"']/g,
+                        function(character) {
+
+                            return {
+                                "&": "&amp;",
+                                "<": "&lt;",
+                                ">": "&gt;",
+                                '"': "&quot;",
+                                "'": "&#039;"
+                            }[character];
+
+                        }
+                    );
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "job-card";
+
+
+            card.innerHTML = `
+
+                <div class="job-card-top">
+
+                    <div>
+
+                        <span class="job-category">
+                            RECHARGE REQUEST
                         </span>
+
+                        <h3>
+                            ${safeWorkerName}
+                        </h3>
 
                     </div>
 
-                    <p class="job-description">
+                    <span class="job-status">
+                        ${statusText}
+                    </span>
 
-                        💰 Amount:
-                        <strong>
-                            ₹${amount}
-                        </strong>
+                </div>
 
-                        <br>
 
-                        🧾 Transaction ID / UTR:
-                        <strong>
-                            ${request.transactionId || "-"}
-                        </strong>
+                <p class="job-description">
 
-                        <br>
+                    🔧 Service:
+                    <strong>
+                        ${safeService}
+                    </strong>
 
-                        📅 Submitted:
-                        <strong>
-                            ${submittedDate}
-                        </strong>
+                    <br>
 
-                        <br>
+                    📍 Area:
+                    <strong>
+                        ${safeArea}
+                    </strong>
 
-                        🕒 Processed:
-                        <strong>
-                            ${processedDate}
-                        </strong>
+                    <br>
 
-                    </p>
+                    💰 Amount:
+                    <strong>
+                        ₹${amount}
+                    </strong>
 
-                    ${
-                        request.status ===
-                        "pending"
-                        ? `
-                            <button
-                                class="primary-btn"
-                                style="margin-top:12px;"
-                                onclick="approveWorkerRecharge(${request.id})"
-                            >
-                                Approve & Add Credits
-                            </button>
+                    <br>
 
-                            <button
-                                class="primary-btn"
-                                style="margin-top:8px;"
-                                onclick="rejectWorkerRecharge(${request.id})"
-                            >
-                                Reject Request
-                            </button>
-                        `
-                        : `
-                            <div
-                                style="
-                                    margin-top:12px;
-                                    padding:10px;
-                                    border-radius:10px;
-                                    background:#f5f5f5;
-                                    text-align:center;
-                                    font-weight:600;
-                                "
-                            >
-                                Request processed
-                            </div>
-                        `
-                    }
+                    🧾 Transaction ID / UTR:
+                    <strong>
+                        ${safeUtr}
+                    </strong>
 
-                `;
+                    <br>
 
-                rechargeList.appendChild(
-                    card
-                );
+                    📅 Submitted:
+                    <strong>
+                        ${submittedDate}
+                    </strong>
 
-            }
-        );
+                    <br>
+
+                    🕒 Reviewed:
+                    <strong>
+                        ${reviewedDate}
+                    </strong>
+
+                </p>
+
+
+                ${
+                    safeNote
+                    ? `
+                        <p
+                            class="job-description"
+                            style="
+                                margin-top:10px;
+                                padding:10px;
+                                background:#f5f5f5;
+                                border-radius:10px;
+                            "
+                        >
+                            📝 Admin Note:
+                            <strong>
+                                ${safeNote}
+                            </strong>
+                        </p>
+                    `
+                    : ""
+                }
+
+
+                ${
+                    request.status ===
+                    "pending"
+                    ? `
+
+                        <button
+                            class="primary-btn"
+                            style="margin-top:12px;"
+                            onclick="approveWorkerRecharge(${request.id})"
+                        >
+                            Approve & Add Credits
+                        </button>
+
+
+                        <button
+                            class="primary-btn"
+                            style="margin-top:8px;"
+                            onclick="rejectWorkerRecharge(${request.id})"
+                        >
+                            Reject Request
+                        </button>
+
+                    `
+                    : `
+
+                        <div
+                            style="
+                                margin-top:12px;
+                                padding:10px;
+                                border-radius:10px;
+                                background:#f5f5f5;
+                                text-align:center;
+                                font-weight:600;
+                            "
+                        >
+                            Request processed
+                        </div>
+
+                    `
+                }
+
+            `;
+
+
+            rechargeList.appendChild(
+                card
+            );
+
+        }
+    );
+
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
+
 }
 
-function approveWorkerRecharge(requestId) {
 
-    const requests =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaRechargeRequests"
-            ) || "[]"
+async function approveWorkerRecharge(requestId) {
+
+    const user =
+        await getFindViaCurrentUser();
+
+
+    if (!user) {
+
+        alert(
+            "Please login to continue."
         );
 
-    const requestIndex =
-        requests.findIndex(
-            function(request) {
-                return (
-                    Number(request.id) ===
-                    Number(requestId)
-                );
+        return;
+    }
+
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+
+    if (adminError) {
+
+        console.error(
+            "FindVia admin check error:",
+            adminError
+        );
+
+        alert(
+            "Could not verify admin access."
+        );
+
+        return;
+    }
+
+
+    if (!adminUser) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return;
+    }
+
+
+    const requestIdNumber =
+        Number(requestId);
+
+
+    if (
+        !Number.isInteger(
+            requestIdNumber
+        ) ||
+        requestIdNumber <= 0
+    ) {
+
+        alert(
+            "Invalid recharge request."
+        );
+
+        return;
+    }
+
+
+    const adminNote =
+        prompt(
+            "Optional admin note:",
+            "Recharge approved."
+        );
+
+
+    if (
+        adminNote === null
+    ) {
+
+        return;
+    }
+
+
+    const {
+        error: approveError
+    } = await supabaseClient
+        .rpc(
+            "approve_recharge_request",
+            {
+                p_request_id:
+                    requestIdNumber,
+
+                p_admin_note:
+                    adminNote.trim() ||
+                    null
             }
         );
 
-    if (requestIndex === -1) {
+
+    if (approveError) {
+
+        console.error(
+            "FindVia recharge approval error:",
+            approveError
+        );
+
 
         alert(
-            "Recharge request not found."
+            approveError.message ||
+            "Recharge approval failed."
         );
 
         return;
     }
 
-    const request =
-        requests[requestIndex];
-
-    if (
-        request.status !== "pending"
-    ) {
-
-        alert(
-            "This recharge request has already been processed."
-        );
-
-        return;
-    }
-
-    const amount =
-        Number(request.amount);
-
-    if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-    ) {
-
-        alert(
-            "Invalid recharge amount."
-        );
-
-        return;
-    }
-
-    const workerProfile =
-        request.workerProfile;
-
-    const currentBalance =
-        getWorkerCreditsForProfile(
-            workerProfile
-        );
-
-    const newBalance =
-        currentBalance + amount;
-
-    setWorkerCreditsForProfile(
-        workerProfile,
-        newBalance
-    );
-
-    addWorkerCreditTransaction(
-        workerProfile,
-        amount,
-        "recharge",
-        "Worker recharge approved. UTR: " +
-            request.transactionId
-    );
-
-    request.status =
-        "approved";
-
-    request.processedAt =
-        new Date().toISOString();
-
-    requests[requestIndex] =
-        request;
-
-    localStorage.setItem(
-        "findviaRechargeRequests",
-        JSON.stringify(requests)
-    );
 
     alert(
-        "Recharge approved successfully.\n\n" +
-        "Credits added: ₹" +
-        amount +
-        "\n" +
-        "New balance: ₹" +
-        newBalance
+        "Recharge approved successfully."
     );
 
-    openAdminRechargeRequests();
+
+    await openAdminRechargeRequests();
+
 }
+        
+
+async function rejectWorkerRecharge(requestId) {
+
+    const user =
+        await getFindViaCurrentUser();
 
 
-function rejectWorkerRecharge(requestId) {
-
-    const requests =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaRechargeRequests"
-            ) || "[]"
-        );
-
-    const requestIndex =
-        requests.findIndex(
-            function(request) {
-                return (
-                    Number(request.id) ===
-                    Number(requestId)
-                );
-            }
-        );
-
-    if (requestIndex === -1) {
+    if (!user) {
 
         alert(
-            "Recharge request not found."
+            "Please login to continue."
         );
 
         return;
     }
 
-    const request =
-        requests[requestIndex];
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+
+    if (adminError) {
+
+        console.error(
+            "FindVia admin check error:",
+            adminError
+        );
+
+        alert(
+            "Could not verify admin access."
+        );
+
+        return;
+    }
+
+
+    if (!adminUser) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return;
+    }
+
+
+    const requestIdNumber =
+        Number(requestId);
+
 
     if (
-        request.status !== "pending"
+        !Number.isInteger(
+            requestIdNumber
+        ) ||
+        requestIdNumber <= 0
     ) {
 
         alert(
-            "This recharge request has already been processed."
+            "Invalid recharge request."
         );
 
         return;
     }
 
-    request.status =
-        "rejected";
 
-    request.processedAt =
-        new Date().toISOString();
+    const adminNote =
+        prompt(
+            "Reason for rejection:",
+            "Payment could not be verified."
+        );
 
-    requests[requestIndex] =
-        request;
 
-    localStorage.setItem(
-        "findviaRechargeRequests",
-        JSON.stringify(requests)
-    );
+    if (
+        adminNote === null
+    ) {
+
+        return;
+    }
+
+
+    const {
+        error: rejectError
+    } = await supabaseClient
+        .rpc(
+            "reject_recharge_request",
+            {
+                p_request_id:
+                    requestIdNumber,
+
+                p_admin_note:
+                    adminNote.trim() ||
+                    null
+            }
+        );
+
+
+    if (rejectError) {
+
+        console.error(
+            "FindVia recharge rejection error:",
+            rejectError
+        );
+
+
+        alert(
+            rejectError.message ||
+            "Recharge rejection failed."
+        );
+
+        return;
+    }
+
 
     alert(
         "Recharge request rejected."
     );
 
-    openAdminRechargeRequests();
-}
 
+    await openAdminRechargeRequests();
+
+}
 
 
 function openAdminWorkers() {
