@@ -7639,49 +7639,22 @@ async function submitWorkerRechargeRequest() {
 
 }
 
-    
-    
-
-
-function openWorkerTransactionHistory() {
+  async function openWorkerTransactionHistory() {
 
     hideAdminScreens();
 
-    const workerProfile =
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        );
+    const user =
+        await getFindViaCurrentUser();
 
-    if (!workerProfile) {
+    if (!user) {
 
         alert(
-            "Worker profile nahi mila."
+            "Please login to continue."
         );
 
         return;
     }
 
-    const worker =
-        JSON.parse(workerProfile);
-
-    const transactions =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaCreditTransactions"
-            ) || "[]"
-        );
-
-    const workerTransactions =
-        transactions.filter(
-            function(transaction) {
-
-                return (
-                    transaction.workerProfile ===
-                    workerProfile
-                );
-
-            }
-        );
 
     const profileScreen =
         document.getElementById(
@@ -7698,6 +7671,7 @@ function openWorkerTransactionHistory() {
             "workerTransactionHistoryList"
         );
 
+
     if (
         !transactionScreen ||
         !transactionList
@@ -7710,19 +7684,92 @@ function openWorkerTransactionHistory() {
         return;
     }
 
+
     if (profileScreen) {
+
         profileScreen.classList.remove(
             "active"
         );
+
     }
+
 
     transactionScreen.style.display =
         "block";
 
+
+    transactionList.innerHTML = `
+        <div class="job-card">
+
+            <h3>
+                Loading transactions...
+            </h3>
+
+            <p class="job-description">
+                Please wait.
+            </p>
+
+        </div>
+    `;
+
+
+    /*
+     * Load worker credit transactions
+     * directly from Supabase.
+     */
+
+    const {
+        data: transactions,
+        error: transactionError
+    } = await supabaseClient
+        .from("credit_transactions")
+        .select(
+            "id, worker_id, amount, transaction_type, note, created_at"
+        )
+        .eq(
+            "worker_id",
+            user.id
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (transactionError) {
+
+        console.error(
+            "FindVia transaction history error:",
+            transactionError
+        );
+
+
+        transactionList.innerHTML = `
+            <div class="job-card">
+
+                <h3>
+                    Transaction history load nahi ho saki
+                </h3>
+
+                <p class="job-description">
+                    ${transactionError.message}
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
     transactionList.innerHTML = "";
 
+
     if (
-        workerTransactions.length === 0
+        !transactions ||
+        transactions.length === 0
     ) {
 
         transactionList.innerHTML = `
@@ -7739,6 +7786,7 @@ function openWorkerTransactionHistory() {
             </div>
         `;
 
+
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -7747,56 +7795,127 @@ function openWorkerTransactionHistory() {
         return;
     }
 
-    let runningBalance = 0;
 
-    workerTransactions
-        .slice()
-        .sort(function(a, b) {
+    /*
+     * Current worker_credits balance.
+     * This is the authoritative current balance.
+     */
 
-            return (
-                new Date(
-                    a.createdAt || 0
-                ) -
-                new Date(
-                    b.createdAt || 0
-                )
-            );
+    const {
+        data: creditWallet,
+        error: creditError
+    } = await supabaseClient
+        .from("worker_credits")
+        .select(
+            "balance"
+        )
+        .eq(
+            "worker_id",
+            user.id
+        )
+        .maybeSingle();
 
-        })
-        .forEach(function(transaction) {
+
+    if (creditError) {
+
+        console.error(
+            "FindVia worker credit balance error:",
+            creditError
+        );
+
+    }
+
+
+    const currentBalance =
+        creditWallet
+            ? Number(
+                creditWallet.balance
+            ) || 0
+            : 0;
+
+
+    transactions.forEach(
+        function(transaction) {
 
             const amount =
-                Number(transaction.amount) || 0;
+                Number(
+                    transaction.amount
+                ) || 0;
 
-            runningBalance += amount;
-
-            const balanceAfter =
-                transaction.balanceAfter !== undefined
-                    ? Number(
-                        transaction.balanceAfter
-                    )
-                    : runningBalance;
 
             const isDebit =
                 amount < 0;
 
+
             const displayAmount =
                 Math.abs(amount);
 
-            const date =
-                transaction.createdAt
+
+            const transactionDate =
+                transaction.created_at
                     ? new Date(
-                        transaction.createdAt
+                        transaction.created_at
                     ).toLocaleString()
                     : "Date unavailable";
+
+
+            const transactionType =
+                transaction.transaction_type ||
+                "Credit Transaction";
+
+
+            const note =
+                transaction.note ||
+                "";
+
+
+            const safeType =
+                String(
+                    transactionType
+                ).replace(
+                    /[&<>"']/g,
+                    function(character) {
+
+                        return {
+                            "&": "&amp;",
+                            "<": "&lt;",
+                            ">": "&gt;",
+                            '"': "&quot;",
+                            "'": "&#039;"
+                        }[character];
+
+                    }
+                );
+
+
+            const safeNote =
+                String(
+                    note
+                ).replace(
+                    /[&<>"']/g,
+                    function(character) {
+
+                        return {
+                            "&": "&amp;",
+                            "<": "&lt;",
+                            ">": "&gt;",
+                            '"': "&quot;",
+                            "'": "&#039;"
+                        }[character];
+
+                    }
+                );
+
 
             const card =
                 document.createElement(
                     "div"
                 );
 
+
             card.className =
                 "job-card";
+
 
             card.innerHTML = `
 
@@ -7805,7 +7924,7 @@ function openWorkerTransactionHistory() {
                     <div>
 
                         <span class="job-category">
-                            ${transaction.type || "Credit Transaction"}
+                            ${safeType}
                         </span>
 
                         <h3>
@@ -7818,76 +7937,67 @@ function openWorkerTransactionHistory() {
 
                     </div>
 
+
                     <span class="job-status">
+
                         ${
                             isDebit
                                 ? "Deducted"
                                 : "Added"
                         }
+
                     </span>
 
                 </div>
 
+
                 <p class="job-description">
 
-                    📅 ${date}
+                    📅 ${transactionDate}
 
                     <br>
 
-                    💳 Balance after:
+                    💳 Current Balance:
                     <strong>
-                        ₹${balanceAfter}
+                        ₹${currentBalance}
                     </strong>
 
-                    ${
-                        transaction.note
-                            ? `
-                                <br>
-                                📝 ${transaction.note}
-                            `
-                            : ""
-                    }
 
                     ${
-                        transaction.jobId
+                        safeNote
                             ? `
                                 <br>
-                                🔧 Job ID:
-                                <strong>
-                                    #${transaction.jobId}
-                                </strong>
 
-                                <br>
-                                💵 Job Amount:
-                                <strong>
-                                    ₹${transaction.jobAmount}
-                                </strong>
-
-                                <br>
-                                📊 Commission:
-                                <strong>
-                                    ${transaction.commissionPercent}%
-                                    (₹${transaction.commissionAmount})
-                                </strong>
+                                📝
+                                ${safeNote}
                             `
                             : ""
                     }
 
                 </p>
+
             `;
+
 
             transactionList.appendChild(
                 card
             );
 
-        });
+        }
+    );
+
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
-}
 
+  }  
+    
+
+
+
+    
 /* ================================
    FINDVIA COMMISSION SYSTEM
 ================================ */
