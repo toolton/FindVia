@@ -6529,6 +6529,8 @@ function openAdminLogin() {
 
 function hideAdminScreens() {
 
+    document.getElementById("adminCategoriesScreen").style.display = "none";
+
     const adminLoginScreen = document.getElementById(
         "adminLoginScreen"
     );
@@ -6622,6 +6624,245 @@ function hideWorkerVerificationScreen() {
 
     screen.classList.remove("active");
     screen.style.display = "none";
+}
+
+function openAdminCategories() {
+    hideAdminScreens();
+
+    document.getElementById("adminPanelScreen").style.display = "none";
+    document.getElementById("adminCategoriesScreen").style.display = "block";
+
+    loadAdminCategories();
+}
+
+async function loadAdminCategories() {
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("job_categories")
+        .select("*")
+        .order("created_at", {
+            ascending: true
+        });
+
+    if (error) {
+        console.error(
+            "Failed to load categories:",
+            error
+        );
+
+        alert(
+            "Failed to load job categories."
+        );
+
+        return;
+    }
+
+    const container =
+        document.getElementById(
+            "adminCategoriesList"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        container.innerHTML =
+            "<p>No categories found.</p>";
+
+        return;
+    }
+
+    container.innerHTML = data.map(category => `
+        <div class="job-card">
+
+            <div>
+                <strong>
+                    ${category.icon || "🛠️"}
+                    ${category.name}
+                </strong>
+
+                <div>
+                    ${category.name_hi || ""}
+                </div>
+
+                <small>
+                    Percentage:
+                    ${category.allow_percentage ? "Yes" : "No"}
+                    |
+                    Fixed:
+                    ${category.allow_fixed ? "Yes" : "No"}
+                </small>
+
+                <br>
+
+                <small>
+                    ${category.commission_percent || 0}%
+                    |
+                    ₹${category.commission_fixed_fee || 0}
+                </small>
+
+                <br>
+
+                <small>
+                    Status:
+                    ${category.active ? "Active" : "Disabled"}
+                </small>
+            </div>
+
+            <button
+                class="secondary-btn"
+                onclick="adminToggleCategory(
+                    '${category.id}',
+                    ${category.active}
+                )"
+            >
+                ${category.active ? "Disable" : "Enable"}
+            </button>
+
+        </div>
+    `).join("");
+}
+
+async function adminAddCategory() {
+    const name =
+        document.getElementById(
+            "adminCategoryName"
+        ).value.trim();
+
+    const nameHi =
+        document.getElementById(
+            "adminCategoryNameHi"
+        ).value.trim();
+
+    const icon =
+        document.getElementById(
+            "adminCategoryIcon"
+        ).value.trim();
+
+    const commissionPercent =
+        Number(
+            document.getElementById(
+                "adminCategoryCommissionPercent"
+            ).value || 0
+        );
+
+    const fixedFee =
+        Number(
+            document.getElementById(
+                "adminCategoryFixedFee"
+            ).value || 0
+        );
+
+    const allowPercentage =
+        document.getElementById(
+            "adminCategoryAllowPercentage"
+        ).checked;
+
+    const allowFixed =
+        document.getElementById(
+            "adminCategoryAllowFixed"
+        ).checked;
+
+    if (!name) {
+        alert("Category name is required.");
+        return;
+    }
+
+    if (
+        !allowPercentage &&
+        !allowFixed
+    ) {
+        alert(
+            "At least one commission mode must be allowed."
+        );
+
+        return;
+    }
+
+    const {
+        error
+    } = await supabaseClient
+        .from("job_categories")
+        .insert({
+            name: name,
+            name_hi: nameHi,
+            icon: icon,
+            active: true,
+            allow_percentage: allowPercentage,
+            allow_fixed: allowFixed,
+            commission_percent: commissionPercent,
+            commission_fixed_fee: fixedFee
+        });
+
+    if (error) {
+        console.error(
+            "Failed to add category:",
+            error
+        );
+
+        alert(
+            "Failed to add category."
+        );
+
+        return;
+    }
+
+    alert("Category added successfully.");
+
+    document.getElementById(
+        "adminCategoryName"
+    ).value = "";
+
+    document.getElementById(
+        "adminCategoryNameHi"
+    ).value = "";
+
+    document.getElementById(
+        "adminCategoryIcon"
+    ).value = "";
+
+    document.getElementById(
+        "adminCategoryCommissionPercent"
+    ).value = "";
+
+    document.getElementById(
+        "adminCategoryFixedFee"
+    ).value = "";
+
+    loadAdminCategories();
+}
+
+async function adminToggleCategory(
+    categoryId,
+    currentStatus
+) {
+    const {
+        error
+    } = await supabaseClient
+        .from("job_categories")
+        .update({
+            active: !currentStatus,
+            updated_at: new Date().toISOString()
+        })
+        .eq("id", categoryId);
+
+    if (error) {
+        console.error(
+            "Failed to update category:",
+            error
+        );
+
+        alert(
+            "Failed to update category."
+        );
+
+        return;
+    }
+
+    loadAdminCategories();
 }
 
 async function openAdminRechargeRequests() {
