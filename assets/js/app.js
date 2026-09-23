@@ -1253,12 +1253,98 @@ hideWorkerVerificationScreen();
 document.getElementById("myJobsScreen").style.display = "none";
 document.getElementById("jobResponsesScreen")?.classList.remove("active");
     document.getElementById("postJobScreen").classList.add("active");
-
+loadJobCategories();
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
 }
+async function loadJobCategories() {
+
+    const categorySelect =
+        document.getElementById("jobCategory");
+
+    if (!categorySelect) {
+        return;
+    }
+
+    categorySelect.innerHTML = `
+        <option value="">
+            Category load ho rahi hai...
+        </option>
+    `;
+
+    const {
+        data: categories,
+        error
+    } = await supabaseClient
+        .from("job_categories")
+        .select(
+            "id, name, name_hi, icon"
+        )
+        .eq("active", true)
+        .order("name", {
+            ascending: true
+        });
+
+    if (error) {
+
+        console.error(
+            "Job categories load error:",
+            error
+        );
+
+        categorySelect.innerHTML = `
+            <option value="">
+                Category load nahi ho saki
+            </option>
+        `;
+
+        return;
+    }
+
+    if (
+        !categories ||
+        categories.length === 0
+    ) {
+
+        categorySelect.innerHTML = `
+            <option value="">
+                Abhi koi category available nahi hai
+            </option>
+        `;
+
+        return;
+    }
+
+    categorySelect.innerHTML = `
+        <option value="">
+            Category चुनें
+        </option>
+    `;
+
+    categories.forEach(function(category) {
+
+        const option =
+            document.createElement("option");
+
+        option.value =
+            category.name;
+
+        option.textContent =
+            (
+                category.icon
+                ? category.icon + " "
+                : ""
+            ) +
+            category.name_hi +
+            " / " +
+            category.name;
+
+        categorySelect.appendChild(option);
+    });
+}
+
 
 async function saveJob() {
 
