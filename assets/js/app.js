@@ -1683,7 +1683,7 @@ function escapeHTML(value) {
     return div.innerHTML;
 }
 
-function respondToJob(jobId) {
+async function respondToJob(jobId) {
 
     const jobs = JSON.parse(
         localStorage.getItem("findviaJobs") || "[]"
@@ -1743,9 +1743,42 @@ if (!isJobAvailableForFindWork(job)) {
     }
 
     /*
-     * Final completion se pehle hi credit eligibility check.
+     * Final credit eligibility check.
+     *
+     * The authoritative balance comes from Supabase.
+     * The UI button check remains separate because
+     * hasSufficientCreditsForJob() is also used
+     * synchronously while rendering job cards.
      */
-    if (!hasSufficientCreditsForJob(job)) {
+
+    const currentCredits =
+        await getWorkerCreditsFromSupabase();
+
+
+    const maximumJobAmount =
+        Number(job.budget);
+
+
+    let estimatedCommission = 0;
+
+
+    if (
+        Number.isFinite(maximumJobAmount) &&
+        maximumJobAmount > 0
+    ) {
+
+        estimatedCommission =
+            calculateFindViaCommission(
+                maximumJobAmount
+            );
+
+    }
+
+
+    if (
+        currentCredits <
+        estimatedCommission
+    ) {
 
         alert(
             "❌ FindVia credits insufficient hain.\n\n" +
