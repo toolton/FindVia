@@ -4976,34 +4976,91 @@ async function selectWorkerForJob(
 }
 
 
+async function openPricingForJob(jobId) {
 
-function openPricingForJob(jobId) {
+    const user =
+        await getFindViaCurrentUser();
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
+    if (!user) {
+        alert("Please login to continue.");
+        return;
+    }
 
-    const job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
+
+    const {
+        data: job,
+        error
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            customer_id,
+            status,
+            match_status,
+            matched_worker_id,
+            customer_offer,
+            worker_offer,
+            price_status,
+            job_status
+        `)
+        .eq("id", jobId)
+        .eq("customer_id", user.id)
+        .maybeSingle();
+
+
+    if (error) {
+        console.error(
+            "FindVia pricing job error:",
+            error
+        );
+
+        alert(
+            "Job load nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
 
     if (!job) {
         alert("Job nahi mili.");
         return;
     }
 
-    if (job.matchStatus !== "matched") {
+
+    if (
+        job.match_status !== "matched" ||
+        !job.matched_worker_id
+    ) {
         alert("Pehle worker ko match karein.");
         return;
     }
 
+
+    if (job.job_status === "confirmed") {
+        alert("Ye job already confirmed hai.");
+        return;
+    }
+
+
+    if (job.price_status === "accepted") {
+        alert(
+            "Price agreement already complete hai. ✅"
+        );
+
+        return;
+    }
+
+
     showFindViaInputModal(
         "Private Price Offer",
         "Is job ke liye aap kitna price offer karna chahte hain?\n\nYe offer private rahega.",
-        function(price) {
+        async function(price) {
 
             const amount =
                 Number(price);
+
 
             if (
                 !Number.isFinite(amount) ||
@@ -5017,26 +5074,54 @@ function openPricingForJob(jobId) {
                 return;
             }
 
-            job.customerOffer =
-                amount;
 
-            job.priceStatus =
-                "customer_offer_sent";
+            const {
+                data: success,
+                error: priceError
+            } =
+                await supabaseClient.rpc(
+                    "update_findvia_job_price",
+                    {
+                        p_job_id: jobId,
+                        p_action: "customer_offer",
+                        p_amount: amount
+                    }
+                );
 
-            job.priceUpdatedAt =
-                new Date().toISOString();
 
-            localStorage.setItem(
-                "findviaJobs",
-                JSON.stringify(jobs)
-            );
+            if (priceError) {
+
+                console.error(
+                    "FindVia customer price error:",
+                    priceError
+                );
+
+                alert(
+                    "Price offer save nahi ho saka.\n\n" +
+                    priceError.message
+                );
+
+                return;
+            }
+
+
+            if (!success) {
+
+                alert(
+                    "Price offer save nahi ho saka."
+                );
+
+                return;
+            }
+
 
             alert(
                 "Private price offer save ho gaya. ✅\n\n" +
-                "Next step mein worker is offer ko dekhkar apna response dega."
+                "Ab worker is offer ko dekhkar response de sakta hai."
             );
 
-            showMyJobs();
+
+            await showMyJobs();
         },
         "number",
         "Enter amount",
@@ -5046,28 +5131,55 @@ function openPricingForJob(jobId) {
 }
 
 
-   function openWorkerOffer(jobId) {
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
+async function openWorkerOffer(jobId) {
 
-    const job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
+    const user =
+        await getFindViaCurrentUser();
 
-    if (!job) {
-        alert("Job nahi mili.");
+    if (!user) {
+        alert("Please login to continue.");
         return;
     }
 
-    const currentWorker =
-        localStorage.getItem("findviaWorkerProfile");
 
-    if (
-        !job.matchedWorker ||
-        job.matchedWorker !== currentWorker
-    ) {
+    const {
+        data: job,
+        error
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            title,
+            matched_worker_id,
+            customer_offer,
+            worker_offer,
+            price_status,
+            job_status,
+            match_status
+        `)
+        .eq("id", jobId)
+        .eq("matched_worker_id", user.id)
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "FindVia worker pricing error:",
+            error
+        );
+
+        alert(
+            "Job load nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+
+    if (!job) {
 
         alert(
             "Ye private offer aapke liye available nahi hai."
@@ -5076,7 +5188,18 @@ function openPricingForJob(jobId) {
         return;
     }
 
-    if (!job.customerOffer) {
+
+    if (job.job_status === "confirmed") {
+
+        alert(
+            "Ye job already confirmed hai."
+        );
+
+        return;
+    }
+
+
+    if (!job.customer_offer) {
 
         alert(
             "Customer ne abhi price offer nahi bheja hai."
@@ -5085,48 +5208,106 @@ function openPricingForJob(jobId) {
         return;
     }
 
+
+    if (job.price_status === "accepted") {
+
+        alert(
+            "Price offer already accepted hai. ✅"
+        );
+
+        return;
+    }
+
+
+    if (job.price_status === "rejected") {
+
+        alert(
+            "Ye offer reject kiya ja chuka hai."
+        );
+
+        return;
+    }
+
+
     showFindViaActionModal(
         "Customer ka Private Offer",
-        "₹" + job.customerOffer,
+        "₹" + job.customer_offer,
         [
+
             {
                 text: "Accept Offer",
                 icon: "✅",
-                action: function() {
 
-                    job.priceStatus = "accepted";
-                    job.workerOffer = job.customerOffer;
-                    job.priceUpdatedAt =
-                        new Date().toISOString();
+                action: async function() {
 
-                    localStorage.setItem(
-                        "findviaJobs",
-                        JSON.stringify(jobs)
-                    );
+                    const {
+                        data: success,
+                        error
+                    } =
+                        await supabaseClient.rpc(
+                            "update_findvia_job_price",
+                            {
+                                p_job_id: jobId,
+                                p_action: "worker_accept"
+                            }
+                        );
+
+
+                    if (error) {
+
+                        console.error(
+                            "FindVia worker accept error:",
+                            error
+                        );
+
+                        alert(
+                            "Offer accept nahi ho saka.\n\n" +
+                            error.message
+                        );
+
+                        return;
+                    }
+
+
+                    if (!success) {
+
+                        alert(
+                            "Offer accept nahi ho saka."
+                        );
+
+                        return;
+                    }
+
 
                     closeFindViaActionModal();
 
+
                     alert(
                         "Offer accepted! ✅\n\n" +
-                        "Agla step job confirmation hoga."
+                        "Ab customer job confirmation kar sakta hai."
                     );
 
-                    showMyJobs();
+
+                    await showMyJobs();
                 }
             },
+
 
             {
                 text: "Counter Offer",
                 icon: "💰",
+
                 action: function() {
 
                     showFindViaInputModal(
                         "Counter Offer",
                         "Apna counter offer enter karein:",
-                        function(counterPrice) {
+
+                        async function(counterPrice) {
 
                             const amount =
                                 Number(counterPrice);
+
 
                             if (
                                 !Number.isFinite(amount) ||
@@ -5140,83 +5321,193 @@ function openPricingForJob(jobId) {
                                 return;
                             }
 
-closeFindViaActionModal();
 
-                            
-                            job.workerOffer = amount;
-                            job.priceStatus =
-                                "counter_offer";
-                            job.priceUpdatedAt =
-                                new Date().toISOString();
+                            const {
+                                data: success,
+                                error
+                            } =
+                                await supabaseClient.rpc(
+                                    "update_findvia_job_price",
+                                    {
+                                        p_job_id: jobId,
+                                        p_action: "worker_counter",
+                                        p_amount: amount
+                                    }
+                                );
 
-                            localStorage.setItem(
-                                "findviaJobs",
-                                JSON.stringify(jobs)
-                            );
 
+                            if (error) {
+
+                                console.error(
+                                    "FindVia counter offer error:",
+                                    error
+                                );
+
+                                alert(
+                                    "Counter offer send nahi ho saka.\n\n" +
+                                    error.message
+                                );
+
+                                return;
+                            }
+
+
+                            if (!success) {
+
+                                alert(
+                                    "Counter offer send nahi ho saka."
+                                );
+
+                                return;
+                            }
+
+
+                            closeFindViaActionModal();
                             closeFindViaInputModal();
+
 
                             alert(
                                 "Counter offer send ho gaya. 💰\n\n" +
                                 "Customer ise review karega."
                             );
+
+
+                            await showMyJobs();
                         }
                     );
                 }
             },
 
+
             {
                 text: "Reject Offer",
                 icon: "❌",
-                action: function() {
 
-                    job.priceStatus = "rejected";
-                    job.priceUpdatedAt =
-                        new Date().toISOString();
+                action: async function() {
 
-                    localStorage.setItem(
-                        "findviaJobs",
-                        JSON.stringify(jobs)
-                    );
+                    const {
+                        data: success,
+                        error
+                    } =
+                        await supabaseClient.rpc(
+                            "update_findvia_job_price",
+                            {
+                                p_job_id: jobId,
+                                p_action: "worker_reject"
+                            }
+                        );
+
+
+                    if (error) {
+
+                        console.error(
+                            "FindVia worker reject error:",
+                            error
+                        );
+
+                        alert(
+                            "Offer reject nahi ho saka.\n\n" +
+                            error.message
+                        );
+
+                        return;
+                    }
+
+
+                    if (!success) {
+
+                        alert(
+                            "Offer reject nahi ho saka."
+                        );
+
+                        return;
+                    }
+
 
                     closeFindViaActionModal();
+
 
                     alert(
                         "Offer reject kar diya gaya."
                     );
+
+
+                    await showMyJobs();
                 }
             }
+
         ]
     );
-   }     
+}
+        
+
+    
+       
+async function openCustomerPriceResponse(jobId) {
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        alert("Please login to continue.");
+        return;
+    }
 
 
-function openCustomerPriceResponse(jobId) {
+    const {
+        data: job,
+        error
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            customer_id,
+            customer_offer,
+            worker_offer,
+            price_status,
+            job_status,
+            match_status,
+            matched_worker_id
+        `)
+        .eq("id", jobId)
+        .eq("customer_id", user.id)
+        .maybeSingle();
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
 
-    const job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
+    if (error) {
+
+        console.error(
+            "FindVia customer price response error:",
+            error
+        );
+
+        alert(
+            "Job load nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
 
     if (!job) {
         alert("Job nahi mili.");
         return;
     }
 
-    if (job.priceStatus === "accepted") {
+
+    if (job.price_status === "accepted") {
 
         alert(
-            "Worker ne aapka offer accept kar liya hai. ✅\n\n" +
+            "Worker ne price offer accept kar liya hai. ✅\n\n" +
             "Agla step job confirmation hoga."
         );
 
         return;
     }
 
-    if (job.priceStatus === "rejected") {
+
+    if (job.price_status === "rejected") {
 
         alert(
             "Worker ne aapka price offer reject kar diya hai. ❌"
@@ -5225,10 +5516,12 @@ function openCustomerPriceResponse(jobId) {
         return;
     }
 
-    if (job.priceStatus === "counter_offer") {
+
+    if (job.price_status === "counter_offer") {
 
         const workerOffer =
-            job.workerOffer;
+            job.worker_offer;
+
 
         showFindViaActionModal(
             "Worker Counter Offer",
@@ -5236,42 +5529,72 @@ function openCustomerPriceResponse(jobId) {
             workerOffer +
             "\n\n" +
             "Kya aap ye offer accept karna chahte hain?",
+
             [
                 {
                     text: "Accept Offer",
                     icon: "✅",
-                    action: function() {
 
-                        job.customerOffer =
-                            workerOffer;
+                    action: async function() {
 
-                        job.priceStatus =
-                            "accepted";
+                        const {
+                            data: success,
+                            error
+                        } =
+                            await supabaseClient.rpc(
+                                "update_findvia_job_price",
+                                {
+                                    p_job_id: jobId,
+                                    p_action: "customer_accept_counter"
+                                }
+                            );
 
-                        job.priceUpdatedAt =
-                            new Date().toISOString();
 
-                        localStorage.setItem(
-                            "findviaJobs",
-                            JSON.stringify(jobs)
-                        );
+                        if (error) {
+
+                            console.error(
+                                "FindVia counter acceptance error:",
+                                error
+                            );
+
+                            alert(
+                                "Counter offer accept nahi ho saka.\n\n" +
+                                error.message
+                            );
+
+                            return;
+                        }
+
+
+                        if (!success) {
+
+                            alert(
+                                "Counter offer accept nahi ho saka."
+                            );
+
+                            return;
+                        }
+
 
                         closeFindViaActionModal();
 
+
                         alert(
                             "Worker ka offer accept ho gaya! ✅\n\n" +
-                            "Agla step job confirmation hoga."
+                            "Ab job confirmation ki ja sakti hai."
                         );
 
-                        showMyJobs();
+
+                        await showMyJobs();
                     }
-                },
-                
+                }
             ]
         );
 
+
         return;
     }
+
 
     alert(
         "Abhi koi worker price response nahi hai."
@@ -5280,22 +5603,60 @@ function openCustomerPriceResponse(jobId) {
 
 
 
-function confirmJob(jobId) {
+async function confirmJob(jobId) {
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
+    const user =
+        await getFindViaCurrentUser();
 
-    const job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
+    if (!user) {
+        alert("Please login to continue.");
+        return;
+    }
+
+
+    const {
+        data: job,
+        error
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            customer_id,
+            customer_offer,
+            worker_offer,
+            price_status,
+            job_status,
+            match_status,
+            matched_worker_id
+        `)
+        .eq("id", jobId)
+        .eq("customer_id", user.id)
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "FindVia confirm job load error:",
+            error
+        );
+
+        alert(
+            "Job load nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
 
     if (!job) {
         alert("Job nahi mili.");
         return;
     }
 
-    if (job.priceStatus !== "accepted") {
+
+    if (job.price_status !== "accepted") {
 
         alert(
             "Pehle price agreement complete karein."
@@ -5304,7 +5665,8 @@ function confirmJob(jobId) {
         return;
     }
 
-    if (job.jobStatus === "confirmed") {
+
+    if (job.job_status === "confirmed") {
 
         alert(
             "Ye job already confirmed hai."
@@ -5313,45 +5675,82 @@ function confirmJob(jobId) {
         return;
     }
 
+
+    const agreedPrice =
+        job.customer_offer;
+
+
     showFindViaActionModal(
         "Confirm Job",
+
         "Job confirm karna hai?\n\n" +
         "Agreed Price: ₹" +
-        job.customerOffer +
+        agreedPrice +
         "\n\n" +
         "Confirm karne ke baad job officially active ho jayegi.",
+
         [
             {
                 text: "Confirm Job",
                 icon: "✅",
-                action: function() {
 
-                    job.jobStatus =
-                        "confirmed";
+                action: async function() {
 
-                    job.confirmedAt =
-                        new Date().toISOString();
+                    const {
+                        data: success,
+                        error
+                    } =
+                        await supabaseClient.rpc(
+                            "confirm_findvia_job",
+                            {
+                                p_job_id: jobId
+                            }
+                        );
 
-                    localStorage.setItem(
-                        "findviaJobs",
-                        JSON.stringify(jobs)
-                    );
+
+                    if (error) {
+
+                        console.error(
+                            "FindVia confirm job error:",
+                            error
+                        );
+
+                        alert(
+                            "Job confirm nahi ho saki.\n\n" +
+                            error.message
+                        );
+
+                        return;
+                    }
+
+
+                    if (!success) {
+
+                        alert(
+                            "Job confirm nahi ho saki."
+                        );
+
+                        return;
+                    }
+
 
                     closeFindViaActionModal();
+
 
                     alert(
                         "Job successfully confirmed! ✅\n\n" +
                         "Agreed Price: ₹" +
-                        job.customerOffer
+                        agreedPrice
                     );
 
-                    showMyJobs();
+
+                    await showMyJobs();
                 }
-            },
-          
+            }
         ]
     );
 }
+
 
 
 function generateCompletionOTP(jobId) {
