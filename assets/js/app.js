@@ -4034,23 +4034,29 @@ hideWorkerTransactionScreen();
 }
 
 
-function loadMyJobs() {
+async function loadMyJobs() {
 
-    const box = document.getElementById("myJobsResults");
+    const box =
+        document.getElementById("myJobsResults");
+
+    if (!box) {
+        return;
+    }
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Please login to continue.</h3>
+            </div>
+        `;
+        return;
+    }
 
     const currentRole =
         localStorage.getItem("findviaUserRole");
-
-    const currentWorkerProfile =
-        localStorage.getItem("findviaWorkerProfile") || "";
-
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
-
-    const responses = JSON.parse(
-        localStorage.getItem("findviaJobResponses") || "[]"
-    );
 
 
     /* =========================
@@ -4059,36 +4065,66 @@ function loadMyJobs() {
 
     if (currentRole === "worker") {
 
+        const {
+            data: matchedJobs,
+            error: workerJobsError
+        } = await supabaseClient
+            .from("jobs")
+            .select(`
+                id,
+                title,
+                category,
+                description,
+                area,
+                timing,
+                status,
+                match_status,
+                matched_worker_id,
+                customer_offer,
+                worker_offer,
+                price_status,
+                job_status
+            `)
+            .eq("matched_worker_id", user.id)
+            .eq("match_status", "matched")
+            .order("created_at", {
+                ascending: false
+            });
 
-const workerCredits = getWorkerCredits();
 
-const creditsBox = `
-    <div class="job-private-note" style="margin-bottom:15px;">
-        💰 <strong>FindVia Credits</strong>
-        <span style="float:right;">
-            ₹${workerCredits}
-        </span>
-    </div>
-`;
-        
-        const matchedJobs = jobs.filter(function(job) {
+        if (workerJobsError) {
 
-            return (
-                job.matchStatus === "matched" &&
-                job.matchedWorker === currentWorkerProfile
+            console.error(
+                "FindVia worker jobs error:",
+                workerJobsError
             );
 
-        });
+            box.innerHTML = `
+                <div class="empty-state">
+                    <h3>Jobs load nahi ho saki.</h3>
+                    <p>
+                        ${escapeHTML(workerJobsError.message)}
+                    </p>
+                </div>
+            `;
+
+            return;
+        }
 
 
         const title =
-            document.querySelector("#myJobsScreen .profile-header h2");
+            document.querySelector(
+                "#myJobsScreen .profile-header h2"
+            );
 
         const subtitle =
-            document.querySelector("#myJobsScreen .profile-header p");
+            document.querySelector(
+                "#myJobsScreen .profile-header p"
+            );
 
         if (title) {
-            title.textContent = "My Matched Jobs";
+            title.textContent =
+                "My Matched Jobs";
         }
 
         if (subtitle) {
@@ -4097,14 +4133,18 @@ const creditsBox = `
         }
 
 
-        if (matchedJobs.length === 0) {
+        if (!matchedJobs || matchedJobs.length === 0) {
 
             box.innerHTML = `
                 <div class="empty-state">
 
-                    <div style="font-size:40px;">📋</div>
+                    <div style="font-size:40px;">
+                        📋
+                    </div>
 
-                    <h3>No matched jobs yet</h3>
+                    <h3>
+                        No matched jobs yet
+                    </h3>
 
                     <p>
                         Jab koi customer aapko apni job ke liye select karega,
@@ -4120,31 +4160,43 @@ const creditsBox = `
 
         let html = "";
 
-
         matchedJobs.forEach(function(job) {
 
-            let statusText = "✅ Worker Matched";
+            let statusText =
+                "✅ Worker Matched";
 
-            if (job.jobStatus === "confirmed") {
+            if (job.job_status === "confirmed") {
 
-                statusText = "✅ Job Confirmed";
+                statusText =
+                    "✅ Job Confirmed";
 
-            } else if (job.priceStatus === "accepted") {
+            } else if (
+                job.price_status === "accepted"
+            ) {
 
-                statusText = "💰 Price Accepted";
+                statusText =
+                    "💰 Price Accepted";
 
-            } else if (job.priceStatus === "counter_offer") {
+            } else if (
+                job.price_status === "counter_offer"
+            ) {
 
-                statusText = "💰 Counter Offer Sent";
+                statusText =
+                    "💰 Counter Offer Sent";
 
-            } else if (job.priceStatus === "rejected") {
+            } else if (
+                job.price_status === "rejected"
+            ) {
 
-                statusText = "❌ Offer Rejected";
+                statusText =
+                    "❌ Offer Rejected";
 
-            } else if (job.customerOffer) {
+            } else if (
+                job.customer_offer
+            ) {
 
-                statusText = "💰 Price Offer Received";
-
+                statusText =
+                    "💰 Price Offer Received";
             }
 
 
@@ -4194,64 +4246,13 @@ const creditsBox = `
                         🔒 Ye job aapke saath privately matched hai.
                     </div>
 
-
-                    ${
-    job.customerOffer &&
-    job.priceStatus !== "accepted"
-    ? `
-        <button
-            class="primary-btn"
-            onclick="openWorkerOffer(${job.id})"
-        >
-            💰 View Private Offer
-        </button>
-    `
-    : ""
-}
-
-
-${
-    job.priceStatus === "accepted" &&
-    job.jobStatus === "confirmed"
-    ? `
-        <button
-            class="primary-btn"
-            onclick="verifyCompletionOTP(${job.id})"
-        >
-            🔐 Enter Completion OTP
-        </button>
-    `
-    : ""
-}
-
-
-${
-    job.jobStatus === "completed"
-    ? `
-        <div class="job-private-note">
-            ✅ Job Completed
-        </div>
-    `
-    : ""
-}
-
-                    ${
-                        job.priceStatus === "accepted"
-                        ? `
-                            <div class="job-private-note">
-                                ✅ Price agreement complete.
-                            </div>
-                        `
-                        : ""
-                    }
-
-
                 </div>
             `;
         });
 
 
-        box.innerHTML = creditsBox + html;
+        box.innerHTML =
+            html;
 
         return;
     }
@@ -4262,13 +4263,18 @@ ${
     ========================= */
 
     const title =
-        document.querySelector("#myJobsScreen .profile-header h2");
+        document.querySelector(
+            "#myJobsScreen .profile-header h2"
+        );
 
     const subtitle =
-        document.querySelector("#myJobsScreen .profile-header p");
+        document.querySelector(
+            "#myJobsScreen .profile-header p"
+        );
 
     if (title) {
-        title.textContent = "My Jobs";
+        title.textContent =
+            "My Jobs";
     }
 
     if (subtitle) {
@@ -4277,14 +4283,64 @@ ${
     }
 
 
-    if (jobs.length === 0) {
+    const {
+        data: jobs,
+        error: jobsError
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            title,
+            category,
+            description,
+            area,
+            timing,
+            status,
+            match_status,
+            matched_worker_id,
+            customer_offer,
+            worker_offer,
+            price_status,
+            job_status
+        `)
+        .eq("customer_id", user.id)
+        .order("created_at", {
+            ascending: false
+        });
+
+
+    if (jobsError) {
+
+        console.error(
+            "FindVia customer jobs error:",
+            jobsError
+        );
+
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Jobs load nahi ho saki.</h3>
+                <p>
+                    ${escapeHTML(jobsError.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (!jobs || jobs.length === 0) {
 
         box.innerHTML = `
             <div class="empty-state">
 
-                <div style="font-size:40px;">📋</div>
+                <div style="font-size:40px;">
+                    📋
+                </div>
 
-                <h3>No jobs posted yet</h3>
+                <h3>
+                    No jobs posted yet
+                </h3>
 
                 <p>
                     Jab aap koi work requirement post karenge,
@@ -4305,16 +4361,60 @@ ${
     }
 
 
+    const jobIds =
+        jobs.map(function(job) {
+            return job.id;
+        });
+
+
+    const {
+        data: responses,
+        error: responsesError
+    } = await supabaseClient
+        .from("job_responses")
+        .select("id, job_id, worker_id, status")
+        .in("job_id", jobIds);
+
+
+    if (responsesError) {
+
+        console.error(
+            "FindVia job response count error:",
+            responsesError
+        );
+
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Responses load nahi ho saki.</h3>
+                <p>
+                    ${escapeHTML(responsesError.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const responseList =
+        responses || [];
+
+
     let html = "";
 
 
     jobs.forEach(function(job) {
 
-        const responseCount = responses.filter(function(response) {
+        const responseCount =
+            responseList.filter(function(response) {
 
-            return response.jobId === job.id;
+                return response.job_id === job.id;
 
-        }).length;
+            }).length;
+
+
+        const isMatched =
+            job.match_status === "matched";
 
 
         html += `
@@ -4336,13 +4436,13 @@ ${
 
                     <span class="job-status">
                         ${
-                            job.matchStatus === "matched"
-                            ? "✅ Worker Matched"
-                            : (
-                                job.status === "open"
-                                ? "Open"
-                                : "Closed"
-                            )
+                            isMatched
+                                ? "✅ Worker Matched"
+                                : (
+                                    job.status === "open"
+                                        ? "Open"
+                                        : "Closed"
+                                )
                         }
                     </span>
 
@@ -4382,69 +4482,17 @@ ${
 
 
                 ${
-                    job.matchStatus === "matched"
+                    isMatched
                     ? `
-                        ${
-                            job.priceStatus === "counter_offer"
-                            ? `
-                                <button
-                                    class="primary-btn"
-                                    onclick="openCustomerPriceResponse(${job.id})"
-                                >
-                                    💰 View Worker Offer
-                                </button>
-                            `
-                            : job.priceStatus === "accepted"
-? `
-    ${
-        job.jobStatus === "completed"
-        ? `
-            <div class="job-private-note">
-                ✅ Job Completed
-            </div>
-        `
-        : job.jobStatus === "confirmed"
-        ? `
-            <button
-                class="primary-btn"
-                onclick="generateCompletionOTP(${job.id})"
-            >
-                🔐 Generate Completion OTP
-            </button>
-        `
-        : `
-            <button
-                class="primary-btn"
-                onclick="confirmJob(${job.id})"
-            >
-                ✅ Confirm Job
-            </button>
-        `
-    }
-`
-                            : job.priceStatus === "rejected"
-                            ? `
-                                <button
-                                    class="primary-btn"
-                                    onclick="openCustomerPriceResponse(${job.id})"
-                                >
-                                    ❌ View Price Status
-                                </button>
-                            `
-                            : `
-                                <button
-                                    class="primary-btn"
-                                    onclick="openPricingForJob(${job.id})"
-                                >
-                                    💰 Set Price
-                                </button>
-                            `
-                        }
+                        <div class="job-private-note">
+                            🔒 Worker successfully matched.
+                            Private pricing will be handled in the next step.
+                        </div>
                     `
                     : `
                         <button
                             class="primary-btn"
-                            onclick="showJobResponses(${job.id})"
+                            onclick="showJobResponses('${job.id}')"
                         >
                             View Responses
                         </button>
@@ -4456,9 +4504,9 @@ ${
     });
 
 
-    box.innerHTML = html;
+    box.innerHTML =
+        html;
 }
-
 
 
 function showJobResponses(jobId) {
@@ -4490,24 +4538,68 @@ hideWorkerRechargeScreen();
 
 
 
-function loadJobResponses(jobId) {
+async function loadJobResponses(jobId) {
 
-    const box = document.getElementById("jobResponsesResults");
+    const box =
+        document.getElementById("jobResponsesResults");
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
-
-    const responses = JSON.parse(
-        localStorage.getItem("findviaJobResponses") || "[]"
-    );
+    if (!box) {
+        return;
+    }
 
 
-    const job = jobs.find(function(item) {
+    const user =
+        await getFindViaCurrentUser();
 
-        return item.id === jobId;
+    if (!user) {
 
-    });
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Please login to continue.</h3>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const {
+        data: job,
+        error: jobError
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            title,
+            category,
+            area,
+            status,
+            match_status,
+            matched_worker_id
+        `)
+        .eq("id", jobId)
+        .eq("customer_id", user.id)
+        .maybeSingle();
+
+
+    if (jobError) {
+
+        console.error(
+            "FindVia job response job error:",
+            jobError
+        );
+
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Job load nahi ho saki.</h3>
+                <p>
+                    ${escapeHTML(jobError.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
 
 
     if (!job) {
@@ -4522,21 +4614,62 @@ function loadJobResponses(jobId) {
     }
 
 
-    const jobResponses = responses.filter(function(response) {
+    const {
+        data: jobResponses,
+        error: responsesError
+    } = await supabaseClient
+        .from("job_responses")
+        .select(`
+            id,
+            job_id,
+            worker_id,
+            status,
+            worker_offer,
+            price_status,
+            created_at
+        `)
+        .eq("job_id", jobId)
+        .order("created_at", {
+            ascending: true
+        });
 
-        return response.jobId === jobId;
 
-    });
+    if (responsesError) {
+
+        console.error(
+            "FindVia job responses error:",
+            responsesError
+        );
+
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Responses load nahi ho saki.</h3>
+                <p>
+                    ${escapeHTML(responsesError.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
 
 
-    if (jobResponses.length === 0) {
+    const responses =
+        jobResponses || [];
+
+
+    if (responses.length === 0) {
 
         box.innerHTML = `
             <div class="empty-state">
 
-                <div style="font-size:40px;">👥</div>
+                <div style="font-size:40px;">
+                    👥
+                </div>
 
-                <h3>No responses yet</h3>
+                <h3>
+                    No responses yet
+                </h3>
 
                 <p>
                     Jab koi worker is job mein interest dikhayega,
@@ -4550,8 +4683,54 @@ function loadJobResponses(jobId) {
     }
 
 
-    let html = `
+    const workerIds =
+        responses.map(function(response) {
+            return response.worker_id;
+        });
 
+
+    const {
+        data: workerProfiles,
+        error: profilesError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(`
+            id,
+            name,
+            service,
+            experience,
+            area,
+            availability,
+            verification_status
+        `)
+        .in("id", workerIds);
+
+
+    if (profilesError) {
+
+        console.error(
+            "FindVia worker profiles error:",
+            profilesError
+        );
+
+        box.innerHTML = `
+            <div class="empty-state">
+                <h3>Worker profiles load nahi ho saki.</h3>
+                <p>
+                    ${escapeHTML(profilesError.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const profileList =
+        workerProfiles || [];
+
+
+    let html = `
         <div class="job-response-job">
 
             <span class="job-category">
@@ -4567,24 +4746,17 @@ function loadJobResponses(jobId) {
             </p>
 
         </div>
-
     `;
 
 
-    jobResponses.forEach(function(response, index) {
+    responses.forEach(function(response, index) {
 
-        let workerProfile = null;
+        const workerProfile =
+            profileList.find(function(profile) {
 
-        try {
+                return profile.id === response.worker_id;
 
-            workerProfile =
-                JSON.parse(response.workerProfile);
-
-        } catch (error) {
-
-            workerProfile = null;
-
-        }
+            });
 
 
         if (!workerProfile) {
@@ -4616,15 +4788,16 @@ function loadJobResponses(jobId) {
 
 
         html += `
-
             <div class="worker-response-card">
 
                 <div class="worker-response-avatar">
+
                     ${escapeHTML(
                         workerProfile.name
                             ? workerProfile.name.charAt(0).toUpperCase()
                             : "W"
                     )}
+
                 </div>
 
 
@@ -4661,114 +4834,47 @@ function loadJobResponses(jobId) {
 
                 </div>
 
-<button
-    class="primary-btn"
-    onclick="selectWorkerForJob(${jobId}, ${index})"
->
-    Select Worker
-</button>
-                
+
+                ${
+                    response.status === "pending" &&
+                    job.match_status !== "matched"
+                    ? `
+                        <button
+                            class="primary-btn"
+                            onclick="selectWorkerForJob(
+                                '${job.id}',
+                                '${response.id}'
+                            )"
+                        >
+                            Select Worker
+                        </button>
+                    `
+                    : `
+                        <div class="job-private-note">
+                            ${
+                                response.status === "accepted"
+                                    ? "✅ Selected Worker"
+                                    : "Response: " +
+                                      escapeHTML(response.status)
+                            }
+                        </div>
+                    `
+                }
 
             </div>
-
         `;
     });
 
 
-    box.innerHTML = html;
+    box.innerHTML =
+        html;
 }
 
 
-function selectWorkerForJob(jobId, responseIndex) {
-
-    function continueWorkerSelection() {
-
-        let jobs = JSON.parse(
-            localStorage.getItem("findviaJobs") || "[]"
-        );
-
-        let responses = JSON.parse(
-            localStorage.getItem("findviaJobResponses") || "[]"
-        );
-
-        let job = jobs.find(function(item) {
-            return item.id === jobId;
-        });
-
-        if (!job) {
-            alert("Job nahi mili.");
-            return;
-        }
-
-        if (job.matchStatus === "matched") {
-
-            alert(
-                "Ye job already kisi worker ke saath matched hai."
-            );
-
-            return;
-        }
-
-        let jobResponses = responses.filter(function(response) {
-            return response.jobId === jobId;
-        });
-
-        let selectedResponse =
-            jobResponses[responseIndex];
-
-        if (!selectedResponse) {
-            alert("Worker response nahi mili.");
-            return;
-        }
-
-        job.matchedWorker =
-            selectedResponse.workerProfile;
-
-        job.matchStatus =
-            "matched";
-
-        job.matchedAt =
-            new Date().toISOString();
-
-        localStorage.setItem(
-            "findviaJobs",
-            JSON.stringify(jobs)
-        );
-
-        selectedResponse.status =
-            "matched";
-
-        let globalResponseIndex =
-            responses.findIndex(function(response) {
-
-                return (
-                    response.jobId === jobId &&
-                    response.createdAt ===
-                        selectedResponse.createdAt
-                );
-
-            });
-
-        if (globalResponseIndex !== -1) {
-
-            responses[
-                globalResponseIndex
-            ].status = "matched";
-
-        }
-
-        localStorage.setItem(
-            "findviaJobResponses",
-            JSON.stringify(responses)
-        );
-
-        alert(
-            "Worker successfully matched! ✅\n\n" +
-            "Ab next step mein private pricing process shuru hoga."
-        );
-
-        showMyJobs();
-    }
+async function selectWorkerForJob(
+    jobId,
+    responseId
+) {
 
     showFindViaActionModal(
         "Select Worker",
@@ -4778,17 +4884,97 @@ function selectWorkerForJob(jobId, responseIndex) {
             {
                 text: "Select Worker",
                 icon: "👷",
-                action: function() {
+
+                action: async function() {
 
                     closeFindViaActionModal();
 
-                    continueWorkerSelection();
+
+                    const user =
+                        await getFindViaCurrentUser();
+
+                    if (!user) {
+
+                        alert(
+                            "Please login to continue."
+                        );
+
+                        return;
+                    }
+
+
+                    const {
+                        data: selected,
+                        error
+                    } =
+                        await supabaseClient.rpc(
+                            "select_findvia_worker",
+                            {
+                                p_job_id: jobId,
+                                p_response_id: responseId
+                            }
+                        );
+
+
+                    if (error) {
+
+                        console.error(
+                            "FindVia worker selection error:",
+                            error
+                        );
+
+
+                        const errorMessage =
+                            String(
+                                error.message || ""
+                            );
+
+
+                        if (
+                            errorMessage.includes(
+                                "already matched"
+                            )
+                        ) {
+
+                            alert(
+                                "Ye job already kisi worker ke saath matched hai."
+                            );
+
+                        } else {
+
+                            alert(
+                                "Worker select nahi ho saka.\n\n" +
+                                errorMessage
+                            );
+                        }
+
+                        return;
+                    }
+
+
+                    if (!selected) {
+
+                        alert(
+                            "Worker select nahi ho saka. Please try again."
+                        );
+
+                        return;
+                    }
+
+
+                    alert(
+                        "Worker successfully matched! ✅\n\n" +
+                        "Ab next step mein private pricing process shuru hoga."
+                    );
+
+
+                    await showMyJobs();
                 }
-            },
-            
+            }
         ]
     );
 }
+
 
 
 function openPricingForJob(jobId) {
