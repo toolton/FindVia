@@ -12,6 +12,8 @@ const supabaseClient =
     );
 
 
+
+
 async function getFindViaCurrentUser() {
     const {
         data: { user },
