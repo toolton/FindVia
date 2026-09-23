@@ -1395,6 +1395,16 @@
                         SYSTEM
                     </span>
 
+
+                    <div class="job-card">
+    <span class="job-category">SYSTEM</span>
+    <h3>Job Categories</h3>
+
+    <button class="primary-btn" onclick="openAdminCategories()">
+        Manage Job Categories
+    </button>
+                    </div>
+
                     <h3>Platform Overview</h3>
 
                 </div>
@@ -1463,7 +1473,81 @@
 
 </section>
 
-    
+    <!-- Admin Categories Screen -->
+<section id="adminCategoriesScreen" style="display:none;">
+
+    <div class="screen-header">
+        <button class="back-btn" onclick="openAdminPanel()">
+            ← Back
+        </button>
+
+        <h2>Job Categories</h2>
+    </div>
+
+    <div id="adminCategoriesList"></div>
+
+    <div class="job-card">
+        <h3>Add Category</h3>
+
+        <input
+            type="text"
+            id="adminCategoryName"
+            placeholder="Category name"
+        >
+
+        <input
+            type="text"
+            id="adminCategoryNameHi"
+            placeholder="Category name in Hindi"
+        >
+
+        <input
+            type="text"
+            id="adminCategoryIcon"
+            placeholder="Icon"
+        >
+
+        <input
+            type="number"
+            id="adminCategoryCommissionPercent"
+            placeholder="Commission %"
+            min="0"
+        >
+
+        <input
+            type="number"
+            id="adminCategoryFixedFee"
+            placeholder="Fixed fee"
+            min="0"
+        >
+
+        <label>
+            <input
+                type="checkbox"
+                id="adminCategoryAllowPercentage"
+                checked
+            >
+            Allow Percentage
+        </label>
+
+        <label>
+            <input
+                type="checkbox"
+                id="adminCategoryAllowFixed"
+                checked
+            >
+            Allow Fixed Fee
+        </label>
+
+        <button
+            class="primary-btn"
+            onclick="adminAddCategory()"
+        >
+            Add Category
+        </button>
+    </div>
+
+</section>
     <!-- Admin Workers Screen -->
 
 <section id="adminWorkersScreen" style="display:none;">
@@ -1633,7 +1717,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/app.js?v=110"></script>
+<script src="assets/js/app.js?v=111"></script>
 
 <script>
 
