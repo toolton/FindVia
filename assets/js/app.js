@@ -5755,53 +5755,115 @@ async function confirmJob(jobId) {
 
 
 
-function generateCompletionOTP(jobId) {
+async function generateCompletionOTP(jobId) {
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
+    const {
+        data: {
+            user
+        },
+        error: userError
+    } = await supabaseClient.auth.getUser();
 
-    const job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
+    if (userError || !user) {
+        alert("Please login karein.");
+        return;
+    }
+
+    const {
+        data: job,
+        error: jobError
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            customer_id,
+            status,
+            job_status,
+            match_status,
+            matched_worker_id
+        `)
+        .eq("id", jobId)
+        .eq("customer_id", user.id)
+        .maybeSingle();
+
+    if (jobError) {
+
+        console.error(
+            "FindVia OTP job load error:",
+            jobError
+        );
+
+        alert(
+            "Job load nahi ho saki.\n\n" +
+            jobError.message
+        );
+
+        return;
+    }
 
     if (!job) {
         alert("Job nahi mili.");
         return;
     }
 
-    if (job.jobStatus !== "confirmed") {
+    if (
+        job.status !== "confirmed" ||
+        job.job_status !== "confirmed"
+    ) {
         alert(
-            "Pehle job confirm karein."
-        );
-        return;
-    }
-
-    if (job.completionOTP) {
-
-        alert(
-            "Completion OTP already generated hai.\n\n" +
-            "OTP: " + job.completionOTP
+            "Pehle job confirm honi chahiye."
         );
 
         return;
     }
 
-    const otp = Math.floor(
-        1000 + Math.random() * 9000
-    ).toString();
+    if (
+        job.match_status !== "matched" ||
+        !job.matched_worker_id
+    ) {
+        alert(
+            "Is job par worker matched nahi hai."
+        );
 
-    job.completionOTP = otp;
-    job.completionOTPGeneratedAt =
-        new Date().toISOString();
+        return;
+    }
 
-    localStorage.setItem(
-        "findviaJobs",
-        JSON.stringify(jobs)
+    const {
+        data: otp,
+        error: otpError
+    } = await supabaseClient.rpc(
+        "get_findvia_completion_otp",
+        {
+            p_job_id: jobId
+        }
     );
 
+    if (otpError) {
+
+        console.error(
+            "FindVia completion OTP load error:",
+            otpError
+        );
+
+        alert(
+            "Completion OTP nahi mil saka.\n\n" +
+            otpError.message
+        );
+
+        return;
+    }
+
+    if (!otp) {
+
+        alert(
+            "Worker ne abhi completion OTP request nahi kiya hai."
+        );
+
+        return;
+    }
+
     alert(
-        "Completion OTP generated! 🔐\n\n" +
+        "🔐 Completion OTP\n\n" +
         "OTP: " + otp +
         "\n\n" +
         "Kaam complete hone ke baad ye OTP worker ko batayein."
@@ -5810,188 +5872,179 @@ function generateCompletionOTP(jobId) {
 
 
 
-function verifyCompletionOTP(jobId) {
+async function verifyCompletionOTP(jobId) {
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
+    const {
+        data: {
+            user
+        },
+        error: userError
+    } = await supabaseClient.auth.getUser();
 
-    const job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
+    if (userError || !user) {
+        alert("Please login karein.");
+        return;
+    }
+
+    const {
+        data: job,
+        error: jobError
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            matched_worker_id,
+            status,
+            job_status
+        `)
+        .eq("id", jobId)
+        .maybeSingle();
+
+    if (jobError) {
+
+        console.error(
+            "FindVia completion job load error:",
+            jobError
+        );
+
+        alert(
+            "Job load nahi ho saki.\n\n" +
+            jobError.message
+        );
+
+        return;
+    }
 
     if (!job) {
         alert("Job nahi mili.");
         return;
     }
 
-    const currentWorker =
-        localStorage.getItem("findviaWorkerProfile");
+    if (job.matched_worker_id !== user.id) {
 
-    if (
-        !job.matchedWorker ||
-        job.matchedWorker !== currentWorker
-    ) {
         alert(
-            "Ye OTP aapke liye available nahi hai."
+            "Ye job aapke liye available nahi hai."
         );
+
         return;
     }
 
-    if (job.jobStatus !== "confirmed") {
+    if (
+        job.status !== "confirmed" ||
+        job.job_status !== "confirmed"
+    ) {
+
         alert(
             "Ye job abhi confirmed nahi hai."
         );
+
         return;
     }
 
-    if (!job.completionOTP) {
-        alert(
-            "Customer ne abhi Completion OTP generate nahi kiya hai."
+    /*
+     * Worker completion OTP request karta hai.
+     * OTP customer ke paas jayega / customer OTP
+     * screen se dekh sakta hai.
+     */
+    const {
+        data: requestResult,
+        error: requestError
+    } = await supabaseClient.rpc(
+        "request_findvia_completion_otp",
+        {
+            p_job_id: jobId
+        }
+    );
+
+    if (requestError) {
+
+        console.error(
+            "FindVia completion OTP request error:",
+            requestError
         );
+
+        alert(
+            "Completion OTP request nahi ho saki.\n\n" +
+            requestError.message
+        );
+
+        return;
+    }
+
+    if (!requestResult) {
+
+        alert(
+            "Completion OTP request nahi ho saki."
+        );
+
         return;
     }
 
     showFindViaInputModal(
         "Complete Job",
-        "Customer se mila 4-digit OTP enter karein:",
-        function(enteredOTP) {
+        "Customer se mila 6-digit OTP enter karein:",
+        async function(enteredOTP) {
 
-            if (
-                enteredOTP.trim() !==
-                job.completionOTP
-            ) {
+            const otp = String(
+                enteredOTP || ""
+            ).trim();
+
+            if (!/^\d{6}$/.test(otp)) {
 
                 alert(
-                    "❌ Incorrect OTP.\n\n" +
-                    "Job complete nahi hui."
+                    "❌ Valid 6-digit OTP enter karein."
                 );
 
                 return;
             }
 
-            const agreedAmount =
-                Number(job.customerOffer);
-
-            if (
-                !Number.isFinite(agreedAmount) ||
-                agreedAmount <= 0
-            ) {
-
-                alert(
-                    "Job price valid nahi hai.\n\n" +
-                    "Commission process nahi ho sakta."
-                );
-
-                return;
-            }
-
-            const commissionPercent =
-                getFindViaCommissionPercent();
-
-            const commissionAmount =
-                calculateFindViaCommission(
-                    agreedAmount
-                );
-
-            job.finalAmount =
-                agreedAmount;
-
-            job.commissionPercent =
-                commissionPercent;
-
-            job.commissionAmount =
-                commissionAmount;
-
-            job.commissionLockedAt =
-                new Date().toISOString();
-
-            const workerProfile =
-                localStorage.getItem(
-                    "findviaWorkerProfile"
-                );
-
-            if (!workerProfile) {
-
-                alert(
-                    "Worker profile nahi mila.\n\n" +
-                    "Job complete nahi hui."
-                );
-
-                return;
-            }
-
-            const currentCredits =
-                getWorkerCreditsForProfile(
-                    workerProfile
-                );
-
-            if (
-                currentCredits <
-                commissionAmount
-            ) {
-
-                alert(
-                    "❌ Insufficient FindVia credits.\n\n" +
-                    "Required: ₹" +
-                    commissionAmount +
-                    "\n" +
-                    "Available: ₹" +
-                    currentCredits +
-                    "\n\n" +
-                    "Please recharge credits before completing this job."
-                );
-
-                return;
-            }
-
-            const newBalance =
-                currentCredits -
-                commissionAmount;
-
-            setWorkerCreditsForProfile(
-                workerProfile,
-                newBalance
-            );
-
-            addWorkerCreditTransaction(
-                workerProfile,
-                -commissionAmount,
-                "debit",
-                "Commission deducted for Job #" +
-                    job.id,
+            const {
+                data: completed,
+                error: completeError
+            } = await supabaseClient.rpc(
+                "complete_findvia_job_with_otp",
                 {
-                    jobId: job.id,
-                    jobAmount:
-                        job.finalAmount,
-                    commissionPercent:
-                        job.commissionPercent,
-                    commissionAmount:
-                        job.commissionAmount
+                    p_job_id: jobId,
+                    p_otp: otp
                 }
             );
 
-            job.jobStatus =
-                "completed";
+            if (completeError) {
 
-            job.completedAt =
-                new Date().toISOString();
+                console.error(
+                    "FindVia job completion error:",
+                    completeError
+                );
 
-            localStorage.setItem(
-                "findviaJobs",
-                JSON.stringify(jobs)
-            );
+                alert(
+                    "❌ Job complete nahi hui.\n\n" +
+                    completeError.message
+                );
+
+                return;
+            }
+
+            if (!completed) {
+
+                alert(
+                    "Job complete nahi hui."
+                );
+
+                return;
+            }
 
             alert(
                 "Job successfully completed! ✅\n\n" +
-                "Completion OTP verified."
+                "Completion OTP verified.\n" +
+                "Commission securely process ho gaya."
             );
 
             showMyJobs();
         }
     );
 }
-
+    
+            
 
 
 function getWorkerCredits() {
