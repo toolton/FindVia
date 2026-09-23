@@ -3285,14 +3285,19 @@ async function saveWorkerProfile() {
 
     const availability =
         document.getElementById("workerAvailability").value;
+const commissionPreference =
+    document.getElementById("workerCommissionPreference")?.value ||
+    "percentage";
+    
 
     if (
-        !name ||
-        !service ||
-        !experience ||
-        !area ||
-        !availability
-    ) {
+    !name ||
+    !service ||
+    !experience ||
+    !area ||
+    !availability ||
+    !commissionPreference
+) {
         alert("Please complete all worker profile details.");
         return;
     }
@@ -3324,6 +3329,8 @@ async function saveWorkerProfile() {
     experience: experience,
     area: area,
     availability: availability,
+    commission_preference:
+        commissionPreference,
     verification_status:
         verificationStatus,
     updated_at:
@@ -3355,14 +3362,16 @@ async function saveWorkerProfile() {
     }
 
     const workerProfile = {
-        name: name,
-        service: service,
-        experience: experience,
-        area: area,
-        availability: availability,
-        verificationStatus:
-            verificationStatus
-    };
+    name: name,
+    service: service,
+    experience: experience,
+    area: area,
+    availability: availability,
+    commissionPreference:
+        commissionPreference,
+    verificationStatus:
+        verificationStatus
+};
 
     localStorage.setItem(
         "findviaWorkerProfile",
@@ -3885,7 +3894,7 @@ async function loadWorkerProfile() {
     } = await supabaseClient
         .from("worker_profiles")
         .select(
-    "id, name, service, experience, area, availability, verification_status"
+    "id, name, service, experience, area, availability, commission_preference, verification_status"
 )
         .eq("id", user.id)
         .maybeSingle();
@@ -3917,6 +3926,16 @@ document.getElementById("workerArea").value =
 
 document.getElementById("workerAvailability").value =
     profile.availability || "";
+
+const commissionPreferenceSelect =
+    document.getElementById("workerCommissionPreference");
+
+if (commissionPreferenceSelect) {
+    commissionPreferenceSelect.value =
+        profile.commission_preference || "percentage";
+}
+
+    
    localStorage.setItem(
     "findviaWorkerProfile",
     JSON.stringify({
@@ -3926,8 +3945,10 @@ document.getElementById("workerAvailability").value =
         experience: profile.experience || "",
         area: profile.area || "",
         availability: profile.availability || "",
-        verificationStatus:
-            profile.verification_status || "pending"
+commissionPreference:
+    profile.commission_preference || "percentage",
+verificationStatus:
+    profile.verification_status || "pending"
     })
 ); 
 }
