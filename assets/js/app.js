@@ -1344,7 +1344,99 @@ async function loadJobCategories() {
         categorySelect.appendChild(option);
     });
 }
+async function loadWorkerServices() {
 
+    const serviceSelect =
+        document.getElementById("workerService");
+
+    if (!serviceSelect) {
+        return;
+    }
+
+    serviceSelect.innerHTML = `
+        <option value="">
+            Service load ho rahi hai...
+        </option>
+    `;
+
+    const {
+        data: categories,
+        error
+    } = await supabaseClient
+        .from("job_categories")
+        .select(
+            "id, name, name_hi, icon"
+        )
+        .eq("active", true)
+        .order("name", {
+            ascending: true
+        });
+
+    if (error) {
+
+        console.error(
+            "Worker services load error:",
+            error
+        );
+
+        serviceSelect.innerHTML = `
+            <option value="">
+                Service load nahi ho saki
+            </option>
+        `;
+
+        return;
+    }
+
+    if (
+        !categories ||
+        categories.length === 0
+    ) {
+
+        serviceSelect.innerHTML = `
+            <option value="">
+                Abhi koi service available nahi hai
+            </option>
+        `;
+
+        return;
+    }
+
+    serviceSelect.innerHTML = `
+        <option value="">
+            Service चुनें
+        </option>
+    `;
+
+    categories.forEach(function(category) {
+
+        const option =
+            document.createElement("option");
+
+        option.value = category.name;
+
+        option.textContent =
+            `${category.icon || "🛠️"} ${category.name}`;
+
+        serviceSelect.appendChild(option);
+
+    });
+
+    const savedProfile =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaWorkerProfile"
+            ) || "null"
+        );
+
+    if (
+        savedProfile &&
+        savedProfile.service
+    ) {
+        serviceSelect.value =
+            savedProfile.service;
+    }
+}
 
 async function saveJob() {
 
@@ -3348,7 +3440,7 @@ document.getElementById("postJobScreen")?.classList.remove("active");
 document.getElementById("myJobsScreen")?.classList.remove("active");
 document.getElementById("jobResponsesScreen")?.classList.remove("active");
     loadWorkerProfile();
-
+loadWorkerServices();
     window.scrollTo({
         top: 0,
         behavior: "smooth"
