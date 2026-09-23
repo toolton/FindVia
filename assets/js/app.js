@@ -5338,7 +5338,49 @@ function adminAddWorkerCredits() {
     );
 }
 
+async function getWorkerCreditsFromSupabase() {
 
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        return 0;
+    }
+
+
+    const {
+        data: wallet,
+        error
+    } = await supabaseClient
+        .from("worker_credits")
+        .select("balance")
+        .eq(
+            "worker_id",
+            user.id
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "FindVia worker credit balance error:",
+            error
+        );
+
+        return 0;
+    }
+
+
+    if (!wallet) {
+        return 0;
+    }
+
+
+    return Number(
+        wallet.balance
+    ) || 0;
+}
 function getWorkerCreditsForProfile(workerProfile) {
 
     const wallets = JSON.parse(
