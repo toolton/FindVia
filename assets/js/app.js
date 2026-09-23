@@ -1838,7 +1838,6 @@ function escapeHTML(value) {
     return div.innerHTML;
 }
 
-
 async function respondToJob(jobId) {
 
     const {
@@ -1888,41 +1887,7 @@ async function respondToJob(jobId) {
     ) {
 
         alert(
-            "Ye job ab available nahi hai."
-        );
-
-        return;
-    }
-
-
-    const workerProfile =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaWorkerProfile"
-            ) || "null"
-        );
-
-
-    if (!workerProfile) {
-
-        alert(
-            "Worker profile nahi mila.\n\n" +
-            "Pehle worker profile setup karein."
-        );
-
-        return;
-    }
-
-
-    if (
-        workerProfile.verificationStatus !==
-        "approved"
-    ) {
-
-        alert(
-            "⏳ Worker verification required.\n\n" +
-            "Aapka worker profile abhi approved nahi hai.\n\n" +
-            "Admin approval ke baad hi aap jobs par response kar sakte hain."
+            t("Ye job ab available nahi hai.")
         );
 
         return;
@@ -1940,7 +1905,9 @@ async function respondToJob(jobId) {
     ) {
 
         alert(
-            "Is job par interest show karne ke liye Worker role select karein."
+            t(
+                "Is job par interest show karne ke liye Worker role select karein."
+            )
         );
 
         showProfile();
@@ -1950,79 +1917,105 @@ async function respondToJob(jobId) {
 
 
     /*
-     * IMPORTANT:
+     * Worker verification, duplicate response,
+     * authentication and worker identity are now
+     * checked securely by Supabase RPC.
      *
-     * Customer maximum budget is intentionally
-     * NOT fetched here.
-     *
-     * Budget lives in job_private_details
-     * and is not exposed to workers.
-     *
-     * Credit eligibility will be moved to
-     * the secure Supabase response flow.
+     * Customer maximum budget is NOT fetched here.
      */
 
 
-    const responses =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaJobResponses"
-            ) || "[]"
-        );
-
-
-    const workerProfileKey =
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        );
-
-
-    const alreadyResponded =
-        responses.some(
-            function(response) {
-
-                return (
-                    response.jobId === jobId &&
-                    response.workerProfile ===
-                        workerProfileKey
-                );
-
+    const {
+        data: responseId,
+        error: responseError
+    } =
+        await supabaseClient.rpc(
+            "create_findvia_job_response",
+            {
+                p_job_id: jobId
             }
         );
 
 
-    if (alreadyResponded) {
+    if (responseError) {
+
+        console.error(
+            "FindVia job response error:",
+            responseError
+        );
+
+
+        const errorMessage =
+            String(
+                responseError.message || ""
+            );
+
+
+        if (
+            errorMessage.includes(
+                "already responded"
+            )
+        ) {
+
+            alert(
+                t(
+                    "Aap already is job mein interest dikha chuke hain."
+                )
+            );
+
+            return;
+        }
+
+
+        if (
+            errorMessage.includes(
+                "Worker verification required"
+            )
+        ) {
+
+            alert(
+                "⏳ Worker verification required.\n\n" +
+                "Aapka worker profile abhi approved nahi hai.\n\n" +
+                "Admin approval ke baad hi aap jobs par response kar sakte hain."
+            );
+
+            return;
+        }
+
+
+        if (
+            errorMessage.includes(
+                "Job is not available"
+            )
+        ) {
+
+            alert(
+                t(
+                    "Ye job ab available nahi hai."
+                )
+            );
+
+            return;
+        }
+
 
         alert(
-            "Aap already is job mein interest dikha chuke hain."
+            "Interest send nahi ho saka.\n\n" +
+            errorMessage
         );
 
         return;
     }
 
 
-    responses.push({
+    if (!responseId) {
 
-        jobId: jobId,
+        alert(
+            "Interest send nahi ho saka. Please try again."
+        );
 
-        workerProfile:
-            workerProfileKey || "{}",
-
-        status:
-            "pending",
-
-        createdAt:
-            new Date().toISOString()
-
-    });
-
-
-    localStorage.setItem(
-        "findviaJobResponses",
-        JSON.stringify(
-            responses
-        )
-    );
+        return;
+    }
 
 
     alert(
@@ -2031,7 +2024,6 @@ async function respondToJob(jobId) {
         "Contact details abhi hidden rahengi."
     );
 }
-            
 
 
 function goHome() {
