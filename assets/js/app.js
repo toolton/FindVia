@@ -1258,95 +1258,199 @@ document.getElementById("jobResponsesScreen")?.classList.remove("active");
     });
 }
 
-function saveJob() {
+async function saveJob() {
 
-    const title = document.getElementById("jobTitle").value.trim();
-    const category = document.getElementById("jobCategory").value;
-    const description = document.getElementById("jobDescription").value.trim();
-    const area = document.getElementById("jobArea").value.trim();
-    const timing = document.getElementById("jobTiming").value;
-    const budget = document.getElementById("jobBudget").value.trim();
-    const photoInput = document.getElementById("jobPhoto");
+    const user =
+        await getFindViaCurrentUser();
 
-    if (!title || !category || !description || !area || !timing || !budget) {
-        alert("Please complete all required job details.");
+    if (!user) {
+        alert("Please login to continue.");
         return;
     }
 
-    if (Number(budget) <= 0) {
-        alert("Please enter a valid maximum budget.");
-        return;
-    }
+    const title =
+        document.getElementById("jobTitle").value.trim();
 
-    const createJob = function(photoData) {
+    const category =
+        document.getElementById("jobCategory").value;
 
-        const jobs = JSON.parse(
-            localStorage.getItem("findviaJobs") || "[]"
+    const description =
+        document.getElementById("jobDescription").value.trim();
+
+    const area =
+        document.getElementById("jobArea").value.trim();
+
+    const timing =
+        document.getElementById("jobTiming").value;
+
+    const budget =
+        document.getElementById("jobBudget").value.trim();
+
+    const photoInput =
+        document.getElementById("jobPhoto");
+
+
+    if (
+        !title ||
+        !category ||
+        !description ||
+        !area ||
+        !timing ||
+        !budget
+    ) {
+        alert(
+            "Please complete all required job details."
         );
 
-        const newJob = {
-            id: Date.now(),
-            title: title,
-            category: category,
-            description: description,
-            area: area,
-            timing: timing,
+        return;
+    }
 
-            // Private customer information
-            budget: Number(budget),
 
-            photo: photoData || "",
+    if (
+        !Number.isFinite(Number(budget)) ||
+        Number(budget) <= 0
+    ) {
+        alert(
+            "Please enter a valid maximum budget."
+        );
 
-            status: "open",
+        return;
+    }
 
-            createdAt: new Date().toISOString()
+
+    const createJob =
+        async function(photoData) {
+
+            const {
+                data: jobId,
+                error
+            } =
+                await supabaseClient.rpc(
+                    "create_findvia_job",
+                    {
+                        p_title: title,
+                        p_category: category,
+                        p_description: description,
+                        p_area: area,
+                        p_timing: timing,
+                        p_photo_data: photoData || "",
+                        p_max_budget: Number(budget)
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    "FindVia job creation error:",
+                    error
+                );
+
+                alert(
+                    "Job post nahi ho saki.\n\n" +
+                    error.message
+                );
+
+                return;
+            }
+
+
+            if (!jobId) {
+
+                alert(
+                    "Job post failed. Please try again."
+                );
+
+                return;
+            }
+
+
+            alert(
+                "Your job has been posted successfully."
+            );
+
+
+            document.getElementById(
+                "jobTitle"
+            ).value = "";
+
+            document.getElementById(
+                "jobCategory"
+            ).value = "";
+
+            document.getElementById(
+                "jobDescription"
+            ).value = "";
+
+            document.getElementById(
+                "jobArea"
+            ).value = "";
+
+            document.getElementById(
+                "jobTiming"
+            ).value = "";
+
+            document.getElementById(
+                "jobBudget"
+            ).value = "";
+
+            document.getElementById(
+                "jobPhoto"
+            ).value = "";
+
+
+            await showPostedJobs();
+
+            findWork();
         };
 
-        jobs.unshift(newJob);
 
-        localStorage.setItem(
-            "findviaJobs",
-            JSON.stringify(jobs)
-        );
+    if (
+        photoInput &&
+        photoInput.files &&
+        photoInput.files[0]
+    ) {
 
-        alert("Your job has been posted successfully.");
-
-        document.getElementById("jobTitle").value = "";
-        document.getElementById("jobCategory").value = "";
-        document.getElementById("jobDescription").value = "";
-        document.getElementById("jobArea").value = "";
-        document.getElementById("jobTiming").value = "";
-        document.getElementById("jobBudget").value = "";
-        document.getElementById("jobPhoto").value = "";
-
-        showPostedJobs();
-
-        findWork();
-    };
+        const file =
+            photoInput.files[0];
 
 
-    if (photoInput.files && photoInput.files[0]) {
+        if (
+            file.size >
+            2 * 1024 * 1024
+        ) {
 
-        const file = photoInput.files[0];
+            alert(
+                "Photo size 2MB se kam honi chahiye."
+            );
 
-        if (file.size > 2 * 1024 * 1024) {
-            alert("Photo size 2MB se kam honi chahiye.");
             return;
         }
 
-        const reader = new FileReader();
 
-        reader.onload = function(event) {
-            createJob(event.target.result);
-        };
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            async function(event) {
+
+                await createJob(
+                    event.target.result
+                );
+
+            };
+
 
         reader.readAsDataURL(file);
 
     } else {
 
-        createJob("");
+        await createJob("");
+
     }
 }
+
 
 function hasSufficientCreditsForJob(job) {
 
@@ -1483,7 +1587,8 @@ function isJobAvailableForFindWork(job) {
     return true;
 }
 
-function showPostedJobs(categoryFilter = "") {
+
+async function showPostedJobs(categoryFilter = "") {
 
     const resultsBox =
         document.getElementById("workResults");
@@ -1492,26 +1597,88 @@ function showPostedJobs(categoryFilter = "") {
         return;
     }
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
 
-    let availableJobs = jobs.filter(function(job) {
-        return isJobAvailableForFindWork(job);
-    });
+    resultsBox.innerHTML = `
+        <div class="empty-state">
+            <strong>Loading jobs...</strong>
+            <p>Please wait.</p>
+        </div>
+    `;
+
+
+    const {
+        data: jobs,
+        error
+    } =
+        await supabaseClient
+            .from("jobs")
+            .select(
+                "id, title, category, description, area, timing, photo_data, status, match_status, matched_worker_id, job_status, created_at"
+            )
+            .eq("status", "open")
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "FindVia jobs load error:",
+            error
+        );
+
+        resultsBox.innerHTML = `
+            <div class="empty-state">
+                <strong>Jobs load nahi ho sake.</strong>
+                <p>
+                    ${escapeHTML(error.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    let availableJobs =
+        (jobs || []).filter(
+            function(job) {
+
+                return (
+                    job.status === "open" &&
+                    !job.match_status &&
+                    job.job_status !== "confirmed" &&
+                    job.job_status !== "completed"
+                );
+
+            }
+        );
+
 
     if (categoryFilter) {
 
-        availableJobs = availableJobs.filter(function(job) {
+        availableJobs =
+            availableJobs.filter(
+                function(job) {
 
-                return (
-                    job.category === categoryFilter
-                );
+                    return (
+                        job.category ===
+                        categoryFilter
+                    );
 
-            });
+                }
+            );
+
     }
 
-    if (availableJobs.length === 0) {
+
+    if (
+        availableJobs.length === 0
+    ) {
 
         resultsBox.innerHTML = `
             <div class="empty-state">
@@ -1519,16 +1686,16 @@ function showPostedJobs(categoryFilter = "") {
                 <strong>
                     ${
                         categoryFilter
-                        ? "No jobs found in this category."
-                        : "No jobs available yet."
+                            ? "No jobs found in this category."
+                            : "No jobs available yet."
                     }
                 </strong>
 
                 <p>
                     ${
                         categoryFilter
-                        ? "Is category mein abhi koi available job nahi hai."
-                        : "New local work opportunities will appear here."
+                            ? "Is category mein abhi koi available job nahi hai."
+                            : "New local work opportunities will appear here."
                     }
                 </p>
 
@@ -1537,6 +1704,7 @@ function showPostedJobs(categoryFilter = "") {
 
         return;
     }
+
 
     let html = `
         <div class="worker-results-header">
@@ -1550,8 +1718,9 @@ function showPostedJobs(categoryFilter = "") {
                 <h3>
                     ${
                         categoryFilter
-                        ? escapeHTML(categoryFilter) + " Jobs"
-                        : "Available Jobs"
+                            ? escapeHTML(categoryFilter) +
+                              " Jobs"
+                            : "Available Jobs"
                     }
                 </h3>
 
@@ -1564,101 +1733,87 @@ function showPostedJobs(categoryFilter = "") {
         </div>
     `;
 
-    availableJobs.forEach(function(job) {
 
-        html += `
-            <div class="job-card">
+    availableJobs.forEach(
+        function(job) {
 
-                <div class="job-card-top">
+            html += `
+                <div class="job-card">
 
-                    <div>
+                    <div class="job-card-top">
 
-                        <span class="job-category">
-                            ${escapeHTML(job.category)}
+                        <div>
+
+                            <span class="job-category">
+                                ${escapeHTML(job.category)}
+                            </span>
+
+                            <h3>
+                                ${escapeHTML(job.title)}
+                            </h3>
+
+                        </div>
+
+                        <span class="job-status">
+                            Open
                         </span>
-
-                        <h3>
-                            ${escapeHTML(job.title)}
-                        </h3>
 
                     </div>
 
-                    <span class="job-status">
-                        Open
-                    </span>
+
+                    <p class="job-description">
+                        ${escapeHTML(job.description)}
+                    </p>
+
+
+                    <div class="job-meta">
+
+                        <span>
+                            📍 ${escapeHTML(job.area)}
+                        </span>
+
+                        <span>
+                            🕒 ${escapeHTML(job.timing)}
+                        </span>
+
+                    </div>
+
+
+                    ${
+                        job.photo_data
+                            ? `
+                                <img
+                                    class="job-photo"
+                                    src="${job.photo_data}"
+                                    alt="Job photo"
+                                >
+                            `
+                            : ""
+                    }
+
+
+                    <div class="job-private-note">
+                        🔒 Customer budget is hidden until the appropriate match stage.
+                    </div>
+
+
+                    <button
+                        class="primary-btn job-interest-btn"
+                        onclick="respondToJob('${job.id}')"
+                    >
+                        I'm Interested
+                    </button>
 
                 </div>
+            `;
 
-                <p class="job-description">
-                    ${escapeHTML(job.description)}
-                </p>
+        }
+    );
 
-                <div class="job-meta">
 
-                    <span>
-                        📍 ${escapeHTML(job.area)}
-                    </span>
-
-                    <span>
-                        🕒 ${escapeHTML(job.timing)}
-                    </span>
-
-                </div>
-
-                ${
-                    job.photo
-                    ? `
-                        <img
-                            class="job-photo"
-                            src="${job.photo}"
-                            alt="Job photo"
-                        >
-                    `
-                    : ""
-                }
-
-                <div class="job-private-note">
-                    🔒 Customer budget is hidden until the appropriate match stage.
-                </div>
-
-                ${
-                    job.matchedWorker &&
-                    job.matchedWorker ===
-                        localStorage.getItem(
-                            "findviaWorkerProfile"
-                        ) &&
-                    job.customerOffer
-                    ? `
-                        <button
-                            class="primary-btn"
-                            onclick="openWorkerOffer(${job.id})"
-                        >
-                            💰 View Private Offer
-                        </button>
-                    `
-                    : ""
-                }
-
-                ${
-                    hasSufficientCreditsForJob(job)
-                    ? `
-                        <button
-                            class="primary-btn job-interest-btn"
-                            onclick="respondToJob(${job.id})"
-                        >
-                            I'm Interested
-                        </button>
-                    `
-                    : ""
-                }
-
-            </div>
-        `;
-    });
-
-    resultsBox.innerHTML = html;
+    resultsBox.innerHTML =
+        html;
 }
-
 
 function selectWorkCategory(category) {
 
@@ -1683,127 +1838,158 @@ function escapeHTML(value) {
     return div.innerHTML;
 }
 
+
 async function respondToJob(jobId) {
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
+    const {
+        data: job,
+        error: jobError
+    } =
+        await supabaseClient
+            .from("jobs")
+            .select(
+                "id, title, category, description, area, timing, photo_data, status, match_status, matched_worker_id, job_status"
+            )
+            .eq("id", jobId)
+            .maybeSingle();
 
-    const job = jobs.find(function(item) {
-        return item.id === jobId;
-    });
 
-    if (!job) {
-        alert("Job nahi mili.");
+    if (jobError) {
+
+        console.error(
+            "FindVia job lookup error:",
+            jobError
+        );
+
+        alert(
+            "Job load nahi ho saki.\n\n" +
+            jobError.message
+        );
+
         return;
     }
 
-if (!isJobAvailableForFindWork(job)) {
 
-    alert(
-        "Ye job ab available nahi hai.\n\n" +
-        "Job expire, match ya complete ho chuki ho sakti hai."
-    );
+    if (!job) {
 
-    return;
-}
-    
-    const workerProfile = JSON.parse(
-        localStorage.getItem("findviaWorkerProfile") || "null"
-    );
+        alert(
+            "Job nahi mili."
+        );
+
+        return;
+    }
+
+
+    if (
+        job.status !== "open" ||
+        job.match_status === "matched" ||
+        job.job_status === "confirmed" ||
+        job.job_status === "completed"
+    ) {
+
+        alert(
+            "Ye job ab available nahi hai."
+        );
+
+        return;
+    }
+
+
+    const workerProfile =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaWorkerProfile"
+            ) || "null"
+        );
+
 
     if (!workerProfile) {
+
         alert(
             "Worker profile nahi mila.\n\n" +
             "Pehle worker profile setup karein."
         );
+
         return;
     }
 
-    if (workerProfile.verificationStatus !== "approved") {
+
+    if (
+        workerProfile.verificationStatus !==
+        "approved"
+    ) {
+
         alert(
             "⏳ Worker verification required.\n\n" +
             "Aapka worker profile abhi approved nahi hai.\n\n" +
             "Admin approval ke baad hi aap jobs par response kar sakte hain."
         );
+
         return;
     }
 
-    const currentRole =
-        localStorage.getItem("findviaUserRole");
 
-    if (currentRole !== "worker") {
+    const currentRole =
+        localStorage.getItem(
+            "findviaUserRole"
+        );
+
+
+    if (
+        currentRole !== "worker"
+    ) {
 
         alert(
             "Is job par interest show karne ke liye Worker role select karein."
         );
 
         showProfile();
+
         return;
     }
+
 
     /*
-     * Final credit eligibility check.
+     * IMPORTANT:
      *
-     * The authoritative balance comes from Supabase.
-     * The UI button check remains separate because
-     * hasSufficientCreditsForJob() is also used
-     * synchronously while rendering job cards.
+     * Customer maximum budget is intentionally
+     * NOT fetched here.
+     *
+     * Budget lives in job_private_details
+     * and is not exposed to workers.
+     *
+     * Credit eligibility will be moved to
+     * the secure Supabase response flow.
      */
 
-    const currentCredits =
-        await getWorkerCreditsFromSupabase();
 
-
-    const maximumJobAmount =
-        Number(job.budget);
-
-
-    let estimatedCommission = 0;
-
-
-    if (
-        Number.isFinite(maximumJobAmount) &&
-        maximumJobAmount > 0
-    ) {
-
-        estimatedCommission =
-            calculateFindViaCommission(
-                maximumJobAmount
-            );
-
-    }
-
-
-    if (
-        currentCredits <
-        estimatedCommission
-    ) {
-
-        alert(
-            "❌ FindVia credits insufficient hain.\n\n" +
-            "Is job par interest show karne se pehle credits recharge karein."
+    const responses =
+        JSON.parse(
+            localStorage.getItem(
+                "findviaJobResponses"
+            ) || "[]"
         );
 
-        return;
-    }
 
-    const responses = JSON.parse(
-        localStorage.getItem("findviaJobResponses") || "[]"
-    );
+    const workerProfileKey =
+        localStorage.getItem(
+            "findviaWorkerProfile"
+        );
+
 
     const alreadyResponded =
-        responses.some(function(response) {
+        responses.some(
+            function(response) {
 
-            return (
-                response.jobId === jobId &&
-                response.workerProfile ===
-                    localStorage.getItem(
-                        "findviaWorkerProfile"
-                    )
-            );
+                return (
+                    response.jobId === jobId &&
+                    response.workerProfile ===
+                        workerProfileKey
+                );
 
-        });
+            }
+        );
+
 
     if (alreadyResponded) {
 
@@ -1814,25 +2000,30 @@ if (!isJobAvailableForFindWork(job)) {
         return;
     }
 
+
     responses.push({
 
         jobId: jobId,
 
         workerProfile:
-            localStorage.getItem(
-                "findviaWorkerProfile"
-            ) || "{}",
+            workerProfileKey || "{}",
 
-        status: "pending",
+        status:
+            "pending",
 
         createdAt:
             new Date().toISOString()
+
     });
+
 
     localStorage.setItem(
         "findviaJobResponses",
-        JSON.stringify(responses)
+        JSON.stringify(
+            responses
+        )
     );
+
 
     alert(
         "Interest sent successfully.\n\n" +
@@ -1840,6 +2031,7 @@ if (!isJobAvailableForFindWork(job)) {
         "Contact details abhi hidden rahengi."
     );
 }
+            
 
 
 function goHome() {
