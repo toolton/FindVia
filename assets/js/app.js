@@ -3679,17 +3679,43 @@ function openWorkerVerification() {
         return;
     }
 
-    const savedProfile =
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        );
+    const user =
+    await getFindViaCurrentUser();
 
-    if (!savedProfile) {
-        alert(
-            "Please complete your Worker Profile first."
-        );
-        return;
-    }
+if (!user) {
+    openAuthScreen();
+    return;
+}
+
+const {
+    data: profile,
+    error: profileError
+} = await supabaseClient
+    .from("worker_profiles")
+    .select("id, name")
+    .eq("id", user.id)
+    .maybeSingle();
+
+if (profileError) {
+    console.error(
+        "Worker profile verification check error:",
+        profileError
+    );
+
+    alert(
+        "Worker profile load nahi ho saki.\n\n" +
+        profileError.message
+    );
+
+    return;
+}
+
+if (!profile) {
+    alert(
+        "Please complete your Worker Profile first."
+    );
+    return;
+}
 
     document
         .getElementById("profileScreen")
@@ -3719,19 +3745,38 @@ if (verificationScreen) {
 }
 
 
-function loadWorkerVerification() {
+async function loadWorkerVerification() {
 
-    const savedProfile =
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        );
+    const user =
+        await getFindViaCurrentUser();
 
-    if (!savedProfile) {
+    if (!user) {
         return;
     }
 
-    const profile =
-        JSON.parse(savedProfile);
+    const {
+        data: profile,
+        error
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "verification_status, verification_submitted"
+        )
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error(
+            "Worker verification load error:",
+            error
+        );
+
+        return;
+    }
+
+    if (!profile) {
+        return;
+    }
 
     const consent =
         document.getElementById(
@@ -3739,8 +3784,9 @@ function loadWorkerVerification() {
         );
 
     if (consent) {
+
         consent.checked =
-            profile.verificationSubmitted === true;
+            profile.verification_submitted === true;
     }
 }
 
@@ -3811,23 +3857,40 @@ async function submitWorkerVerification() {
     }
 
 
-    const savedProfile =
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        );
+    const {
+    data: profile,
+    error: profileError
+} = await supabaseClient
+    .from("worker_profiles")
+    .select(
+        "id, name, service, experience, area, availability, commission_preference, verification_status, verification_submitted"
+    )
+    .eq("id", user.id)
+    .maybeSingle();
 
+if (profileError) {
 
-    if (!savedProfile) {
-        alert(
-            "Worker profile not found."
-        );
-        return;
-    }
+    console.error(
+        "Worker profile load error:",
+        profileError
+    );
 
+    alert(
+        "Worker profile load nahi ho saki.\n\n" +
+        profileError.message
+    );
 
-    const profile =
-        JSON.parse(savedProfile);
+    return;
+}
 
+if (!profile) {
+
+    alert(
+        "Worker profile not found."
+    );
+
+    return;
+}
 
     const governmentFile =
         governmentId.files[0];
