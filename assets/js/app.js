@@ -4218,35 +4218,22 @@ if (commissionPreferenceSelect) {
 }
 
     
-   localStorage.setItem(
-    "findviaWorkerProfile",
-    JSON.stringify({
-        id: profile.id || user.id,
-        name: profile.name || "",
-        service: profile.service || "",
-        experience: profile.experience || "",
-        area: profile.area || "",
-        availability: profile.availability || "",
-commissionPreference:
-    profile.commission_preference || "percentage",
-verificationStatus:
-    profile.verification_status || "pending"
-    })
-); 
-}
+   
 
 /* ================================
    WORKER PROFILE SUMMARY
 ================================ */
-function loadWorkerProfileSummary() {
+async function loadWorkerProfileSummary() {
 
-    const summaryBox = document.getElementById("workerProfileSummary");
+    const summaryBox =
+        document.getElementById("workerProfileSummary");
 
     if (!summaryBox) {
         return;
     }
 
-    const currentRole = localStorage.getItem("findviaUserRole");
+    const currentRole =
+        localStorage.getItem("findviaUserRole");
 
     // Worker नहीं है तो profile summary hide रहे
     if (currentRole !== "worker") {
@@ -4254,63 +4241,108 @@ function loadWorkerProfileSummary() {
         return;
     }
 
-    const savedProfile = localStorage.getItem("findviaWorkerProfile");
+    const user =
+        await getFindViaCurrentUser();
 
-    if (!savedProfile) {
+    if (!user) {
         summaryBox.style.display = "none";
         return;
     }
 
-    const profile = JSON.parse(savedProfile);
+    const {
+        data: profile,
+        error
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, service, experience, area, availability, commission_preference, verification_status"
+        )
+        .eq("id", user.id)
+        .maybeSingle();
 
-    document.getElementById("summaryWorkerName").textContent =
+    if (error) {
+        console.error(
+            "Worker profile summary load error:",
+            error
+        );
+
+        summaryBox.style.display = "none";
+        return;
+    }
+
+    if (!profile) {
+        summaryBox.style.display = "none";
+        return;
+    }
+
+    document.getElementById(
+        "summaryWorkerName"
+    ).textContent =
         profile.name || "-";
 
-    document.getElementById("summaryWorkerService").textContent =
+    document.getElementById(
+        "summaryWorkerService"
+    ).textContent =
         profile.service || "-";
 
-    document.getElementById("summaryWorkerExperience").textContent =
+    document.getElementById(
+        "summaryWorkerExperience"
+    ).textContent =
         profile.experience || "-";
 
-    document.getElementById("summaryWorkerArea").textContent =
+    document.getElementById(
+        "summaryWorkerArea"
+    ).textContent =
         profile.area || "-";
 
-    document.getElementById("summaryWorkerAvailability").textContent =
+    document.getElementById(
+        "summaryWorkerAvailability"
+    ).textContent =
         profile.availability || "-";
 
-const verificationElement =
-    document.getElementById("summaryWorkerVerification");
+    const verificationElement =
+        document.getElementById(
+            "summaryWorkerVerification"
+        );
 
-if (verificationElement) {
+    if (verificationElement) {
 
-    if (profile.verificationStatus === "approved") {
+        if (
+            profile.verification_status ===
+            "approved"
+        ) {
 
-        verificationElement.textContent =
-            "🟢 Approved";
+            verificationElement.textContent =
+                "🟢 Approved";
 
-    } else if (profile.verificationStatus === "rejected") {
+        } else if (
+            profile.verification_status ===
+            "rejected"
+        ) {
 
-        verificationElement.textContent =
-            "🔴 Rejected";
+            verificationElement.textContent =
+                "🔴 Rejected";
 
-    } else {
+        } else {
 
-        verificationElement.textContent =
-            "🟡 Pending Verification";
+            verificationElement.textContent =
+                "🟡 Pending Verification";
+        }
     }
-}
+
     const verificationButton =
-    document.getElementById(
-        "workerVerificationButton"
-    );
+        document.getElementById(
+            "workerVerificationButton"
+        );
 
-if (verificationButton) {
+    if (verificationButton) {
 
-    verificationButton.style.display =
-        profile.verificationStatus === "approved"
-            ? "none"
-            : "block";
-}
+        verificationButton.style.display =
+            profile.verification_status ===
+            "approved"
+                ? "none"
+                : "block";
+    }
 
     summaryBox.style.display = "block";
 }
