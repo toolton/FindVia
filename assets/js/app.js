@@ -1726,43 +1726,7 @@ async function saveJob() {
 }
 
 
-function hasSufficientCreditsForJob(job) {
 
-    if (!job) {
-        return false;
-    }
-
-    const workerProfile =
-        localStorage.getItem("findviaWorkerProfile");
-
-    if (!workerProfile) {
-        return false;
-    }
-
-    const currentCredits =
-        getWorkerCreditsForProfile(workerProfile);
-
-    /*
-     * Customer ka maximum budget worker ko show nahi hota.
-     * Sirf internal eligibility check ke liye use ho raha hai.
-     */
-    const maximumJobAmount =
-        Number(job.budget);
-
-    if (
-        !Number.isFinite(maximumJobAmount) ||
-        maximumJobAmount <= 0
-    ) {
-        return true;
-    }
-
-    const estimatedCommission =
-        calculateFindViaCommission(
-            maximumJobAmount
-        );
-
-    return currentCredits >= estimatedCommission;
-}
 
 function isJobAvailableForFindWork(job) {
 
@@ -6478,153 +6442,9 @@ async function verifyCompletionOTP(jobId) {
             
 
 
-function getWorkerCredits() {
-
-    const currentWorker =
-        localStorage.getItem("findviaWorkerProfile");
-
-    if (!currentWorker) {
-        return 0;
-    }
-
-    const wallets = JSON.parse(
-        localStorage.getItem("findviaWorkerCredits") || "{}"
-    );
-
-    return Number(wallets[currentWorker] || 0);
-}
 
 
-function setWorkerCredits(amount) {
-
-    const currentWorker =
-        localStorage.getItem("findviaWorkerProfile");
-
-    if (!currentWorker) {
-        return false;
-    }
-
-    const wallets = JSON.parse(
-        localStorage.getItem("findviaWorkerCredits") || "{}"
-    );
-
-    wallets[currentWorker] = Math.max(
-        0,
-        Number(amount) || 0
-    );
-
-    localStorage.setItem(
-        "findviaWorkerCredits",
-        JSON.stringify(wallets)
-    );
-
-    return true;
-}
-
-
-
-function addWorkerCreditTransaction(
-    workerProfile,
-    amount,
-    type,
-    note,
-    jobDetails
-) {
-
-    const transactions = JSON.parse(
-        localStorage.getItem("findviaCreditTransactions") || "[]"
-    );
-
-    const balanceAfter =
-        getWorkerCreditsForProfile(workerProfile);
-
-    const transaction = {
-        id: Date.now(),
-        workerProfile: workerProfile,
-        amount: Number(amount),
-        type: type,
-        note: note || "",
-        balanceAfter: balanceAfter,
-        createdAt: new Date().toISOString()
-    };
-
-    if (jobDetails) {
-        transaction.jobId =
-            jobDetails.jobId || null;
-
-        transaction.jobAmount =
-            Number(jobDetails.jobAmount) || 0;
-
-        transaction.commissionPercent =
-            Number(jobDetails.commissionPercent) || 0;
-
-        transaction.commissionAmount =
-            Number(jobDetails.commissionAmount) || 0;
-    }
-
-    transactions.push(transaction);
-
-    localStorage.setItem(
-        "findviaCreditTransactions",
-        JSON.stringify(transactions)
-    );
-}
-
-function adminAddWorkerCredits() {
-
-    const workerProfile =
-        prompt(
-            "Worker ka exact profile data enter karein:"
-        );
-
-    if (!workerProfile) {
-        return;
-    }
-
-    const amountInput =
-        prompt(
-            "Kitne credits add karne hain?\n\n" +
-            "Amount ₹ mein enter karein:"
-        );
-
-    if (amountInput === null) {
-        return;
-    }
-
-    const amount = Number(amountInput);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-        alert(
-            "Please ek valid amount enter karein."
-        );
-        return;
-    }
-
-    const currentBalance =
-        getWorkerCreditsForProfile(workerProfile);
-
-    const newBalance =
-        currentBalance + amount;
-
-    setWorkerCreditsForProfile(
-        workerProfile,
-        newBalance
-    );
-
-    addWorkerCreditTransaction(
-        workerProfile,
-        amount,
-        "recharge",
-        "Admin verified credit addition"
-    );
-
-    alert(
-        "Credits successfully added! ✅\n\n" +
-        "Added: ₹" + amount +
-        "\n" +
-        "New Balance: ₹" + newBalance
-    );
-}
+    
 
 async function getWorkerCreditsFromSupabase() {
 
@@ -11803,46 +11623,38 @@ function runFindViaSystemTest() {
     );
 
 
-    // ==========================================
+        // ==========================================
     // 7. CREDIT SYSTEM
     // ==========================================
 
     test(
-        "Credit reader exists",
-        typeof getWorkerCreditsForProfile === "function"
+        "Supabase worker credit reader exists",
+        typeof getWorkerCreditsFromSupabase === "function"
     );
 
     test(
-        "Credit setter exists",
-        typeof setWorkerCreditsForProfile === "function"
-    );
-
-    test(
-        "Credit transaction function exists",
-        typeof addWorkerCreditTransaction === "function"
-    );
-
-    test(
-        "Job credit eligibility helper exists",
-        typeof hasSufficientCreditsForJob === "function"
-    );
-
-    test(
-        "Credit eligibility calculates commission",
-        sourceHas(
-            "hasSufficientCreditsForJob",
-            "calculateFindViaCommission"
+        "Secure credit deduction RPC is used",
+        verifySource.includes(
+            "complete_findvia_job_with_otp"
         )
     );
 
     test(
-        "Credit eligibility checks current credits",
-        sourceHas(
-            "hasSufficientCreditsForJob",
-            "currentCredits"
+        "Completion uses backend commission processing",
+        verifySource.includes(
+            "supabaseClient.rpc"
         )
     );
 
+    test(
+        "Legacy localStorage credit helper is removed",
+        typeof getWorkerCreditsForProfile === "undefined"
+    );
+
+    test(
+        "Legacy localStorage credit transaction helper is removed",
+        typeof addWorkerCreditTransaction === "undefined"
+    );
 
     // ==========================================
     // 8. TRANSACTION LEDGER
@@ -11951,9 +11763,9 @@ function runFindViaSystemTest() {
         typeof openAdminWorkers === "function"
     );
 
-    test(
+        test(
         "Admin credit function exists",
-        typeof adminAddWorkerCredits === "function"
+        typeof adminAddWorkerCreditsFromList === "function"
     );
 
     test(
