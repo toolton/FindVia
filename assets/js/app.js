@@ -6019,6 +6019,7 @@ async function openCustomerPriceResponse(jobId) {
 
 
 
+
 async function confirmJob(jobId) {
 
     const user =
@@ -6043,7 +6044,10 @@ async function confirmJob(jobId) {
             price_status,
             job_status,
             match_status,
-            matched_worker_id
+            matched_worker_id,
+            commission_percent,
+            commission_amount,
+            commission_locked_at
         `)
         .eq("id", jobId)
         .eq("customer_id", user.id)
@@ -6093,7 +6097,22 @@ async function confirmJob(jobId) {
 
 
     const agreedPrice =
-        job.customer_offer;
+        Number(
+            job.customer_offer
+        ) || 0;
+
+
+    const currentCommission =
+        await loadFindViaCommissionPercent();
+
+
+    const estimatedCommission =
+        Math.round(
+            (
+                agreedPrice *
+                currentCommission
+            ) / 100
+        );
 
 
     showFindViaActionModal(
@@ -6103,7 +6122,13 @@ async function confirmJob(jobId) {
         "Agreed Price: ₹" +
         agreedPrice +
         "\n\n" +
-        "Confirm karne ke baad job officially active ho jayegi.",
+        "Current Commission: " +
+        currentCommission +
+        "%\n" +
+        "Estimated Commission: ₹" +
+        estimatedCommission +
+        "\n\n" +
+        "Commission job confirm hote hi lock ho jayega.",
 
         [
             {
@@ -6150,13 +6175,68 @@ async function confirmJob(jobId) {
                     }
 
 
+                    const {
+                        data: confirmedJob,
+                        error: commissionError
+                    } =
+                        await supabaseClient
+                            .from("jobs")
+                            .select(
+                                `
+                                commission_percent,
+                                commission_amount,
+                                commission_locked_at
+                                `
+                            )
+                            .eq("id", jobId)
+                            .maybeSingle();
+
+
+                    if (commissionError) {
+
+                        console.error(
+                            "FindVia commission load error:",
+                            commissionError
+                        );
+
+                        closeFindViaActionModal();
+
+                        alert(
+                            "Job confirm ho gayi hai, " +
+                            "lekin commission details load nahi ho saki.\n\n" +
+                            commissionError.message
+                        );
+
+                        await showMyJobs();
+
+                        return;
+                    }
+
+
                     closeFindViaActionModal();
+
+
+                    const lockedPercent =
+                        Number(
+                            confirmedJob?.commission_percent
+                        ) || 0;
+
+                    const lockedAmount =
+                        Number(
+                            confirmedJob?.commission_amount
+                        ) || 0;
 
 
                     alert(
                         "Job successfully confirmed! ✅\n\n" +
                         "Agreed Price: ₹" +
-                        agreedPrice
+                        agreedPrice +
+                        "\n\n" +
+                        "Commission Locked: " +
+                        lockedPercent +
+                        "%\n" +
+                        "Commission Amount: ₹" +
+                        lockedAmount
                     );
 
 
