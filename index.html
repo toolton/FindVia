@@ -1310,7 +1310,42 @@
             </button>
 
         </div>
+        <div class="job-card">
 
+            <div class="job-card-top">
+
+                <div>
+
+                    <span class="job-category">
+                        JOBS
+                    </span>
+
+                    <h3>
+                        🧾 Job Management
+                    </h3>
+
+                </div>
+
+                <span class="job-status">
+                    Admin
+                </span>
+
+            </div>
+
+            <p class="job-description">
+                Jobs, agreed price aur job-wise commission
+                ko manage karein.
+            </p>
+
+            <button
+                class="primary-btn"
+                style="margin-top:12px;"
+                onclick="openAdminJobs()"
+            >
+                🧾 Manage Jobs
+            </button>
+
+        </div>
 
         <div class="job-card">
 
@@ -1585,6 +1620,53 @@
     </div>
 
 </section>
+
+<!-- Admin Jobs Screen -->
+
+<section
+    id="adminJobsScreen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        onclick="openAdminPanel()"
+    >
+        Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            🧾
+        </div>
+
+        <div>
+
+            <h2>
+                Manage Jobs
+            </h2>
+
+            <p>
+                FindVia jobs aur commission management
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="results-box"
+        id="adminJobsList"
+    >
+
+        <!-- Admin jobs will appear here -->
+
+    </div>
+
+</section>
+    
     <!-- Admin Workers Screen -->
 
 <section id="adminWorkersScreen" style="display:none;">
