@@ -3667,7 +3667,7 @@ const commissionPreference =
     showProfile();
 }
 
-function openWorkerVerification() {
+async function openWorkerVerification() {
 
     const currentRole =
         localStorage.getItem("findviaUserRole");
