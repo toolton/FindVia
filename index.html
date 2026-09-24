@@ -1011,13 +1011,7 @@
     style="display:none;"
 >
 
-    <button
-        class="back-btn"
-        type="button"
-        onclick="closeAuthScreen()"
-    >
-        Back
-    </button>
+    
 
     <div class="profile-header">
 
@@ -1038,7 +1032,10 @@
     </div>
 
 
-    <div class="profile-form-box">
+    <div
+    class="profile-form-box"
+    id="authFormBox"
+>
 
         <label for="authEmail">
             Email
@@ -1097,7 +1094,50 @@
             class="form-note"
             style="margin-top:15px;"
         ></p>
+<div
+    id="loggedInAuthBox"
+    style="
+        display:none;
+        text-align:center;
+        padding:20px 10px;
+    "
+>
+    <div
+        style="
+            font-size:42px;
+            margin-bottom:10px;
+        "
+    >
+        👤
+    </div>
 
+    <h3
+        style="
+            margin:0 0 8px 0;
+        "
+    >
+        You are logged in
+    </h3>
+
+    <p
+        id="loggedInEmail"
+        style="
+            margin:0 0 18px 0;
+            color:#666;
+            word-break:break-word;
+        "
+    ></p>
+
+    <button
+        type="button"
+        class="primary-btn"
+        onclick="signOutFindVia()"
+    >
+        Logout
+    </button>
+</div>
+
+        
     </div>
 
 </section>
@@ -1712,20 +1752,16 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/app.js?v=112"></script>
+<script src="assets/js/app.js?v=113"></script>
 
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+    applyFindViaLanguage();
+    applyFindViaStaticLanguage();
+    initializeFindViaIconSystem();
+    initializeFindViaAuth();
+});
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        applyFindViaLanguage();
-        applyFindViaStaticLanguage();
-        initializeFindViaIconSystem();
-
-    }
-);
 </script>
     
 </body>
