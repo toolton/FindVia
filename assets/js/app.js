@@ -6489,35 +6489,7 @@ async function getWorkerCreditsFromSupabase() {
         wallet.balance
     ) || 0;
 }
-function getWorkerCreditsForProfile(workerProfile) {
 
-    const wallets = JSON.parse(
-        localStorage.getItem("findviaWorkerCredits") || "{}"
-    );
-
-    return Number(
-        wallets[workerProfile] || 0
-    );
-}
-
-
-function setWorkerCreditsForProfile(
-    workerProfile,
-    amount
-) {
-
-    const wallets = JSON.parse(
-        localStorage.getItem("findviaWorkerCredits") || "{}"
-    );
-
-    wallets[workerProfile] =
-        Math.max(0, Number(amount) || 0);
-
-    localStorage.setItem(
-        "findviaWorkerCredits",
-        JSON.stringify(wallets)
-    );
-}
 
 async function isFindViaAdmin() {
 
@@ -11392,13 +11364,7 @@ function runFindViaSystemTest() {
     )
 ); 
 
-    test(
-        "Insufficient credits block worker response",
-        sourceHas(
-            "respondToJob",
-            "hasSufficientCreditsForJob"
-        )
-    );
+    
 
 
     // ==========================================
@@ -11514,22 +11480,7 @@ function runFindViaSystemTest() {
         )
     );
 
-    test(
-        "Commission deduction is performed",
-        verifySource.includes(
-            "addWorkerCreditTransaction"
-        )
-    );
-
-    test(
-        "Completed status is saved",
-        verifySource.includes(
-            "completed"
-        ) &&
-        verifySource.includes(
-            "localStorage.setItem"
-        )
-    );
+    
 
 
     // ==========================================
@@ -11656,92 +11607,7 @@ function runFindViaSystemTest() {
         typeof addWorkerCreditTransaction === "undefined"
     );
 
-    // ==========================================
-    // 8. TRANSACTION LEDGER
-    // ==========================================
-
-    const transactionSource =
-        getSource(
-            "addWorkerCreditTransaction"
-        );
-
-    test(
-        "Transaction saves worker profile",
-        transactionSource.includes(
-            "workerProfile"
-        )
-    );
-
-    test(
-        "Transaction saves amount",
-        transactionSource.includes(
-            "amount"
-        )
-    );
-
-    test(
-        "Transaction saves type",
-        transactionSource.includes(
-            "type"
-        )
-    );
-
-    test(
-        "Transaction saves balanceAfter",
-        transactionSource.includes(
-            "balanceAfter"
-        )
-    );
-
-    test(
-        "Transaction saves createdAt",
-        transactionSource.includes(
-            "createdAt"
-        )
-    );
-
-    test(
-        "Transaction supports job details",
-        transactionSource.includes(
-            "jobDetails"
-        )
-    );
-
-    test(
-        "Transaction supports commission details",
-        transactionSource.includes(
-            "commissionAmount"
-        )
-    );
-
-    const transactions =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaCreditTransactions"
-            ) || "[]"
-        );
-
-    test(
-        "Transaction storage is readable",
-        Array.isArray(transactions)
-    );
-
-    if (transactions.length > 0) {
-
-        const latestTransaction =
-            transactions[
-                transactions.length - 1
-            ];
-
-        test(
-            "Latest transaction has balanceAfter",
-            Object.prototype.hasOwnProperty.call(
-                latestTransaction,
-                "balanceAfter"
-            )
-        );
-
-    }
+    
 
 
     // ==========================================
@@ -12178,18 +12044,18 @@ test(
 );
 
 test(
-    "Admin recharge approval adds credits",
+    "Admin recharge approval uses secure RPC",
     sourceHas(
         "approveWorkerRecharge",
-        "setWorkerCreditsForProfile"
+        "approve_recharge_request"
     )
 );
 
 test(
-    "Approved recharge creates transaction",
+    "Admin recharge rejection uses secure RPC",
     sourceHas(
-        "approveWorkerRecharge",
-        "addWorkerCreditTransaction"
+        "rejectWorkerRecharge",
+        "reject_recharge_request"
     )
 );
 
