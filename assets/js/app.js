@@ -2567,7 +2567,9 @@ function requestWorker(workerName) {
 }
 
 
-function searchWork() {
+async function searchWork() {
+
+        await loadFindViaCommissionPercent();
 
     const searchInput =
         document.getElementById("workSearch");
@@ -6681,7 +6683,7 @@ function setWorkerCreditsForProfile(
 }
 
 
-function openAdminPanel() {
+async function openAdminPanel() {
 
 hideAdminScreens();
     
@@ -6720,7 +6722,7 @@ const commissionDisplay =
     document.getElementById("adminCommissionCurrent");
 
 const currentCommission =
-    getFindViaCommissionPercent();
+    await loadFindViaCommissionPercent();
 
 if (commissionInput) {
     commissionInput.value = currentCommission;
@@ -10415,19 +10417,67 @@ async function submitWorkerRechargeRequest() {
    FINDVIA COMMISSION SYSTEM
 ================================ */
 
-function getFindViaCommissionPercent() {
+let findViaCommissionPercent = 10;
 
-    const savedCommission = localStorage.getItem(
-        "findviaCommissionPercent"
-    );
 
-    if (savedCommission === null) {
-        return 10;
+async function loadFindViaCommissionPercent() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("platform_settings")
+        .select("commission_percent")
+        .eq("id", "global")
+        .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "FindVia commission load error:",
+            error
+        );
+
+        return findViaCommissionPercent;
     }
 
-    const commission = Number(savedCommission);
+    if (!data) {
+        return findViaCommissionPercent;
+    }
 
-    if (!Number.isFinite(commission) || commission < 0 || commission > 100) {
+    const commission =
+        Number(
+            data.commission_percent
+        );
+
+    if (
+        !Number.isFinite(commission) ||
+        commission < 0 ||
+        commission > 100
+    ) {
+
+        return findViaCommissionPercent;
+    }
+
+    findViaCommissionPercent =
+        commission;
+
+    return findViaCommissionPercent;
+}
+
+
+function getFindViaCommissionPercent() {
+
+    const commission =
+        Number(
+            findViaCommissionPercent
+        );
+
+    if (
+        !Number.isFinite(commission) ||
+        commission < 0 ||
+        commission > 100
+    ) {
         return 10;
     }
 
@@ -10435,9 +10485,10 @@ function getFindViaCommissionPercent() {
 }
 
 
-function setFindViaCommissionPercent(percent) {
+async function setFindViaCommissionPercent(percent) {
 
-    const commission = Number(percent);
+    const commission =
+        Number(percent);
 
     if (
         !Number.isFinite(commission) ||
@@ -10447,10 +10498,72 @@ function setFindViaCommissionPercent(percent) {
         return false;
     }
 
-    localStorage.setItem(
-        "findviaCommissionPercent",
-        commission.toString()
-    );
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+
+        alert(
+            "Admin login required."
+        );
+
+        return false;
+    }
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (
+        adminError ||
+        !adminUser
+    ) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return false;
+    }
+
+    const {
+        error: updateError
+    } = await supabaseClient
+        .from("platform_settings")
+        .update({
+            commission_percent:
+                commission,
+
+            updated_at:
+                new Date().toISOString()
+        })
+        .eq(
+            "id",
+            "global"
+        );
+
+    if (updateError) {
+
+        console.error(
+            "FindVia commission update error:",
+            updateError
+        );
+
+        alert(
+            "Commission save nahi ho saki.\n\n" +
+            updateError.message
+        );
+
+        return false;
+    }
+
+    findViaCommissionPercent =
+        commission;
 
     return true;
 }
@@ -10458,9 +10571,13 @@ function setFindViaCommissionPercent(percent) {
 
 function calculateFindViaCommission(amount) {
 
-    const price = Number(amount);
+    const price =
+        Number(amount);
 
-    if (!Number.isFinite(price) || price <= 0) {
+    if (
+        !Number.isFinite(price) ||
+        price <= 0
+    ) {
         return 0;
     }
 
@@ -10468,45 +10585,59 @@ function calculateFindViaCommission(amount) {
         getFindViaCommissionPercent();
 
     return Math.round(
-        (price * commissionPercent) / 100
+        (
+            price *
+            commissionPercent
+        ) / 100
     );
 }
 
-function saveAdminCommission() {
 
-    const input = document.getElementById(
-        "adminCommissionInput"
-    );
+async function saveAdminCommission() {
 
-    const currentDisplay = document.getElementById(
-        "adminCommissionCurrent"
-    );
+    const input =
+        document.getElementById(
+            "adminCommissionInput"
+        );
+
+    const currentDisplay =
+        document.getElementById(
+            "adminCommissionCurrent"
+        );
 
     if (!input) {
         return;
     }
 
-    const commission = Number(input.value);
+    const commission =
+        Number(
+            input.value
+        );
 
     if (
         !Number.isFinite(commission) ||
         commission < 0 ||
         commission > 100
     ) {
-        alert("Commission must be between 0% and 100%.");
+
+        alert(
+            "Commission must be between 0% and 100%."
+        );
+
         return;
     }
 
-    const saved = setFindViaCommissionPercent(
-        commission
-    );
+    const saved =
+        await setFindViaCommissionPercent(
+            commission
+        );
 
     if (!saved) {
-        alert("Unable to save commission.");
         return;
     }
 
     if (currentDisplay) {
+
         currentDisplay.textContent =
             commission + "%";
     }
