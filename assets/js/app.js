@@ -2567,9 +2567,9 @@ function requestWorker(workerName) {
 }
 
 
-async function searchWork() {
 
-        await loadFindViaCommissionPercent();
+
+async function searchWork() {
 
     const searchInput =
         document.getElementById("workSearch");
@@ -2581,33 +2581,80 @@ async function searchWork() {
 
     if (search === "") {
 
-        showPostedJobs();
+        await showPostedJobs();
 
         return;
     }
 
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
+    const {
+        data: jobs,
+        error
+    } = await supabaseClient
+        .from("jobs")
+        .select(
+            "id, title, category, description, area, timing, photo_data, status, match_status, matched_worker_id, job_status, created_at"
+        )
+        .eq("status", "open")
+        .order("created_at", {
+            ascending: false
+        });
+
+    if (error) {
+
+        console.error(
+            "FindVia work search error:",
+            error
+        );
+
+        const resultsBox =
+            document.getElementById("workResults");
+
+        if (resultsBox) {
+
+            resultsBox.innerHTML = `
+                <div class="empty-state">
+
+                    <strong>
+                        Search failed.
+                    </strong>
+
+                    <p>
+                        ${escapeHTML(error.message)}
+                    </p>
+
+                </div>
+            `;
+        }
+
+        return;
+    }
 
     const matchedJobs =
-        jobs.filter(function(job) {
+        (jobs || []).filter(function(job) {
 
-            if (!isJobAvailableForFindWork(job)) {
+            if (
+                job.match_status ||
+                job.job_status === "confirmed" ||
+                job.job_status === "completed"
+            ) {
                 return false;
             }
 
             const title =
-                String(job.title || "").toLowerCase();
+                String(job.title || "")
+                    .toLowerCase();
 
             const category =
-                String(job.category || "").toLowerCase();
+                String(job.category || "")
+                    .toLowerCase();
 
             const description =
-                String(job.description || "").toLowerCase();
+                String(job.description || "")
+                    .toLowerCase();
 
             const area =
-                String(job.area || "").toLowerCase();
+                String(job.area || "")
+                    .toLowerCase();
 
             return (
                 title.includes(search) ||
@@ -2643,11 +2690,6 @@ async function searchWork() {
 
         return;
     }
-
-    /*
-     * Matched jobs ko temporarily render karne ke liye
-     * same job-card structure use kar rahe hain.
-     */
 
     let html = `
         <div class="worker-results-header">
@@ -2713,11 +2755,11 @@ async function searchWork() {
                 </div>
 
                 ${
-                    job.photo
+                    job.photo_data
                     ? `
                         <img
                             class="job-photo"
-                            src="${job.photo}"
+                            src="${job.photo_data}"
                             alt="Job photo"
                         >
                     `
@@ -2728,26 +2770,21 @@ async function searchWork() {
                     🔒 Customer budget is hidden until the appropriate match stage.
                 </div>
 
-                ${
-                    hasSufficientCreditsForJob(job)
-                    ? `
-                        <button
-                            class="primary-btn job-interest-btn"
-                            onclick="respondToJob(${job.id})"
-                        >
-                            I'm Interested
-                        </button>
-                    `
-                    : ""
-                }
+                <button
+                    class="primary-btn job-interest-btn"
+                    onclick="respondToJob('${job.id}')"
+                >
+                    I'm Interested
+                </button>
 
             </div>
         `;
+
     });
 
-    resultsBox.innerHTML = html;
+    resultsBox.innerHTML =
+        html;
 }
-
 
 
 function searchWorkers() {
