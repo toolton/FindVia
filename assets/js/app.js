@@ -10495,6 +10495,7 @@ async function setFindViaCommissionPercent(percent) {
         commission < 0 ||
         commission > 100
     ) {
+
         return false;
     }
 
@@ -10511,59 +10512,50 @@ async function setFindViaCommissionPercent(percent) {
     }
 
     const {
-        data: adminUser,
-        error: adminError
+        data,
+        error
     } = await supabaseClient
-        .from("admin_users")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
+        .rpc(
+            "update_findvia_global_commission",
+            {
+                p_commission:
+                    commission
+            }
+        );
 
-    if (
-        adminError ||
-        !adminUser
-    ) {
+    if (error) {
+
+        console.error(
+            "FindVia commission update error:",
+            error
+        );
 
         alert(
-            "Admin access required."
+            "Commission save nahi ho saki.\n\n" +
+            error.message
         );
 
         return false;
     }
 
-    const {
-        error: updateError
-    } = await supabaseClient
-        .from("platform_settings")
-        .update({
-            commission_percent:
-                commission,
+    const savedCommission =
+        Number(data);
 
-            updated_at:
-                new Date().toISOString()
-        })
-        .eq(
-            "id",
-            "global"
-        );
-
-    if (updateError) {
-
-        console.error(
-            "FindVia commission update error:",
-            updateError
-        );
+    if (
+        !Number.isFinite(savedCommission) ||
+        savedCommission < 0 ||
+        savedCommission > 100
+    ) {
 
         alert(
-            "Commission save nahi ho saki.\n\n" +
-            updateError.message
+            "Invalid commission response."
         );
 
         return false;
     }
 
     findViaCommissionPercent =
-        commission;
+        savedCommission;
 
     return true;
 }
