@@ -7744,6 +7744,14 @@ async function loadAdminCategories() {
 
 async function adminEditCategory(categoryId) {
 
+        const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+        alert("Admin access required.");
+        return;
+    }
+
     if (!categoryId) {
 
         alert(
@@ -7965,6 +7973,14 @@ async function adminEditCategory(categoryId) {
 }
 
 async function adminAddCategory() {
+
+        const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+        alert("Admin access required.");
+        return;
+    }
     const name =
         document.getElementById(
             "adminCategoryName"
