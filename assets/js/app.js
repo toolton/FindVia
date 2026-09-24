@@ -3592,17 +3592,31 @@ const commissionPreference =
         return;
     }
 
-    const existingProfile =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaWorkerProfile"
-            ) || "null"
+       const {
+        data: existingProfile,
+        error: existingProfileError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select("verification_status")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (existingProfileError) {
+        console.error(
+            "Worker verification status load error:",
+            existingProfileError
         );
 
+        alert(
+            "Worker profile status load nahi ho saka.\n\n" +
+            existingProfileError.message
+        );
+
+        return;
+    }
+
     const verificationStatus =
-        existingProfile?.verificationStatus === "approved"
-            ? "approved"
-            : "pending";
+        existingProfile?.verification_status || "pending"; 
 
     const profileData = {
     id: user.id,
