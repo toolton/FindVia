@@ -8106,6 +8106,17 @@ async function adminToggleCategory(
     categoryId,
     currentStatus
 ) {
+
+    const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+        alert(
+            "Admin access required."
+        );
+        return;
+    }
+
     const {
         error
     } = await supabaseClient
@@ -8117,19 +8128,21 @@ async function adminToggleCategory(
         .eq("id", categoryId);
 
     if (error) {
+
         console.error(
             "Failed to update category:",
             error
         );
 
         alert(
-            "Failed to update category."
+            "Category update failed.\n\n" +
+            error.message
         );
 
         return;
     }
 
-    loadAdminCategories();
+    await loadAdminCategories();
 }
 
 async function openAdminRechargeRequests() {
