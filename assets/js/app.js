@@ -7988,43 +7988,91 @@ async function rejectWorkerRecharge(requestId) {
 }
 
 
-function openAdminWorkers() {
+async function openAdminWorkers() {
 
     hideAdminScreens();
 
-    const workersScreen = document.getElementById("adminWorkersScreen");
-    const workersList = document.getElementById("adminWorkersList");
+    const workersScreen =
+        document.getElementById("adminWorkersScreen");
+
+    const workersList =
+        document.getElementById("adminWorkersList");
 
     if (!workersScreen || !workersList) {
         alert("Worker management screen not found.");
         return;
     }
 
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        alert("Admin login required.");
+        openAuthScreen();
+        return;
+    }
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (adminError || !adminUser) {
+        console.error(
+            "Admin access check error:",
+            adminError
+        );
+
+        alert("Admin access required.");
+        return;
+    }
+
     workersScreen.style.display = "block";
 
-    let workerProfiles = JSON.parse(
-    localStorage.getItem("findviaWorkerProfiles") || "[]"
-);
+    workersList.innerHTML = `
+        <div class="job-card">
+            <h3>Loading workers...</h3>
+            <p class="job-description">
+                Please wait.
+            </p>
+        </div>
+    `;
 
-// Agar existing current worker profile collection mein nahi hai,
-// to use automatically collection mein add karo.
-const currentWorkerProfile = localStorage.getItem(
-    "findviaWorkerProfile"
-);
+    const {
+        data: workers,
+        error: workersError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, service, experience, area, availability, verification_status, verification_submitted"
+        )
+        .order("created_at", {
+            ascending: true
+        });
 
-if (
-    currentWorkerProfile &&
-    !workerProfiles.includes(currentWorkerProfile)
-) {
-    workerProfiles.push(currentWorkerProfile);
+    if (workersError) {
+        console.error(
+            "Admin worker load error:",
+            workersError
+        );
 
-    localStorage.setItem(
-        "findviaWorkerProfiles",
-        JSON.stringify(workerProfiles)
-    );
-}
+        workersList.innerHTML = `
+            <div class="job-card">
+                <h3>Workers load nahi ho sake</h3>
+                <p class="job-description">
+                    ${escapeHTML(workersError.message)}
+                </p>
+            </div>
+        `;
 
-    if (workerProfiles.length === 0) {
+        return;
+    }
+
+    if (!workers || workers.length === 0) {
         workersList.innerHTML = `
             <div class="job-card">
                 <h3>No workers found</h3>
@@ -8033,46 +8081,96 @@ if (
                 </p>
             </div>
         `;
+
         return;
     }
 
+    const workerIds =
+        workers.map(function(worker) {
+            return worker.id;
+        });
+
+    const {
+        data: wallets,
+        error: walletError
+    } = await supabaseClient
+        .from("worker_credits")
+        .select("worker_id, balance")
+        .in("worker_id", workerIds);
+
+    if (walletError) {
+        console.error(
+            "Admin worker credits load error:",
+            walletError
+        );
+    }
+
+    const walletMap = {};
+
+    (wallets || []).forEach(function(wallet) {
+
+        walletMap[wallet.worker_id] =
+            Number(wallet.balance) || 0;
+
+    });
+
     workersList.innerHTML = "";
 
-    workerProfiles.forEach((profileString, index) => {
+    workers.forEach(function(worker, index) {
 
-        const worker = JSON.parse(profileString);
+        const status =
+            worker.verification_status || "pending";
 
-        const credits = getWorkerCreditsForProfile(profileString);
+        const statusText =
+            status === "approved"
+                ? "Approved"
+                : status === "rejected"
+                ? "Rejected"
+                : "Pending";
 
-        const card = document.createElement("div");
+        const credits =
+            walletMap[worker.id] || 0;
+
+        const card =
+            document.createElement("div");
+
         card.className = "job-card";
 
         card.innerHTML = `
             <div class="job-card-top">
+
                 <div>
+
                     <span class="job-category">
                         WORKER #${index + 1}
                     </span>
 
-                    <h3>${worker.name}</h3>
+                    <h3>
+                        ${escapeHTML(
+                            worker.name || "-"
+                        )}
+                    </h3>
+
                 </div>
 
+                <span class="job-status">
+                    ${statusText}
+                </span>
 
-<span class="job-status">
-    ${worker.verificationStatus === "approved"
-        ? "Approved"
-        : worker.verificationStatus === "rejected"
-        ? "Rejected"
-        : "Pending"}
-</span>
-
-                
             </div>
 
             <p class="job-description">
-                🔧 ${worker.service}<br>
-                📍 ${worker.area}<br>
-                ⭐ ${worker.experience} experience
+                🔧 ${escapeHTML(
+                    worker.service || "-"
+                )}<br>
+
+                📍 ${escapeHTML(
+                    worker.area || "-"
+                )}<br>
+
+                ⭐ ${escapeHTML(
+                    worker.experience || "-"
+                )} experience
             </p>
 
             <div style="
@@ -8081,114 +8179,272 @@ if (
                 border-radius:10px;
                 background:#f5f5f5;
             ">
+
                 💰 <strong>FindVia Credits</strong><br>
-                <span style="font-size:20px;font-weight:bold;">
+
+                <span style="
+                    font-size:20px;
+                    font-weight:bold;
+                ">
                     ₹${credits}
                 </span>
+
             </div>
-<button
-    class="primary-btn"
-    style="margin-top:12px;"
-    onclick="adminAddWorkerCreditsFromList(${index})"
->
-    ➕ Add Credits
-</button>
 
-<button
-    class="primary-btn"
-    style="margin-top:8px;"
-    onclick="openWorkerTransactions(${index})"
->
-    📋 Transaction History
-</button>
+            <button
+                class="primary-btn"
+                style="margin-top:12px;"
+                onclick="adminAddWorkerCreditsFromList('${worker.id}')"
+            >
+                ➕ Add Credits
+            </button>
 
+            <button
+                class="primary-btn"
+                style="margin-top:8px;"
+                onclick="openWorkerTransactionsById('${worker.id}')"
+            >
+                📋 Transaction History
+            </button>
 
-<button
-    class="primary-btn"
-    style="margin-top:8px;"
-    onclick="openWorkerVerificationReview(${index})"
->
-    🔍 View Verification
-</button>
+            <button
+                class="primary-btn"
+                style="margin-top:8px;"
+                onclick="openWorkerVerificationReview('${worker.id}')"
+            >
+                🔍 View Verification
+            </button>
 
+            ${
+                status !== "approved"
 
-${
-    worker.verificationStatus !== "approved"
-    ? `
-        <button
-            class="primary-btn"
-            style="margin-top:8px;"
-            onclick="approveWorker(${index})"
-        >
-            ✅ Approve Worker
-        </button>
-    `
-    : `
-        <button
-            class="primary-btn"
-            style="margin-top:8px;"
-            onclick="rejectWorker(${index})"
-        >
-            ❌ Reject Worker
-        </button>
-    `
-}
+                ? `
+                    <button
+                        class="primary-btn"
+                        style="margin-top:8px;"
+                        onclick="approveWorker('${worker.id}')"
+                    >
+                        ✅ Approve Worker
+                    </button>
+                `
 
-            
+                : `
+
+                    <button
+                        class="primary-btn"
+                        style="margin-top:8px;"
+                        onclick="rejectWorker('${worker.id}')"
+                    >
+                        ❌ Reject Worker
+                    </button>
+
+                `
+            }
+
         `;
 
         workersList.appendChild(card);
+
     });
 }
 
-function adminAddWorkerCreditsFromList(index) {
 
-    const workerProfiles = JSON.parse(
-        localStorage.getItem("findviaWorkerProfiles") || "[]"
-    );
+async function adminAddWorkerCreditsFromList(workerId) {
 
-    const profileString = workerProfiles[index];
-
-    if (!profileString) {
-        alert("Worker not found.");
+    if (!workerId) {
+        alert("Worker account ID nahi mila.");
         return;
     }
 
-    const worker = JSON.parse(profileString);
+    const user =
+        await getFindViaCurrentUser();
 
-    const amount = prompt(
-        `Worker: ${worker.name}\n\nKitne credits add karne hain?`
-    );
+    if (!user) {
+        alert("Admin login required.");
+        openAuthScreen();
+        return;
+    }
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (adminError || !adminUser) {
+        alert("Admin access required.");
+        return;
+    }
+
+    const {
+        data: worker,
+        error: workerError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select("id, name")
+        .eq("id", workerId)
+        .maybeSingle();
+
+    if (workerError || !worker) {
+
+        alert(
+            "Worker profile nahi mili." +
+            (
+                workerError
+                    ? "\n\n" + workerError.message
+                    : ""
+            )
+        );
+
+        return;
+    }
+
+    const amount =
+        prompt(
+            `Worker: ${worker.name || "-"}\n\nKitne credits add karne hain?`
+        );
 
     if (amount === null) {
         return;
     }
 
-    const creditAmount = Number(amount);
+    const creditAmount =
+        Number(amount);
 
-    if (!Number.isFinite(creditAmount) || creditAmount <= 0) {
-        alert("Please enter a valid amount.");
+    if (
+        !Number.isFinite(creditAmount) ||
+        creditAmount <= 0
+    ) {
+
+        alert(
+            "Please enter a valid amount."
+        );
+
         return;
     }
 
-    const currentCredits = getWorkerCreditsForProfile(profileString);
+    const {
+        data: wallet,
+        error: walletError
+    } = await supabaseClient
+        .from("worker_credits")
+        .select("id, balance")
+        .eq("worker_id", workerId)
+        .maybeSingle();
 
-    setWorkerCreditsForProfile(
-        profileString,
-        currentCredits + creditAmount
-    );
+    if (walletError) {
 
-    addWorkerCreditTransaction(
-        profileString,
-        creditAmount,
-        "Admin credit recharge"
-    );
+        alert(
+            "Worker credits load nahi ho sake.\n\n" +
+            walletError.message
+        );
+
+        return;
+    }
+
+    const currentBalance =
+        Number(wallet?.balance) || 0;
+
+    let updateError = null;
+
+    if (wallet) {
+
+        const result =
+            await supabaseClient
+                .from("worker_credits")
+                .update({
+                    balance:
+                        currentBalance +
+                        creditAmount,
+
+                    updated_at:
+                        new Date().toISOString()
+                })
+                .eq(
+                    "worker_id",
+                    workerId
+                );
+
+        updateError =
+            result.error;
+
+    } else {
+
+        const result =
+            await supabaseClient
+                .from("worker_credits")
+                .insert({
+                    worker_id:
+                        workerId,
+
+                    balance:
+                        creditAmount
+                });
+
+        updateError =
+            result.error;
+    }
+
+    if (updateError) {
+
+        console.error(
+            "Admin credit update error:",
+            updateError
+        );
+
+        alert(
+            "Credits add nahi ho sake.\n\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+    const {
+        error: transactionError
+    } = await supabaseClient
+        .from("credit_transactions")
+        .insert({
+            worker_id:
+                workerId,
+
+            amount:
+                creditAmount,
+
+            transaction_type:
+                "admin_credit",
+
+            note:
+                "Admin manually added credits"
+        });
+
+    if (transactionError) {
+
+        console.error(
+            "Admin credit transaction error:",
+            transactionError
+        );
+
+        alert(
+            "Credits add ho gaye, lekin transaction ledger entry save nahi ho saki.\n\n" +
+            transactionError.message
+        );
+
+        await openAdminWorkers();
+
+        return;
+    }
 
     alert(
-        `₹${creditAmount} credits added successfully to ${worker.name}.`
+        `₹${creditAmount} credits added successfully to ${
+            worker.name || "worker"
+        }.`
     );
 
-    openAdminWorkers();
+    await openAdminWorkers();
 }
 
 function openWorkerTransactions(index) {
@@ -8361,7 +8617,7 @@ ${
     });
 }
 
-async function openWorkerVerificationReview(index) {
+async function openWorkerVerificationReview(workerId) {
 
     const workerProfiles = JSON.parse(
         localStorage.getItem(
