@@ -6939,8 +6939,8 @@ function openAdminCategories() {
 
     loadAdminCategories();
 }
-
 async function loadAdminCategories() {
+
     const {
         data,
         error
@@ -6952,13 +6952,15 @@ async function loadAdminCategories() {
         });
 
     if (error) {
+
         console.error(
             "Failed to load categories:",
             error
         );
 
         alert(
-            "Failed to load job categories."
+            "Failed to load job categories.\n\n" +
+            error.message
         );
 
         return;
@@ -6973,62 +6975,367 @@ async function loadAdminCategories() {
         return;
     }
 
-    if (!data || data.length === 0) {
+    if (
+        !data ||
+        data.length === 0
+    ) {
+
         container.innerHTML =
             "<p>No categories found.</p>";
 
         return;
     }
 
-    container.innerHTML = data.map(category => `
-        <div class="job-card">
+    container.innerHTML =
+        data.map(
+            function(category) {
 
-            <div>
-                <strong>
-                    ${category.icon || "🛠️"}
-                    ${category.name}
-                </strong>
+                const safeName =
+                    escapeHTML(
+                        category.name || "-"
+                    );
 
-                <div>
-                    ${category.name_hi || ""}
-                </div>
+                const safeNameHi =
+                    escapeHTML(
+                        category.name_hi || ""
+                    );
 
-                <small>
-                    Percentage:
-                    ${category.allow_percentage ? "Yes" : "No"}
-                    |
-                    Fixed:
-                    ${category.allow_fixed ? "Yes" : "No"}
-                </small>
+                const safeIcon =
+                    escapeHTML(
+                        category.icon || "🛠️"
+                    );
 
-                <br>
+                const commissionPercent =
+                    Number(
+                        category.commission_percent
+                    ) || 0;
 
-                <small>
-                    ${category.commission_percent || 0}%
-                    |
-                    ₹${category.commission_fixed_fee || 0}
-                </small>
+                const fixedFee =
+                    Number(
+                        category.commission_fixed_fee
+                    ) || 0;
 
-                <br>
+                return `
+                    <div class="job-card">
 
-                <small>
-                    Status:
-                    ${category.active ? "Active" : "Disabled"}
-                </small>
-            </div>
+                        <div>
 
-            <button
-                class="secondary-btn"
-                onclick="adminToggleCategory(
-                    '${category.id}',
-                    ${category.active}
-                )"
-            >
-                ${category.active ? "Disable" : "Enable"}
-            </button>
+                            <strong>
+                                ${safeIcon}
+                                ${safeName}
+                            </strong>
 
-        </div>
-    `).join("");
+                            ${
+                                safeNameHi
+                                    ? `
+                                        <div>
+                                            ${safeNameHi}
+                                        </div>
+                                    `
+                                    : ""
+                            }
+
+                            <small>
+                                Percentage:
+                                ${
+                                    category.allow_percentage
+                                        ? "Yes"
+                                        : "No"
+                                }
+
+                                |
+
+                                Fixed:
+                                ${
+                                    category.allow_fixed
+                                        ? "Yes"
+                                        : "No"
+                                }
+                            </small>
+
+                            <br>
+
+                            <small>
+                                Commission:
+                                ${commissionPercent}%
+
+                                |
+
+                                Fixed Fee:
+                                ₹${fixedFee}
+                            </small>
+
+                            <br>
+
+                            <small>
+                                Status:
+                                ${
+                                    category.active
+                                        ? "Active"
+                                        : "Disabled"
+                                }
+                            </small>
+
+                        </div>
+
+                        <div
+                            style="
+                                display:flex;
+                                flex-direction:column;
+                                gap:8px;
+                                margin-top:12px;
+                            "
+                        >
+
+                            <button
+                                class="primary-btn"
+                                onclick="adminEditCategory('${category.id}')"
+                            >
+                                ✏️ Edit
+                            </button>
+
+                            <button
+                                class="secondary-btn"
+                                onclick="adminToggleCategory(
+                                    '${category.id}',
+                                    ${category.active}
+                                )"
+                            >
+                                ${
+                                    category.active
+                                        ? "Disable"
+                                        : "Enable"
+                                }
+                            </button>
+
+                        </div>
+
+                    </div>
+                `;
+            }
+        ).join("");
+}
+
+async function adminEditCategory(categoryId) {
+
+    if (!categoryId) {
+
+        alert(
+            "Category ID nahi mila."
+        );
+
+        return;
+    }
+
+    const {
+        data: category,
+        error: loadError
+    } = await supabaseClient
+        .from("job_categories")
+        .select(
+            "id, name, name_hi, icon, allow_percentage, allow_fixed, commission_percent, commission_fixed_fee, active"
+        )
+        .eq(
+            "id",
+            categoryId
+        )
+        .maybeSingle();
+
+    if (loadError || !category) {
+
+        alert(
+            "Category load nahi ho saki." +
+            (
+                loadError
+                    ? "\n\n" +
+                      loadError.message
+                    : ""
+            )
+        );
+
+        return;
+    }
+
+    const name =
+        prompt(
+            "Category name:",
+            category.name || ""
+        );
+
+    if (name === null) {
+        return;
+    }
+
+    const nameHi =
+        prompt(
+            "Category Hindi name:",
+            category.name_hi || ""
+        );
+
+    if (nameHi === null) {
+        return;
+    }
+
+    const icon =
+        prompt(
+            "Category icon:",
+            category.icon || ""
+        );
+
+    if (icon === null) {
+        return;
+    }
+
+    const commissionPercent =
+        prompt(
+            "Commission percentage:",
+            category.commission_percent ?? 0
+        );
+
+    if (commissionPercent === null) {
+        return;
+    }
+
+    const fixedFee =
+        prompt(
+            "Fixed commission fee:",
+            category.commission_fixed_fee ?? 0
+        );
+
+    if (fixedFee === null) {
+        return;
+    }
+
+    const allowPercentage =
+        confirm(
+            "Percentage commission allow karna hai?\n\n" +
+            "OK = Yes\n" +
+            "Cancel = No"
+        );
+
+    const allowFixed =
+        confirm(
+            "Fixed commission allow karna hai?\n\n" +
+            "OK = Yes\n" +
+            "Cancel = No"
+        );
+
+    if (
+        !name.trim()
+    ) {
+
+        alert(
+            "Category name is required."
+        );
+
+        return;
+    }
+
+    if (
+        !allowPercentage &&
+        !allowFixed
+    ) {
+
+        alert(
+            "At least one commission mode must be allowed."
+        );
+
+        return;
+    }
+
+    const percentageNumber =
+        Number(
+            commissionPercent
+        );
+
+    const fixedFeeNumber =
+        Number(
+            fixedFee
+        );
+
+    if (
+        !Number.isFinite(
+            percentageNumber
+        ) ||
+        percentageNumber < 0 ||
+        percentageNumber > 100
+    ) {
+
+        alert(
+            "Commission percentage must be between 0 and 100."
+        );
+
+        return;
+    }
+
+    if (
+        !Number.isFinite(
+            fixedFeeNumber
+        ) ||
+        fixedFeeNumber < 0
+    ) {
+
+        alert(
+            "Fixed commission fee invalid hai."
+        );
+
+        return;
+    }
+
+    const {
+        error: updateError
+    } = await supabaseClient
+        .from("job_categories")
+        .update({
+            name:
+                name.trim(),
+
+            name_hi:
+                nameHi.trim(),
+
+            icon:
+                icon.trim(),
+
+            allow_percentage:
+                allowPercentage,
+
+            allow_fixed:
+                allowFixed,
+
+            commission_percent:
+                percentageNumber,
+
+            commission_fixed_fee:
+                fixedFeeNumber,
+
+            updated_at:
+                new Date().toISOString()
+        })
+        .eq(
+            "id",
+            categoryId
+        );
+
+    if (updateError) {
+
+        console.error(
+            "Failed to update category:",
+            updateError
+        );
+
+        alert(
+            "Category update nahi ho saki.\n\n" +
+            updateError.message
+        );
+
+        return;
+    }
+
+    alert(
+        "Category updated successfully."
+    );
+
+    await loadAdminCategories();
 }
 
 async function adminAddCategory() {
@@ -7075,6 +7382,35 @@ async function adminAddCategory() {
         alert("Category name is required.");
         return;
     }
+
+    if (
+    !Number.isFinite(
+        commissionPercent
+    ) ||
+    commissionPercent < 0 ||
+    commissionPercent > 100
+) {
+
+    alert(
+        "Commission percentage must be between 0 and 100."
+    );
+
+    return;
+}
+
+if (
+    !Number.isFinite(
+        fixedFee
+    ) ||
+    fixedFee < 0
+) {
+
+    alert(
+        "Fixed commission fee invalid hai."
+    );
+
+    return;
+}
 
     if (
         !allowPercentage &&
