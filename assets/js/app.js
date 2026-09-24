@@ -8447,6 +8447,299 @@ async function adminAddWorkerCreditsFromList(workerId) {
     await openAdminWorkers();
 }
 
+async function openWorkerTransactionsById(workerId) {
+
+    if (!workerId) {
+
+        alert(
+            "Worker account ID nahi mila."
+        );
+
+        return;
+    }
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+
+        alert(
+            "Admin login required."
+        );
+
+        openAuthScreen();
+
+        return;
+    }
+
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (
+        adminError ||
+        !adminUser
+    ) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return;
+    }
+
+    const {
+        data: worker,
+        error: workerError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, service"
+        )
+        .eq("id", workerId)
+        .maybeSingle();
+
+    if (workerError || !worker) {
+
+        alert(
+            "Worker profile nahi mili." +
+            (
+                workerError
+                    ? "\n\n" +
+                      workerError.message
+                    : ""
+            )
+        );
+
+        return;
+    }
+
+    const {
+        data: transactions,
+        error: transactionError
+    } = await supabaseClient
+        .from("credit_transactions")
+        .select(
+            "id, amount, transaction_type, note, created_at"
+        )
+        .eq(
+            "worker_id",
+            workerId
+        )
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
+
+    if (transactionError) {
+
+        console.error(
+            "Worker transaction load error:",
+            transactionError
+        );
+
+        alert(
+            "Transaction history load nahi ho saki.\n\n" +
+            transactionError.message
+        );
+
+        return;
+    }
+
+    const transactionScreen =
+        document.getElementById(
+            "adminWorkerTransactionsScreen"
+        );
+
+    const transactionList =
+        document.getElementById(
+            "adminWorkerTransactionsList"
+        );
+
+    const workerName =
+        document.getElementById(
+            "adminTransactionWorkerName"
+        );
+
+    if (
+        !transactionScreen ||
+        !transactionList ||
+        !workerName
+    ) {
+
+        alert(
+            "Transaction screen not found."
+        );
+
+        return;
+    }
+
+    hideAdminScreens();
+
+    transactionScreen.style.display =
+        "block";
+
+    workerName.textContent =
+        (worker.name || "-") +
+        " • Transaction History";
+
+    if (
+        !transactions ||
+        transactions.length === 0
+    ) {
+
+        transactionList.innerHTML = `
+            <div class="job-card">
+
+                <h3>
+                    No transactions yet
+                </h3>
+
+                <p class="job-description">
+                    Is worker ke liye abhi koi
+                    credit transaction nahi hai.
+                </p>
+
+            </div>
+        `;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        return;
+    }
+
+    transactionList.innerHTML = "";
+
+    let runningBalance = 0;
+
+    transactions.forEach(
+        function(transaction) {
+
+            const amount =
+                Number(
+                    transaction.amount
+                ) || 0;
+
+            runningBalance += amount;
+
+            const isDebit =
+                amount < 0;
+
+            const displayAmount =
+                Math.abs(amount);
+
+            const transactionDate =
+                transaction.created_at
+                    ? new Date(
+                        transaction.created_at
+                    ).toLocaleString()
+                    : "Date unavailable";
+
+            const transactionType =
+                transaction.transaction_type ||
+                "Credit Transaction";
+
+            const note =
+                transaction.note || "";
+
+            const safeType =
+                escapeHTML(
+                    String(
+                        transactionType
+                    )
+                );
+
+            const safeNote =
+                escapeHTML(
+                    String(
+                        note
+                    )
+                );
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+            card.className =
+                "job-card";
+
+            card.innerHTML = `
+                <div class="job-card-top">
+
+                    <div>
+
+                        <span class="job-category">
+                            ${safeType}
+                        </span>
+
+                        <h3>
+                            ${
+                                isDebit
+                                    ? "💸 −"
+                                    : "💰 +"
+                            }₹${displayAmount}
+                        </h3>
+
+                    </div>
+
+                    <span class="job-status">
+                        ${
+                            isDebit
+                                ? "Deducted"
+                                : "Added"
+                        }
+                    </span>
+
+                </div>
+
+                <p class="job-description">
+
+                    📅 ${transactionDate}
+
+                    <br>
+
+                    💳 Running Balance:
+                    <strong>
+                        ₹${runningBalance}
+                    </strong>
+
+                    ${
+                        safeNote
+                            ? `
+                                <br>
+                                📝 ${safeNote}
+                            `
+                            : ""
+                    }
+
+                </p>
+            `;
+
+            transactionList.appendChild(
+                card
+            );
+
+        }
+    );
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
 function openWorkerTransactions(index) {
 
     const workerProfiles = JSON.parse(
@@ -8619,37 +8912,13 @@ ${
 
 async function openWorkerVerificationReview(workerId) {
 
-    const workerProfiles = JSON.parse(
-        localStorage.getItem(
-            "findviaWorkerProfiles"
-        ) || "[]"
-    );
-
-    const profileString =
-        workerProfiles[index];
-
-    if (!profileString) {
-
-        alert(
-            "Worker profile nahi mila."
-        );
-
-        return;
-    }
-
-    const localWorker =
-        JSON.parse(profileString);
-
-    const workerId =
-        localWorker.id;
-
     if (!workerId) {
 
-        alert(
-            "Worker account ID nahi mila."
-        );
+    alert(
+        "Worker account ID nahi mila."
+    );
 
-        return;
+    return;
     }
 
     const user =
@@ -9913,55 +10182,93 @@ function saveAdminCommission() {
     );
 }
 
-async function approveWorker(index) {
-
-    const workerProfiles = JSON.parse(
-        localStorage.getItem("findviaWorkerProfiles") || "[]"
-    );
-
-    if (!workerProfiles[index]) {
-        alert("Worker profile nahi mila.");
-        return;
-    }
-
-    const worker = JSON.parse(workerProfiles[index]);
-
-    const workerId = worker.id;
+async function approveWorker(workerId) {
 
     if (!workerId) {
-        alert("Worker account ID nahi mila.");
+
+        alert(
+            "Worker account ID nahi mila."
+        );
+
         return;
     }
 
-    const user = await getFindViaCurrentUser();
+    const user =
+        await getFindViaCurrentUser();
 
     if (!user) {
-        alert("Admin login required.");
+
+        alert(
+            "Admin login required."
+        );
+
         openAuthScreen();
+
         return;
     }
 
-    const { data: adminUser, error: adminError } =
-        await supabaseClient
-            .from("admin_users")
-            .select("id")
-            .eq("id", user.id)
-            .maybeSingle();
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    if (adminError || !adminUser) {
-        alert("Admin access required.");
+    if (
+        adminError ||
+        !adminUser
+    ) {
+
+        alert(
+            "Admin access required."
+        );
+
         return;
     }
 
-    const { error: updateError } =
-        await supabaseClient
-            .from("worker_profiles")
-            .update({
-                verification_status: "approved"
-            })
-            .eq("id", workerId);
+    const {
+        data: worker,
+        error: workerError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, verification_status"
+        )
+        .eq("id", workerId)
+        .maybeSingle();
+
+    if (workerError || !worker) {
+
+        alert(
+            "Worker profile nahi mili." +
+            (
+                workerError
+                    ? "\n\n" +
+                      workerError.message
+                    : ""
+            )
+        );
+
+        return;
+    }
+
+    const {
+        error: updateError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .update({
+            verification_status:
+                "approved"
+        })
+        .eq(
+            "id",
+            workerId
+        );
 
     if (updateError) {
+
         console.error(
             "Worker approval error:",
             updateError
@@ -9975,92 +10282,101 @@ async function approveWorker(index) {
         return;
     }
 
-    worker.verificationStatus = "approved";
-
-    workerProfiles[index] =
-        JSON.stringify(worker);
-
-    localStorage.setItem(
-        "findviaWorkerProfiles",
-        JSON.stringify(workerProfiles)
-    );
-
-    const currentProfile = JSON.parse(
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        ) || "null"
-    );
-
-    if (
-        currentProfile &&
-        currentProfile.id === workerId
-    ) {
-        currentProfile.verificationStatus =
-            "approved";
-
-        localStorage.setItem(
-            "findviaWorkerProfile",
-            JSON.stringify(currentProfile)
-        );
-    }
-
     alert(
         "✅ Worker approved successfully."
     );
 
-    openAdminWorkers();
+    await openAdminWorkers();
 }
 
 
-async function rejectWorker(index) {
-
-    const workerProfiles = JSON.parse(
-        localStorage.getItem("findviaWorkerProfiles") || "[]"
-    );
-
-    if (!workerProfiles[index]) {
-        alert("Worker profile nahi mila.");
-        return;
-    }
-
-    const worker = JSON.parse(workerProfiles[index]);
-
-    const workerId = worker.id;
+async function rejectWorker(workerId) {
 
     if (!workerId) {
-        alert("Worker account ID nahi mila.");
+
+        alert(
+            "Worker account ID nahi mila."
+        );
+
         return;
     }
 
-    const user = await getFindViaCurrentUser();
+    const user =
+        await getFindViaCurrentUser();
 
     if (!user) {
-        alert("Admin login required.");
+
+        alert(
+            "Admin login required."
+        );
+
         openAuthScreen();
+
         return;
     }
 
-    const { data: adminUser, error: adminError } =
-        await supabaseClient
-            .from("admin_users")
-            .select("id")
-            .eq("id", user.id)
-            .maybeSingle();
+    const {
+        data: adminUser,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    if (adminError || !adminUser) {
-        alert("Admin access required.");
+    if (
+        adminError ||
+        !adminUser
+    ) {
+
+        alert(
+            "Admin access required."
+        );
+
         return;
     }
 
-    const { error: updateError } =
-        await supabaseClient
-            .from("worker_profiles")
-            .update({
-                verification_status: "rejected"
-            })
-            .eq("id", workerId);
+    const {
+        data: worker,
+        error: workerError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, verification_status"
+        )
+        .eq("id", workerId)
+        .maybeSingle();
+
+    if (workerError || !worker) {
+
+        alert(
+            "Worker profile nahi mili." +
+            (
+                workerError
+                    ? "\n\n" +
+                      workerError.message
+                    : ""
+            )
+        );
+
+        return;
+    }
+
+    const {
+        error: updateError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .update({
+            verification_status:
+                "rejected"
+        })
+        .eq(
+            "id",
+            workerId
+        );
 
     if (updateError) {
+
         console.error(
             "Worker rejection error:",
             updateError
@@ -10074,41 +10390,11 @@ async function rejectWorker(index) {
         return;
     }
 
-    worker.verificationStatus =
-        "rejected";
-
-    workerProfiles[index] =
-        JSON.stringify(worker);
-
-    localStorage.setItem(
-        "findviaWorkerProfiles",
-        JSON.stringify(workerProfiles)
-    );
-
-    const currentProfile = JSON.parse(
-        localStorage.getItem(
-            "findviaWorkerProfile"
-        ) || "null"
-    );
-
-    if (
-        currentProfile &&
-        currentProfile.id === workerId
-    ) {
-        currentProfile.verificationStatus =
-            "rejected";
-
-        localStorage.setItem(
-            "findviaWorkerProfile",
-            JSON.stringify(currentProfile)
-        );
-    }
-
     alert(
         "❌ Worker rejected."
     );
 
-    openAdminWorkers();
+    await openAdminWorkers();
 }
 
 
