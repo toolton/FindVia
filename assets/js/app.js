@@ -1308,28 +1308,18 @@ behavior: "smooth"
 });
 }
 
+
 function findWorkers() {
 
-document.getElementById("authScreen").style.display = "none";
-    
-hideWorkerVerificationScreen();
-hideAdminScreens();
-   hideWorkerRechargeScreen(); 
- hideWorkerTransactionScreen();   
-document.getElementById("homeContent").style.display = "none";
+alert(
+    "FindVia mein workers ko direct browse nahi kiya jaata.\n\n" +
+    "Pehle apni job post karein. Interested workers response bhejenge, " +
+    "uske baad aap worker ko privately select kar sakte hain."
+);
 
-document.getElementById("searchScreen").classList.remove("active");
-document.getElementById("findWorkScreen").classList.remove("active");
-document.getElementById("findWorkersScreen").classList.add("active");
-document.getElementById("postJobScreen")?.classList.remove("active");
-document.getElementById("myJobsScreen").style.display = "none";
-document.getElementById("jobResponsesScreen")?.classList.remove("active");
-window.scrollTo({
-top: 0,
-behavior: "smooth"
-});
+return;
+
 }
-
 
 function postJob() {
 hideWorkerTransactionScreen();
@@ -3027,388 +3017,298 @@ document.getElementById("postJobScreen").classList.remove("active");
     });
 }
 
-function globalSearch() {
-
-    const input =
-        document.getElementById("globalSearch");
-
-    const search =
-        input
-        ? input.value.trim().toLowerCase()
-        : "";
-
-    const resultsBox =
-        document.getElementById("globalResults");
-
-    if (!resultsBox) {
-        return;
-    }
-
-    if (!search) {
-
-        resultsBox.innerHTML = `
-            <div class="empty-state">
-
-                <strong>
-                    Search something on FindVia.
-                </strong>
-
-                <p>
-                    Work ya worker ka naam, service,
-                    category ya area search karein.
-                </p>
-
-            </div>
-        `;
-
-        return;
-    }
-
-    /* =========================
-       SEARCH JOBS
-    ========================= */
-
-    const jobs = JSON.parse(
-        localStorage.getItem("findviaJobs") || "[]"
-    );
-
-    const matchedJobs =
-        jobs.filter(function(job) {
-
-            if (
-                typeof isJobAvailableForFindWork ===
-                "function"
-            ) {
-
-                if (
-                    !isJobAvailableForFindWork(job)
-                ) {
-                    return false;
-                }
-
-            } else {
-
-                if (job.status !== "open") {
-                    return false;
-                }
-
-            }
-
-            const title =
-                String(job.title || "").toLowerCase();
-
-            const category =
-                String(job.category || "").toLowerCase();
-
-            const description =
-                String(job.description || "").toLowerCase();
-
-            const area =
-                String(job.area || "").toLowerCase();
-
-            return (
-                title.includes(search) ||
-                category.includes(search) ||
-                description.includes(search) ||
-                area.includes(search)
-            );
-
-        });
 
 
-    /* =========================
-       SEARCH APPROVED WORKERS
-    ========================= */
 
-    const workerProfiles = JSON.parse(
-        localStorage.getItem(
-            "findviaWorkerProfiles"
-        ) || "[]"
-    );
+async function globalSearch() {
 
-    const matchedWorkers = [];
+const input =
+    document.getElementById("globalSearch");
 
-    workerProfiles.forEach(function(profileData) {
+const search =
+    input
+    ? input.value.trim().toLowerCase()
+    : "";
 
-        try {
+const resultsBox =
+    document.getElementById("globalResults");
 
-            const worker =
-                typeof profileData === "string"
-                    ? JSON.parse(profileData)
-                    : profileData;
+if (!resultsBox) {
+    return;
+}
 
-            if (
-                !worker ||
-                worker.verificationStatus !==
-                    "approved"
-            ) {
-                return;
-            }
+if (!search) {
 
-            const name =
-                String(worker.name || "")
-                    .toLowerCase();
+    resultsBox.innerHTML = `
+        <div class="empty-state">
 
-            const service =
-                String(worker.service || "")
-                    .toLowerCase();
+            <strong>
+                Search something on FindVia.
+            </strong>
 
-            const area =
-                String(worker.area || "")
-                    .toLowerCase();
-
-            const experience =
-                String(worker.experience || "")
-                    .toLowerCase();
-
-            if (
-                name.includes(search) ||
-                service.includes(search) ||
-                area.includes(search) ||
-                experience.includes(search)
-            ) {
-
-                matchedWorkers.push(worker);
-
-            }
-
-        } catch (error) {
-
-            console.log(
-                "Invalid worker profile skipped."
-            );
-
-        }
-
-    });
-
-
-    /* =========================
-       RESULTS
-    ========================= */
-
-    if (
-        matchedJobs.length === 0 &&
-        matchedWorkers.length === 0
-    ) {
-
-        resultsBox.innerHTML = `
-            <div class="empty-state">
-
-                <div style="font-size:40px;">
-                    🔎
-                </div>
-
-                <h3>
-                    No results found
-                </h3>
-
-                <p>
-                    "${escapeHTML(search)}"
-                    ke liye koi matching work ya
-                    approved worker nahi mila.
-                </p>
-
-            </div>
-        `;
-
-        return;
-    }
-
-
-    let html = `
-        <div class="worker-results-header">
-
-            <div>
-
-                <span class="results-label">
-                    FINDVIA SEARCH
-                </span>
-
-                <h3>
-                    Search Results
-                </h3>
-
-            </div>
-
-            <span class="results-count">
-                ${
-                    matchedJobs.length +
-                    matchedWorkers.length
-                } found
-            </span>
+            <p>
+                Work title, service, category ya area search karein.
+            </p>
 
         </div>
     `;
 
-
-    /* =========================
-       JOB RESULTS
-    ========================= */
-
-    if (matchedJobs.length > 0) {
-
-        html += `
-            <div style="margin:18px 0 10px;">
-                <strong>
-                    💼 Work Opportunities
-                </strong>
-            </div>
-        `;
-
-        matchedJobs.forEach(function(job) {
-
-            html += `
-                <div class="job-card">
-
-                    <div class="job-card-top">
-
-                        <div>
-
-                            <span class="job-category">
-                                ${escapeHTML(
-                                    job.category
-                                )}
-                            </span>
-
-                            <h3>
-                                ${escapeHTML(
-                                    job.title
-                                )}
-                            </h3>
-
-                        </div>
-
-                        <span class="job-status">
-                            Open
-                        </span>
-
-                    </div>
-
-                    <p class="job-description">
-                        ${escapeHTML(
-                            job.description
-                        )}
-                    </p>
-
-                    <div class="job-meta">
-
-                        <span>
-                            📍 ${escapeHTML(
-                                job.area
-                            )}
-                        </span>
-
-                        <span>
-                            🕒 ${escapeHTML(
-                                job.timing
-                            )}
-                        </span>
-
-                    </div>
-
-                </div>
-            `;
-
-        });
-
-    }
-
-
-    /* =========================
-       WORKER RESULTS
-    ========================= */
-
-    if (matchedWorkers.length > 0) {
-
-        html += `
-            <div style="margin:22px 0 10px;">
-                <strong>
-                    👷 Approved Workers
-                </strong>
-            </div>
-        `;
-
-        matchedWorkers.forEach(function(worker) {
-
-            const workerName =
-                worker.name || "Worker";
-
-            const initial =
-                workerName
-                    .charAt(0)
-                    .toUpperCase();
-
-            html += `
-                <div class="worker-card premium-worker-card">
-
-                    <div class="worker-avatar">
-                        ${escapeHTML(initial)}
-                    </div>
-
-                    <div class="worker-info">
-
-                        <div class="worker-name-row">
-
-                            <h4>
-                                ${escapeHTML(
-                                    workerName
-                                )}
-                            </h4>
-
-                            <span class="verified-badge">
-                                ✓ Verified
-                            </span>
-
-                        </div>
-
-                        <div class="worker-status">
-
-                            <span class="online-dot"></span>
-
-                            ${escapeHTML(
-                                worker.availability ||
-                                "Available"
-                            )}
-
-                        </div>
-
-                        <p>
-                            🔧 ${escapeHTML(
-                                worker.service ||
-                                "Service not specified"
-                            )}
-                        </p>
-
-                        <p>
-                            📍 ${escapeHTML(
-                                worker.area ||
-                                "Area not specified"
-                            )}
-                        </p>
-
-                        <div class="worker-stats">
-
-                            <span>
-                                💼 ${escapeHTML(
-                                    worker.experience ||
-                                    "Experience not specified"
-                                )}
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-            `;
-
-        });
-
-    }
-
-    resultsBox.innerHTML = html;
+    return;
 }
+
+
+const currentRole =
+    localStorage.getItem("findviaUserRole");
+
+
+/*
+ * FindVia rule:
+ * Customer ko direct worker directory nahi dikhani hai.
+ * Work opportunities worker side par available hongi.
+ */
+
+if (currentRole !== "worker") {
+
+    resultsBox.innerHTML = `
+        <div class="empty-state">
+
+            <div style="font-size:40px;">
+                🔒
+            </div>
+
+            <h3>
+                Worker Search
+            </h3>
+
+            <p>
+                Available work search karne ke liye
+                Worker role select karein.
+            </p>
+
+        </div>
+    `;
+
+    return;
+}
+
+
+const {
+    data: jobs,
+    error
+} = await supabaseClient
+    .from("jobs")
+    .select(
+        "id, title, category, description, area, timing, photo_data, status, match_status, matched_worker_id, job_status, created_at"
+    )
+    .eq("status", "open")
+    .order("created_at", {
+        ascending: false
+    });
+
+
+if (error) {
+
+    console.error(
+        "FindVia global search error:",
+        error
+    );
+
+    resultsBox.innerHTML = `
+        <div class="empty-state">
+
+            <strong>
+                Search failed.
+            </strong>
+
+            <p>
+                ${escapeHTML(error.message)}
+            </p>
+
+        </div>
+    `;
+
+    return;
+}
+
+
+const matchedJobs =
+    (jobs || []).filter(function(job) {
+
+        if (
+            job.match_status ||
+            job.job_status === "confirmed" ||
+            job.job_status === "completed"
+        ) {
+            return false;
+        }
+
+
+        const title =
+            String(job.title || "")
+                .toLowerCase();
+
+        const category =
+            String(job.category || "")
+                .toLowerCase();
+
+        const description =
+            String(job.description || "")
+                .toLowerCase();
+
+        const area =
+            String(job.area || "")
+                .toLowerCase();
+
+
+        return (
+            title.includes(search) ||
+            category.includes(search) ||
+            description.includes(search) ||
+            area.includes(search)
+        );
+
+    });
+
+
+if (matchedJobs.length === 0) {
+
+    resultsBox.innerHTML = `
+        <div class="empty-state">
+
+            <div style="font-size:40px;">
+                🔎
+            </div>
+
+            <h3>
+                No work found
+            </h3>
+
+            <p>
+                "${escapeHTML(search)}"
+                ke liye abhi koi available work nahi mila.
+            </p>
+
+        </div>
+    `;
+
+    return;
+}
+
+
+let html = `
+    <div class="worker-results-header">
+
+        <div>
+
+            <span class="results-label">
+                FINDVIA SEARCH
+            </span>
+
+            <h3>
+                Available Work
+            </h3>
+
+        </div>
+
+        <span class="results-count">
+            ${matchedJobs.length} found
+        </span>
+
+    </div>
+`;
+
+
+matchedJobs.forEach(function(job) {
+
+    html += `
+        <div class="job-card">
+
+            <div class="job-card-top">
+
+                <div>
+
+                    <span class="job-category">
+                        ${escapeHTML(
+                            job.category || ""
+                        )}
+                    </span>
+
+                    <h3>
+                        ${escapeHTML(
+                            job.title || ""
+                        )}
+                    </h3>
+
+                </div>
+
+                <span class="job-status">
+                    Open
+                </span>
+
+            </div>
+
+
+            <p class="job-description">
+                ${escapeHTML(
+                    job.description || ""
+                )}
+            </p>
+
+
+            <div class="job-meta">
+
+                <span>
+                    📍 ${escapeHTML(
+                        job.area || ""
+                    )}
+                </span>
+
+                <span>
+                    🕒 ${escapeHTML(
+                        job.timing || ""
+                    )}
+                </span>
+
+            </div>
+
+
+            ${
+                job.photo_data
+                ? `
+                    <img
+                        class="job-photo"
+                        src="${job.photo_data}"
+                        alt="Job photo"
+                    >
+                `
+                : ""
+            }
+
+
+            <div class="job-private-note">
+                🔒 Customer budget is hidden until the appropriate match stage.
+            </div>
+
+
+            <button
+                class="primary-btn job-interest-btn"
+                onclick="respondToJob('${job.id}')"
+            >
+                I'm Interested
+            </button>
+
+        </div>
+    `;
+
+});
+
+
+resultsBox.innerHTML =
+    html;
+
+}
+    
+    
 /* ================================
    USER ROLE SYSTEM
 ================================ */
