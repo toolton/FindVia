@@ -6942,6 +6942,11 @@ function hideAdminScreens() {
         "adminRechargeRequestsScreen"
     );
 
+        const adminJobsScreen =
+        document.getElementById(
+            "adminJobsScreen"
+        );
+
     if (adminLoginScreen) {
         adminLoginScreen.style.display = "none";
     }
@@ -6964,7 +6969,469 @@ if (adminVerificationScreen) {
 if (adminRechargeRequestsScreen) {
     adminRechargeRequestsScreen.style.display = "none";
 }
-    
+        if (adminJobsScreen) {
+        adminJobsScreen.style.display = "none";
+        }
+}
+
+async function openAdminJobs() {
+
+    hideAdminScreens();
+
+    document.getElementById(
+        "homeContent"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "searchScreen"
+    )?.classList.remove("active");
+
+    document.getElementById(
+        "findWorkScreen"
+    )?.classList.remove("active");
+
+    document.getElementById(
+        "findWorkersScreen"
+    )?.classList.remove("active");
+
+    document.getElementById(
+        "profileScreen"
+    )?.classList.remove("active");
+
+    document.getElementById(
+        "workerProfileScreen"
+    )?.classList.remove("active");
+
+    document.getElementById(
+        "postJobScreen"
+    )?.classList.remove("active");
+
+    document.getElementById(
+        "jobResponsesScreen"
+    )?.classList.remove("active");
+
+
+    const myJobsScreen =
+        document.getElementById(
+            "myJobsScreen"
+        );
+
+    if (myJobsScreen) {
+        myJobsScreen.style.display =
+            "none";
+    }
+
+
+    const adminJobsScreen =
+        document.getElementById(
+            "adminJobsScreen"
+        );
+
+    if (!adminJobsScreen) {
+
+        alert(
+            "Admin Jobs screen nahi mili."
+        );
+
+        return;
+    }
+
+
+    adminJobsScreen.style.display =
+        "block";
+
+
+    await loadAdminJobs();
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+async function loadAdminJobs() {
+
+    const jobsList =
+        document.getElementById(
+            "adminJobsList"
+        );
+
+    if (!jobsList) {
+        return;
+    }
+
+
+    jobsList.innerHTML = `
+        <div class="job-card">
+            <p>
+                Jobs load ho rahi hain...
+            </p>
+        </div>
+    `;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "admin_list_findvia_jobs"
+    );
+
+
+    if (error) {
+
+        console.error(
+            "FindVia admin jobs load error:",
+            error
+        );
+
+
+        jobsList.innerHTML = `
+            <div class="job-card">
+                <p>
+                    Jobs load nahi ho saki.
+                </p>
+                <p>
+                    ${escapeHTML(
+                        error.message
+                    )}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    let jobs = data;
+
+
+    if (typeof jobs === "string") {
+
+        try {
+            jobs = JSON.parse(jobs);
+        } catch (parseError) {
+
+            console.error(
+                "FindVia admin jobs JSON parse error:",
+                parseError
+            );
+
+            jobs = [];
+        }
+    }
+
+
+    if (!Array.isArray(jobs)) {
+        jobs = [];
+    }
+
+
+    if (jobs.length === 0) {
+
+        jobsList.innerHTML = `
+            <div class="job-card">
+                <h3>
+                    No Jobs
+                </h3>
+
+                <p>
+                    Abhi FindVia me koi job nahi hai.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    jobsList.innerHTML = "";
+
+
+    jobs.forEach(function(job) {
+
+        const title =
+            escapeHTML(
+                job.title || "Untitled Job"
+            );
+
+
+        const category =
+            escapeHTML(
+                job.category || "-"
+            );
+
+
+        const area =
+            escapeHTML(
+                job.area || "-"
+            );
+
+
+        const price =
+            Number(
+                job.customer_offer ??
+                job.worker_offer ??
+                0
+            ) || 0;
+
+
+        const commissionPercent =
+            Number(
+                job.commission_percent
+            );
+
+
+        const commissionAmount =
+            Number(
+                job.commission_amount
+            );
+
+
+        const safeCommissionPercent =
+            Number.isFinite(
+                commissionPercent
+            )
+            ? commissionPercent
+            : 0;
+
+
+        const safeCommissionAmount =
+            Number.isFinite(
+                commissionAmount
+            )
+            ? commissionAmount
+            : 0;
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "job-card";
+
+
+        card.innerHTML = `
+
+            <div class="job-card-top">
+
+                <div>
+
+                    <span class="job-category">
+                        ${category}
+                    </span>
+
+                    <h3>
+                        ${title}
+                    </h3>
+
+                </div>
+
+                <span class="job-status">
+                    ${
+                        escapeHTML(
+                            job.job_status ||
+                            job.price_status ||
+                            "Unknown"
+                        )
+                    }
+                </span>
+
+            </div>
+
+
+            <p class="job-description">
+
+                📍 ${area}
+
+                <br>
+
+                💰 Agreed Price:
+                <strong>
+                    ₹${price}
+                </strong>
+
+                <br>
+
+                💳 Commission:
+                <strong>
+                    ${safeCommissionPercent}%
+                </strong>
+
+                <br>
+
+                💸 Commission Amount:
+                <strong>
+                    ₹${safeCommissionAmount}
+                </strong>
+
+            </p>
+
+
+            <div
+                style="
+                    margin-top:12px;
+                    display:flex;
+                    gap:8px;
+                    flex-wrap:wrap;
+                "
+            >
+
+                <button
+                    class="primary-btn"
+                    onclick="
+                        adminChangeJobCommission(
+                            ${Number(job.id)}
+                        )
+                    "
+                >
+                    ⚙️ Change Commission
+                </button>
+
+            </div>
+
+        `;
+
+
+        jobsList.appendChild(card);
+
+    });
+}
+
+
+async function adminChangeJobCommission(
+    jobId
+) {
+
+    if (!jobId) {
+
+        alert(
+            "Job ID nahi mila."
+        );
+
+        return;
+    }
+
+
+    const commissionInput =
+        prompt(
+            "Is job ke liye commission percentage enter karein (0-100):"
+        );
+
+
+    if (
+        commissionInput === null
+    ) {
+        return;
+    }
+
+
+    const commission =
+        Number(
+            commissionInput
+        );
+
+
+    if (
+        !Number.isFinite(
+            commission
+        ) ||
+        commission < 0 ||
+        commission > 100
+    ) {
+
+        alert(
+            "Commission 0 se 100 ke beech hona chahiye."
+        );
+
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            "Job #" +
+            jobId +
+            " ki commission " +
+            commission +
+            "% set karni hai?"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "admin_update_findvia_job_commission",
+        {
+            p_job_id:
+                jobId,
+
+            p_commission_percent:
+                commission
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "FindVia admin job commission update error:",
+            error
+        );
+
+
+        alert(
+            "Commission update nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+
+    const newAmount =
+        Number(data);
+
+
+    if (
+        !Number.isFinite(
+            newAmount
+        )
+    ) {
+
+        alert(
+            "Commission update hui, lekin returned amount invalid hai."
+        );
+
+        await loadAdminJobs();
+
+        return;
+    }
+
+
+    alert(
+        "Job commission successfully updated! ✅\n\n" +
+        "New Commission: " +
+        commission +
+        "%\n" +
+        "Commission Amount: ₹" +
+        newAmount
+    );
+
+
+    await loadAdminJobs();
 }
 
 function hideWorkerTransactionScreen() {
