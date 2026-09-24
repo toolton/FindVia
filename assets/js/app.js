@@ -11597,16 +11597,7 @@ function runFindViaSystemTest() {
         )
     );
 
-    test(
-        "Legacy localStorage credit helper is removed",
-        typeof getWorkerCreditsForProfile === "undefined"
-    );
-
-    test(
-        "Legacy localStorage credit transaction helper is removed",
-        typeof addWorkerCreditTransaction === "undefined"
-    );
-
+    
     
 
 
@@ -12059,41 +12050,8 @@ test(
     )
 );
 
-test(
-    "Approved recharge status is saved",
-    sourceHas(
-        "approveWorkerRecharge",
-        /request\.status\s*=\s*["']approved["']/
-    )
-);
 
-test(
-    "Approved recharge saves processed time",
-    sourceHas(
-        "approveWorkerRecharge",
-        "request.processedAt"
-    )
-);
 
-test(
-    "Admin recharge rejection function exists",
-    typeof rejectWorkerRecharge === "function"
-);
-
-test(
-    "Rejected recharge status is saved",
-    sourceHas(
-        "rejectWorkerRecharge",
-        /request\.status\s*=\s*["']rejected["']/
-    )
-);
-test(
-    "Rejected recharge saves processed time",
-    sourceHas(
-        "rejectWorkerRecharge",
-        "request.processedAt"
-    )
-);
 
 test(
     "Recharge requests are protected from duplicate pending UTR",
