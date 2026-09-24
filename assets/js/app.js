@@ -4218,7 +4218,7 @@ if (commissionPreferenceSelect) {
 }
 
     
-   
+}   
 
 /* ================================
    WORKER PROFILE SUMMARY
