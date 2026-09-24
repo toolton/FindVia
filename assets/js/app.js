@@ -6002,35 +6002,16 @@ async function confirmJob(jobId) {
             job.customer_offer
         ) || 0;
 
+showFindViaActionModal(
+    "Confirm Job",
 
-    const currentCommission =
-        await loadFindViaCommissionPercent();
-
-
-    const estimatedCommission =
-        Math.round(
-            (
-                agreedPrice *
-                currentCommission
-            ) / 100
-        );
-
-
-    showFindViaActionModal(
-        "Confirm Job",
-
-        "Job confirm karna hai?\n\n" +
-        "Agreed Price: ₹" +
-        agreedPrice +
-        "\n\n" +
-        "Current Commission: " +
-        currentCommission +
-        "%\n" +
-        "Estimated Commission: ₹" +
-        estimatedCommission +
-        "\n\n" +
-        "Commission job confirm hote hi lock ho jayega.",
-
+    "Job confirm karna hai?\n\n" +
+    "Agreed Price: ₹" +
+    agreedPrice +
+    "\n\n" +
+    "Commission category aur matched worker ki commission preference ke according calculate hoga.\n\n" +
+    "Final commission job confirm hote hi lock ho jayega.",
+    
         [
             {
                 text: "Confirm Job",
