@@ -6762,11 +6762,51 @@ function setWorkerCreditsForProfile(
     );
 }
 
+async function isFindViaAdmin() {
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        return false;
+    }
+
+    const {
+        data: adminRecord,
+        error
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error(
+            "Admin authorization check error:",
+            error
+        );
+        return false;
+    }
+
+    return !!adminRecord;
+}
+
 
 async function openAdminPanel() {
 
-hideAdminScreens();
-    
+    const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+        alert(
+            "Admin access required. Please login with the authorized admin account."
+        );
+        openAdminLogin();
+        return;
+    }
+
+    hideAdminScreens();
+
     document.getElementById("homeContent").style.display = "none";
 
     document.getElementById("searchScreen")?.classList.remove("active");
@@ -6794,74 +6834,111 @@ hideAdminScreens();
 
     adminPanelScreen.style.display = "block";
 
+    const commissionInput =
+        document.getElementById("adminCommissionInput");
 
-const commissionInput =
-    document.getElementById("adminCommissionInput");
+    const commissionDisplay =
+        document.getElementById("adminCommissionCurrent");
 
-const commissionDisplay =
-    document.getElementById("adminCommissionCurrent");
+    const currentCommission =
+        await loadFindViaCommissionPercent();
 
-const currentCommission =
-    await loadFindViaCommissionPercent();
+    if (commissionInput) {
+        commissionInput.value = currentCommission;
+    }
 
-if (commissionInput) {
-    commissionInput.value = currentCommission;
-}
-
-if (commissionDisplay) {
-    commissionDisplay.textContent =
-        currentCommission + "%";
-}
-    
+    if (commissionDisplay) {
+        commissionDisplay.textContent =
+            currentCommission + "%";
+    }
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
 }
-function adminLogin() {
+
+
+async function adminLogin() {
+
+    const emailInput =
+        document.getElementById("adminEmailInput");
 
     const passwordInput =
         document.getElementById("adminPasswordInput");
 
-    if (!passwordInput) {
+    if (!emailInput || !passwordInput) {
         alert("Admin login screen nahi mili.");
         return;
     }
 
-    const password =
-        passwordInput.value.trim();
+    const email =
+        emailInput.value.trim();
 
-    if (!password) {
-        alert("Please admin password enter karein.");
+    const password =
+        passwordInput.value;
+
+    if (!email || !password) {
+        alert("Please email aur password enter karein.");
         return;
     }
 
-    /*
-        Prototype admin password.
-        Real authentication Supabase/backend
-        ke saath later implement hogi.
-    */
-    const ADMIN_PASSWORD = "FindViaAdmin2026";
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
 
-    if (password !== ADMIN_PASSWORD) {
+    if (error || !data.user) {
+        console.error(
+            "Admin login error:",
+            error
+        );
 
         alert(
-            "❌ Incorrect admin password."
+            error?.message ||
+            "Admin login failed."
         );
 
         passwordInput.value = "";
+        return;
+    }
 
+    const {
+        data: adminRecord,
+        error: adminError
+    } = await supabaseClient
+        .from("admin_users")
+        .select("id")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+    if (adminError || !adminRecord) {
+
+        await supabaseClient.auth.signOut();
+
+        alert(
+            "Admin access required. This account is not authorized for the Admin Panel."
+        );
+
+        passwordInput.value = "";
         return;
     }
 
     passwordInput.value = "";
 
-    document.getElementById("adminLoginScreen").style.display =
-        "none";
+    const adminLoginScreen =
+        document.getElementById("adminLoginScreen");
 
-    openAdminPanel();
+    if (adminLoginScreen) {
+        adminLoginScreen.style.display = "none";
+    }
+
+    await openAdminPanel();
 }
+
 
 function openAdminLogin() {
 
