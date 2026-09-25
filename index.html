@@ -15,14 +15,58 @@
 <body>
 
     <!-- Header -->
-    <header class="header">
-        <div class="logo">FindVia</div>
+    
+<header class="header">
+    <div class="logo">FindVia</div>
 
-        <button class="language-btn" onclick="toggleLanguage()">
+    <div style="display:flex; align-items:center; gap:8px;">
+
+        <button
+            type="button"
+            onclick="openFindViaNotifications()"
+            style="
+                position:relative;
+                border:none;
+                background:none;
+                font-size:22px;
+                cursor:pointer;
+                padding:6px;
+            "
+            aria-label="Notifications"
+        >
+            🔔
+            <span
+                id="notificationBadge"
+                style="
+                    display:none;
+                    position:absolute;
+                    top:0;
+                    right:0;
+                    min-width:16px;
+                    height:16px;
+                    padding:0 3px;
+                    border-radius:10px;
+                    background:#ef4444;
+                    color:white;
+                    font-size:10px;
+                    line-height:16px;
+                    text-align:center;
+                    box-sizing:border-box;
+                "
+            >
+                0
+            </span>
+        </button>
+
+        <button
+            class="language-btn"
+            onclick="toggleLanguage()"
+        >
             हिंदी / EN
         </button>
-    </header>
 
+    </div>
+</header>
 
     <!-- Main App -->
     <main>
@@ -1143,6 +1187,61 @@
 </div>
     
 </section>
+
+<!-- FindVia Notifications Screen -->
+
+<section
+    id="findviaNotificationsScreen"
+    class="app-screen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        onclick="goHome()"
+    >
+        Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            🔔
+        </div>
+
+        <div>
+            <h2>Notifications</h2>
+            <p>Your FindVia updates and messages.</p>
+        </div>
+
+    </div>
+
+    <div
+        style="
+            display:flex;
+            justify-content:flex-end;
+            margin-bottom:12px;
+        "
+    >
+        <button
+            type="button"
+            class="back-btn"
+            onclick="markAllFindViaNotificationsRead()"
+            style="font-size:12px;"
+        >
+            Mark all as read
+        </button>
+    </div>
+
+    <div
+        id="findviaNotificationsList"
+        class="results-box"
+    >
+        <p>Loading notifications...</p>
+    </div>
+
+</section>
+    
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
 
@@ -1469,6 +1568,44 @@
         onclick="openAdminRechargeRequests()"
     >
         Review Recharge Requests
+    </button>
+
+</div>
+
+        <!-- Admin Send Notification -->
+
+<div class="job-card">
+
+    <div class="job-card-top">
+
+        <div>
+
+            <span class="job-category">
+                NOTIFICATIONS
+            </span>
+
+            <h3>
+                🔔 Send Notification
+            </h3>
+
+        </div>
+
+        <span class="job-status">
+            Admin
+        </span>
+
+    </div>
+
+    <p class="job-description">
+        Kisi specific FindVia user ko direct in-app message bhejein.
+    </p>
+
+    <button
+        class="primary-btn"
+        style="margin-top:12px;"
+        onclick="openAdminNotifications()"
+    >
+        🔔 Send Notification
     </button>
 
 </div>
@@ -1812,6 +1949,90 @@
         id="adminRechargeRequestsList"
     >
         <!-- Recharge requests will appear here -->
+    </div>
+
+</section>
+
+
+    <!-- Admin Send Notification Screen -->
+
+<section
+    id="adminNotificationsScreen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        onclick="openAdminPanel()"
+    >
+        Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            🔔
+        </div>
+
+        <div>
+            <h2>Send Notification</h2>
+            <p>Send a direct message to a FindVia user.</p>
+        </div>
+
+    </div>
+
+    <div class="profile-form-box">
+
+        <label for="adminNotificationUser">
+            Select User
+        </label>
+
+        <select
+            id="adminNotificationUser"
+            style="width:100%; box-sizing:border-box;"
+        >
+            <option value="">
+                Loading users...
+            </option>
+        </select>
+
+        <label
+            for="adminNotificationTitle"
+            style="margin-top:14px;"
+        >
+            Notification Title
+        </label>
+
+        <input
+            type="text"
+            id="adminNotificationTitle"
+            maxlength="150"
+            placeholder="Notification title"
+        >
+
+        <label
+            for="adminNotificationMessage"
+            style="margin-top:14px;"
+        >
+            Message
+        </label>
+
+        <textarea
+            id="adminNotificationMessage"
+            rows="5"
+            maxlength="1000"
+            placeholder="Message likhein..."
+        ></textarea>
+
+        <button
+            type="button"
+            class="primary-btn"
+            onclick="sendAdminFindViaNotification()"
+            style="margin-top:14px;"
+        >
+            🔔 Send Notification
+        </button>
+
     </div>
 
 </section>
