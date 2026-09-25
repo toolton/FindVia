@@ -368,21 +368,718 @@ async function signOutFindVia() {
 }
 
 function initializeFindViaAuth() {
-    supabaseClient.auth.onAuthStateChange(
-        function(event, session) {
-            findViaCurrentUser =
-                session?.user || null;
+    
+supabaseClient.auth.onAuthStateChange(
+    function(event, session) {
 
-            updateFindViaAuthUI();
-            updateFindViaAuthVisibility();
-        }
-    );
+        findViaCurrentUser =
+            session?.user || null;
 
+        updateFindViaAuthUI();
+        updateFindViaAuthVisibility();
+
+        setTimeout(
+            function() {
+                refreshFindViaNotificationBadge();
+            },
+            0
+        );
+    }
+);
     setTimeout(function() {
         refreshFindViaAuthState();
     }, 0);
 }
-        
+/* =========================================
+   FINDVIA NOTIFICATIONS
+   ========================================= */
+
+async function refreshFindViaNotificationBadge() {
+
+    const badge =
+        document.getElementById(
+            "notificationBadge"
+        );
+
+    if (!badge) {
+        return;
+    }
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+
+        badge.style.display = "none";
+
+        return;
+    }
+
+    const {
+        count,
+        error
+    } = await supabaseClient
+        .from("notifications")
+        .select(
+            "id",
+            {
+                count: "exact",
+                head: true
+            }
+        )
+        .eq(
+            "user_id",
+            user.id
+        )
+        .eq(
+            "is_read",
+            false
+        );
+
+    if (error) {
+
+        console.error(
+            "FindVia notification badge error:",
+            error
+        );
+
+        badge.style.display = "none";
+
+        return;
+    }
+
+    const unreadCount =
+        Number(count) || 0;
+
+    if (unreadCount <= 0) {
+
+        badge.style.display = "none";
+
+        return;
+    }
+
+    badge.textContent =
+        unreadCount > 99
+            ? "99+"
+            : String(unreadCount);
+
+    badge.style.display =
+        "block";
+}
+
+
+async function loadFindViaNotifications() {
+
+    const list =
+        document.getElementById(
+            "findviaNotificationsList"
+        );
+
+    if (!list) {
+        return;
+    }
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+
+        list.innerHTML = `
+            <div class="job-card">
+                <h3>Login required</h3>
+                <p class="job-description">
+                    Please login to view notifications.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    list.innerHTML = `
+        <div class="job-card">
+            <h3>Loading notifications...</h3>
+            <p class="job-description">
+                Please wait.
+            </p>
+        </div>
+    `;
+
+    const {
+        data: notifications,
+        error
+    } = await supabaseClient
+        .from("notifications")
+        .select(
+            "id, title, message, notification_type, is_read, created_at"
+        )
+        .eq(
+            "user_id",
+            user.id
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        )
+        .limit(50);
+
+    if (error) {
+
+        console.error(
+            "FindVia notifications load error:",
+            error
+        );
+
+        list.innerHTML = `
+            <div class="job-card">
+                <h3>Notifications could not be loaded</h3>
+                <p class="job-description">
+                    ${escapeHTML(error.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    if (
+        !notifications ||
+        notifications.length === 0
+    ) {
+
+        list.innerHTML = `
+            <div class="job-card">
+
+                <div
+                    style="
+                        font-size:38px;
+                        text-align:center;
+                        margin-bottom:8px;
+                    "
+                >
+                    🔔
+                </div>
+
+                <h3>
+                    No notifications
+                </h3>
+
+                <p class="job-description">
+                    You are all caught up.
+                </p>
+
+            </div>
+        `;
+
+        await refreshFindViaNotificationBadge();
+
+        return;
+    }
+
+    list.innerHTML =
+        notifications
+        .map(function(notification) {
+
+            const unreadStyle =
+                notification.is_read
+                    ? ""
+                    : "border-left:4px solid #2563eb;";
+
+            const unreadLabel =
+                notification.is_read
+                    ? ""
+                    : `
+                        <span
+                            style="
+                                font-size:11px;
+                                color:#2563eb;
+                                font-weight:600;
+                            "
+                        >
+                            NEW
+                        </span>
+                    `;
+
+            const dateText =
+                notification.created_at
+                    ? new Date(
+                        notification.created_at
+                    ).toLocaleString()
+                    : "";
+
+            return `
+                <div
+                    class="job-card"
+                    style="${unreadStyle}"
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            gap:10px;
+                            align-items:flex-start;
+                        "
+                    >
+
+                        <div>
+                            <span class="job-category">
+                                ${escapeHTML(
+                                    notification.notification_type ||
+                                    "SYSTEM"
+                                )}
+                            </span>
+
+                            <h3>
+                                ${escapeHTML(
+                                    notification.title
+                                )}
+                            </h3>
+                        </div>
+
+                        ${unreadLabel}
+
+                    </div>
+
+                    <p class="job-description">
+                        ${escapeHTML(
+                            notification.message
+                        )}
+                    </p>
+
+                    <small
+                        style="
+                            display:block;
+                            margin-top:8px;
+                            color:#777;
+                        "
+                    >
+                        ${escapeHTML(dateText)}
+                    </small>
+
+                    ${
+                        notification.is_read
+                        ? ""
+                        : `
+                            <button
+                                type="button"
+                                class="primary-btn"
+                                style="
+                                    margin-top:10px;
+                                    font-size:12px;
+                                "
+                                onclick="markFindViaNotificationRead('${notification.id}')"
+                            >
+                                Mark as read
+                            </button>
+                        `
+                    }
+
+                </div>
+            `;
+
+        })
+        .join("");
+
+    await refreshFindViaNotificationBadge();
+}
+
+
+async function openFindViaNotifications() {
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+
+        openAuthScreen();
+
+        return;
+    }
+
+    document.getElementById(
+        "homeContent"
+    ).style.display = "none";
+
+    document
+        .querySelectorAll(
+            ".app-screen"
+        )
+        .forEach(function(screen) {
+
+            screen.classList.remove(
+                "active"
+            );
+
+        });
+
+    const myJobsScreen =
+        document.getElementById(
+            "myJobsScreen"
+        );
+
+    if (myJobsScreen) {
+        myJobsScreen.style.display = "none";
+    }
+
+    const notificationScreen =
+        document.getElementById(
+            "findviaNotificationsScreen"
+        );
+
+    if (!notificationScreen) {
+
+        alert(
+            "Notification screen not found."
+        );
+
+        return;
+    }
+
+    notificationScreen.style.display =
+        "block";
+
+    await loadFindViaNotifications();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+async function markFindViaNotificationRead(
+    notificationId
+) {
+
+    if (!notificationId) {
+        return;
+    }
+
+    const {
+        error
+    } = await supabaseClient
+        .rpc(
+            "mark_findvia_notification_read",
+            {
+                p_notification_id:
+                    notificationId
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "FindVia notification read error:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Notification update failed."
+        );
+
+        return;
+    }
+
+    await loadFindViaNotifications();
+}
+
+
+async function markAllFindViaNotificationsRead() {
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        return;
+    }
+
+    const {
+        error
+    } = await supabaseClient
+        .from("notifications")
+        .update({
+            is_read: true
+        })
+        .eq(
+            "user_id",
+            user.id
+        )
+        .eq(
+            "is_read",
+            false
+        );
+
+    if (error) {
+
+        console.error(
+            "FindVia mark all notifications error:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Notifications update failed."
+        );
+
+        return;
+    }
+
+    await loadFindViaNotifications();
+}
+
+
+/* =========================================
+   ADMIN NOTIFICATIONS
+   ========================================= */
+
+async function openAdminNotifications() {
+
+    const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return;
+    }
+
+    hideAdminScreens();
+
+    const screen =
+        document.getElementById(
+            "adminNotificationsScreen"
+        );
+
+    if (!screen) {
+
+        alert(
+            "Admin notification screen not found."
+        );
+
+        return;
+    }
+
+    screen.style.display =
+        "block";
+
+    await loadAdminNotificationUsers();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+async function loadAdminNotificationUsers() {
+
+    const select =
+        document.getElementById(
+            "adminNotificationUser"
+        );
+
+    if (!select) {
+        return;
+    }
+
+    select.innerHTML =
+        `
+            <option value="">
+                Loading users...
+            </option>
+        `;
+
+    const {
+        data: users,
+        error
+    } = await supabaseClient
+        .rpc(
+            "get_findvia_notification_users"
+        );
+
+    if (error) {
+
+        console.error(
+            "FindVia notification users error:",
+            error
+        );
+
+        select.innerHTML =
+            `
+                <option value="">
+                    Could not load users
+                </option>
+            `;
+
+        alert(
+            error.message ||
+            "Could not load users."
+        );
+
+        return;
+    }
+
+    if (
+        !users ||
+        users.length === 0
+    ) {
+
+        select.innerHTML =
+            `
+                <option value="">
+                    No users found
+                </option>
+            `;
+
+        return;
+    }
+
+    select.innerHTML =
+        `
+            <option value="">
+                Select a user
+            </option>
+        `;
+
+    users.forEach(
+        function(user) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                user.user_id;
+
+            const role =
+                user.user_role === "worker"
+                    ? "Worker"
+                    : "Customer";
+
+            option.textContent =
+                (
+                    user.display_name ||
+                    user.email ||
+                    "FindVia User"
+                ) +
+                " — " +
+                role;
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+}
+
+
+async function sendAdminFindViaNotification() {
+
+    const userId =
+        document.getElementById(
+            "adminNotificationUser"
+        )?.value;
+
+    const title =
+        document.getElementById(
+            "adminNotificationTitle"
+        )?.value.trim();
+
+    const message =
+        document.getElementById(
+            "adminNotificationMessage"
+        )?.value.trim();
+
+    if (!userId) {
+
+        alert(
+            "Please select a user."
+        );
+
+        return;
+    }
+
+    if (!title) {
+
+        alert(
+            "Please notification title enter karein."
+        );
+
+        return;
+    }
+
+    if (!message) {
+
+        alert(
+            "Please notification message enter karein."
+        );
+
+        return;
+    }
+
+    const {
+        error
+    } = await supabaseClient
+        .rpc(
+            "send_findvia_admin_notification",
+            {
+                p_user_id:
+                    userId,
+
+                p_title:
+                    title,
+
+                p_message:
+                    message
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "FindVia admin notification error:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Notification send failed."
+        );
+
+        return;
+    }
+
+    alert(
+        "Notification sent successfully."
+    );
+
+    const titleInput =
+        document.getElementById(
+            "adminNotificationTitle"
+        );
+
+    const messageInput =
+        document.getElementById(
+            "adminNotificationMessage"
+        );
+
+    if (titleInput) {
+        titleInput.value = "";
+    }
+
+    if (messageInput) {
+        messageInput.value = "";
+    }
+}        
 
 let hindiMode =
     localStorage.getItem("findviaLanguage") === "hi";
@@ -6729,6 +7426,11 @@ function hideAdminScreens() {
         "adminRechargeRequestsScreen"
     );
 
+    const adminNotificationsScreen =
+    document.getElementById(
+        "adminNotificationsScreen"
+    );
+
         const adminJobsScreen =
         document.getElementById(
             "adminJobsScreen"
@@ -6756,6 +7458,10 @@ if (adminVerificationScreen) {
 if (adminRechargeRequestsScreen) {
     adminRechargeRequestsScreen.style.display = "none";
 }
+
+    if (adminNotificationsScreen) {
+    adminNotificationsScreen.style.display = "none";
+    }
         if (adminJobsScreen) {
         adminJobsScreen.style.display = "none";
         }
@@ -11641,6 +12347,21 @@ function runFindViaSystemTest() {
         "Admin screens can be hidden",
         typeof hideAdminScreens === "function"
     );
+
+    test(
+    "Notification screen function exists",
+    typeof openFindViaNotifications === "function"
+);
+
+test(
+    "Admin notification function exists",
+    typeof openAdminNotifications === "function"
+);
+
+test(
+    "Admin notification send function exists",
+    typeof sendAdminFindViaNotification === "function"
+);
 
 
     // ==========================================
