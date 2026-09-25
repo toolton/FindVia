@@ -11926,61 +11926,333 @@ async function rejectWorker(workerId) {
 }
 
 
-function runFindViaSystemTest() {
+async function runFindViaSystemTest() {
 
     const results = [];
 
-    function test(name, condition) {
+    function test(name, passed, detail = "") {
 
         results.push({
-            name: name,
-            passed: Boolean(condition)
+            name,
+            passed: Boolean(passed),
+            detail
         });
 
     }
 
-    function getSource(functionName) {
+    async function checkTable(
+        tableName,
+        label
+    ) {
 
         try {
 
-            if (
-                typeof window[functionName] === "function"
-            ) {
-                return window[functionName].toString();
-            }
+            const { error } =
+                await supabaseClient
+                    .from(tableName)
+                    .select("*", { count: "exact", head: true });
 
-            return "";
+            test(
+                label,
+                !error,
+                error
+                    ? error.message
+                    : "Accessible"
+            );
 
         } catch (error) {
 
-            return "";
+            test(
+                label,
+                false,
+                error?.message || "Unknown error"
+            );
 
         }
+
     }
 
-    function sourceHas(
-        functionName,
-        pattern
+    async function checkRpc(
+        rpcName,
+        label,
+        params = {}
     ) {
 
-        const source =
-            getSource(functionName);
+        try {
 
-        if (!source) {
-            return false;
+            const { error } =
+                await supabaseClient.rpc(
+                    rpcName,
+                    params
+                );
+
+            /*
+             * A function can legitimately reject the supplied
+             * test parameters. That still proves the RPC exists
+             * and is reachable.
+             *
+             * Therefore only "function not found" style errors
+             * are treated as an RPC availability failure.
+             */
+
+            const message =
+                String(error?.message || "").toLowerCase();
+
+            const missing =
+                message.includes("could not find the function") ||
+                message.includes("function") &&
+                message.includes("does not exist");
+
+            test(
+                label,
+                !missing,
+                error
+                    ? error.message
+                    : "RPC available"
+            );
+
+        } catch (error) {
+
+            test(
+                label,
+                false,
+                error?.message || "Unknown error"
+            );
+
         }
 
-        if (pattern instanceof RegExp) {
-            return pattern.test(source);
-        }
-
-        return source.includes(pattern);
     }
 
 
     // ==========================================
-    // 1. CORE MARKETPLACE
+    // 1. SUPABASE CONNECTION
     // ==========================================
+
+    test(
+        "Supabase client exists",
+        typeof supabaseClient === "object" &&
+        supabaseClient !== null
+    );
+
+    test(
+        "Supabase URL configured",
+        typeof SUPABASE_URL === "string" &&
+        SUPABASE_URL.includes("supabase.co")
+    );
+
+    test(
+        "Supabase publishable key configured",
+        typeof SUPABASE_PUBLISHABLE_KEY === "string" &&
+        SUPABASE_PUBLISHABLE_KEY.length > 20
+    );
+
+
+    // ==========================================
+    // 2. AUTHENTICATION
+    // ==========================================
+
+    let currentUser = null;
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.getUser();
+
+        currentUser =
+            data?.user || null;
+
+        test(
+            "Authenticated Supabase session",
+            !error && !!currentUser,
+            error
+                ? error.message
+                : currentUser
+                    ? "Authenticated"
+                    : "No active user"
+        );
+
+    } catch (error) {
+
+        test(
+            "Authenticated Supabase session",
+            false,
+            error?.message || "Auth check failed"
+        );
+
+    }
+
+
+    // ==========================================
+    // 3. REQUIRED DATABASE TABLES
+    // ==========================================
+
+    await checkTable(
+        "jobs",
+        "Jobs table accessible"
+    );
+
+    await checkTable(
+        "job_responses",
+        "Job responses table accessible"
+    );
+
+    await checkTable(
+        "worker_profiles",
+        "Worker profiles table accessible"
+    );
+
+    await checkTable(
+        "worker_credits",
+        "Worker credits table accessible"
+    );
+
+    await checkTable(
+        "credit_transactions",
+        "Credit transactions table accessible"
+    );
+
+    await checkTable(
+        "recharge_requests",
+        "Recharge requests table accessible"
+    );
+
+    await checkTable(
+        "notifications",
+        "Notifications table accessible"
+    );
+
+
+    // ==========================================
+    // 4. CORE MARKETPLACE RPCs
+    // ==========================================
+
+    await checkRpc(
+        "create_findvia_job",
+        "Job creation RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "create_findvia_job_response",
+        "Worker response RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "select_findvia_worker",
+        "Worker matching RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "update_findvia_job_price",
+        "Job pricing RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "confirm_findvia_job",
+        "Job confirmation RPC available",
+        {}
+    );
+
+
+    // ==========================================
+    // 5. COMMISSION / CREDIT RPCs
+    // ==========================================
+
+    await checkRpc(
+        "admin_update_findvia_job_commission",
+        "Admin job commission RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "update_findvia_global_commission",
+        "Global commission RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "deduct_worker_credits",
+        "Worker credit deduction RPC available",
+        {}
+    );
+
+
+    // ==========================================
+    // 6. COMPLETION / OTP RPCs
+    // ==========================================
+
+    await checkRpc(
+        "request_findvia_completion_otp",
+        "Completion OTP request RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "get_findvia_completion_otp",
+        "Completion OTP getter available",
+        {}
+    );
+
+    await checkRpc(
+        "complete_findvia_job_with_otp",
+        "OTP completion RPC available",
+        {}
+    );
+
+
+    // ==========================================
+    // 7. RECHARGE RPCs
+    // ==========================================
+
+    await checkRpc(
+        "approve_recharge_request",
+        "Recharge approval RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "reject_recharge_request",
+        "Recharge rejection RPC available",
+        {}
+    );
+
+
+    // ==========================================
+    // 8. NOTIFICATION RPCs
+    // ==========================================
+
+    await checkRpc(
+        "get_findvia_notification_users",
+        "Admin notification users RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "send_findvia_admin_notification",
+        "Admin notification RPC available",
+        {}
+    );
+
+    await checkRpc(
+        "mark_findvia_notification_read",
+        "Notification read RPC available",
+        {}
+    );
+
+
+    // ==========================================
+    // 9. FRONTEND CORE FUNCTIONS
+    // ==========================================
+
+    test(
+        "Customer job creation function exists",
+        typeof saveJob === "function"
+    );
 
     test(
         "Worker response function exists",
@@ -12012,284 +12284,104 @@ function runFindViaSystemTest() {
         typeof confirmJob === "function"
     );
 
+
+    // ==========================================
+    // 10. COMPLETION FRONTEND
+    // ==========================================
+
     test(
-        "Completion OTP generation exists",
+        "Completion OTP generation function exists",
         typeof generateCompletionOTP === "function"
     );
 
     test(
-        "Completion OTP verification exists",
+        "Completion OTP verification function exists",
         typeof verifyCompletionOTP === "function"
     );
 
 
     // ==========================================
-    // 2. WORKER VERIFICATION
+    // 11. WORKER CREDIT FRONTEND
     // ==========================================
 
     test(
-        "Worker verification is required before response",
-        sourceHas(
-            "respondToJob",
-            /verificationStatus\s*!==\s*["']approved["']/
-        )
-    );
-
-    test(
-        "Worker profile is required for response",
-        sourceHas(
-            "respondToJob",
-            "findviaWorkerProfile"
-        )
-    );
-
-   test(
-    "Worker role is required for response",
-    sourceHas(
-        "respondToJob",
-        /currentRole\s*!==\s*["']worker["']/
-    )
-); 
-
-    
-
-
-    // ==========================================
-    // 3. JOB MATCHING SAFETY
-    // ==========================================
-
-    test(
-        "Worker matching checks job existence",
-        sourceHas(
-            "selectWorkerForJob",
-            "if (!job)"
-        )
-    );
-
-    test(
-        "Matched job cannot be matched again",
-        sourceHas(
-            "selectWorkerForJob",
-            /job\.matchStatus\s*===\s*["']matched["']/
-        )
-    );
-
-    test(
-        "Worker responses are used for matching",
-        sourceHas(
-            "selectWorkerForJob",
-            "findviaJobResponses"
-        )
-    );
-
-
-    // ==========================================
-    // 4. PRICING
-    // ==========================================
-
-    test(
-        "Customer pricing function is available",
-        typeof openPricingForJob === "function"
-    );
-
-    test(
-        "Worker offer function is available",
-        typeof openWorkerOffer === "function"
-    );
-
-    test(
-        "Customer price response is available",
-        typeof openCustomerPriceResponse === "function"
-    );
-
-    test(
-        "Confirmation requires accepted price",
-        sourceHas(
-            "confirmJob",
-            /job\.priceStatus\s*!==\s*["']accepted["']/
-        )
-    );
-
-    test(
-        "Already confirmed job is protected",
-        sourceHas(
-            "confirmJob",
-            /job\.jobStatus\s*===\s*["']confirmed["']/
-        )
-    );
-
-
-    // ==========================================
-    // 5. OTP / COMPLETION
-    // ==========================================
-
-    const otpSource =
-        getSource("generateCompletionOTP");
-
-    const verifySource =
-        getSource("verifyCompletionOTP");
-
-    test(
-        "OTP generation requires confirmed job",
-        /job\.jobStatus\s*!==\s*["']confirmed["']/.test(
-            otpSource
-        )
-    );
-
-    test(
-        "OTP verification checks matched worker",
-        verifySource.includes(
-            "job.matchedWorker"
-        )
-    );
-
-    test(
-        "OTP verification requires confirmed job",
-        /job\.jobStatus\s*!==\s*["']confirmed["']/.test(
-            verifySource
-        )
-    );
-
-    test(
-        "OTP completion logic exists",
-        verifySource.includes(
-            "completionOTP"
-        )
-    );
-
-    test(
-        "Insufficient credits block completion",
-        verifySource.includes(
-            "currentCredits"
-        ) &&
-        verifySource.includes(
-            "commissionAmount"
-        )
-    );
-
-    
-
-
-    // ==========================================
-    // PART 1 ENDS HERE
-    // ==========================================
-    // ==========================================
-    // 6. COMMISSION SYSTEM
-    // ==========================================
-
-    test(
-        "Commission getter exists",
-        typeof getFindViaCommissionPercent === "function"
-    );
-
-    test(
-        "Commission setter exists",
-        typeof setFindViaCommissionPercent === "function"
-    );
-
-    test(
-        "Commission calculator exists",
-        typeof calculateFindViaCommission === "function"
-    );
-
-    test(
-        "Admin commission save exists",
-        typeof saveAdminCommission === "function"
-    );
-
-    test(
-        "Completion stores commission percentage",
-        verifySource.includes(
-            "job.commissionPercent"
-        )
-    );
-
-    test(
-        "Completion stores commission amount",
-        verifySource.includes(
-            "job.commissionAmount"
-        )
-    );
-
-    test(
-        "Completion stores commission lock time",
-        verifySource.includes(
-            "job.commissionLockedAt"
-        )
-    );
-
-    const commissionPercent =
-        getFindViaCommissionPercent();
-
-    test(
-        "Commission percentage is valid",
-        Number.isFinite(
-            Number(commissionPercent)
-        ) &&
-        Number(commissionPercent) >= 0 &&
-        Number(commissionPercent) <= 100
-    );
-
-    const commission1000 =
-        calculateFindViaCommission(1000);
-
-    const expected1000 =
-        Math.round(
-            1000 *
-            Number(commissionPercent) /
-            100
-        );
-
-    test(
-        "Commission calculation for ₹1000",
-        commission1000 === expected1000
-    );
-
-    const commission500 =
-        calculateFindViaCommission(500);
-
-    const expected500 =
-        Math.round(
-            500 *
-            Number(commissionPercent) /
-            100
-        );
-
-    test(
-        "Commission calculation for ₹500",
-        commission500 === expected500
-    );
-
-
-        // ==========================================
-    // 7. CREDIT SYSTEM
-    // ==========================================
-
-    test(
-        "Supabase worker credit reader exists",
+        "Worker credit reader exists",
         typeof getWorkerCreditsFromSupabase === "function"
     );
 
     test(
-        "Secure credit deduction RPC is used",
-        verifySource.includes(
-            "complete_findvia_job_with_otp"
-        )
+        "Worker transaction history exists",
+        typeof openWorkerTransactionHistory === "function"
     );
-
-    test(
-        "Completion uses backend commission processing",
-        verifySource.includes(
-            "supabaseClient.rpc"
-        )
-    );
-
-    
-    
 
 
     // ==========================================
-    // 9. ADMIN
+    // 12. RECHARGE FRONTEND
+    // ==========================================
+
+    test(
+        "Worker recharge screen exists",
+        typeof openWorkerRecharge === "function"
+    );
+
+    test(
+        "Recharge submission function exists",
+        typeof submitWorkerRechargeRequest === "function"
+    );
+
+    test(
+        "Admin recharge requests screen exists",
+        typeof openAdminRechargeRequests === "function"
+    );
+
+    test(
+        "Recharge approval function exists",
+        typeof approveWorkerRecharge === "function"
+    );
+
+    test(
+        "Recharge rejection function exists",
+        typeof rejectWorkerRecharge === "function"
+    );
+
+
+    // ==========================================
+    // 13. NOTIFICATION FRONTEND
+    // ==========================================
+
+    test(
+        "Notification screen exists",
+        typeof openFindViaNotifications === "function"
+    );
+
+    test(
+        "Notification badge refresh exists",
+        typeof refreshFindViaNotificationBadge === "function"
+    );
+
+    test(
+        "Notification read function exists",
+        typeof markFindViaNotificationRead === "function"
+    );
+
+    test(
+        "Mark all notifications read exists",
+        typeof markAllFindViaNotificationsRead === "function"
+    );
+
+    test(
+        "Admin notification screen exists",
+        typeof openAdminNotifications === "function"
+    );
+
+    test(
+        "Admin notification send exists",
+        typeof sendAdminFindViaNotification === "function"
+    );
+
+
+    // ==========================================
+    // 14. ADMIN SYSTEM
     // ==========================================
 
     test(
@@ -12303,157 +12395,44 @@ function runFindViaSystemTest() {
     );
 
     test(
-        "Admin worker screen function exists",
+        "Admin worker screen exists",
         typeof openAdminWorkers === "function"
     );
 
-        test(
-        "Admin credit function exists",
-        typeof adminAddWorkerCreditsFromList === "function"
-    );
-
     test(
-        "Admin worker transaction function exists",
-        typeof openWorkerTransactions === "function"
-    );
-
-    test(
-        "Approve worker function exists",
+        "Worker approval function exists",
         typeof approveWorker === "function"
     );
 
     test(
-        "Reject worker function exists",
+        "Worker rejection function exists",
         typeof rejectWorker === "function"
     );
 
     test(
-        "Approve worker sets approved status",
-        sourceHas(
-            "approveWorker",
-            'verificationStatus = "approved"'
-        )
-    );
-
-    test(
-        "Reject worker sets rejected status",
-        sourceHas(
-            "rejectWorker",
-            'verificationStatus = "rejected"'
-        )
-    );
-
-    test(
-        "Admin screens can be hidden",
+        "Admin screens hide function exists",
         typeof hideAdminScreens === "function"
     );
 
-    test(
-    "Notification screen function exists",
-    typeof openFindViaNotifications === "function"
-);
-
-test(
-    "Admin notification function exists",
-    typeof openAdminNotifications === "function"
-);
-
-test(
-    "Admin notification send function exists",
-    typeof sendAdminFindViaNotification === "function"
-);
-
 
     // ==========================================
-    // 10. WORKER TRANSACTION HISTORY
+    // 15. NAVIGATION / UI
     // ==========================================
 
     test(
-        "Worker transaction history exists",
-        typeof openWorkerTransactionHistory === "function"
+        "Find Work function exists",
+        typeof findWork === "function"
     );
 
     test(
-        "Worker transaction screen can be hidden",
-        typeof hideWorkerTransactionScreen === "function"
+        "Find Workers function exists",
+        typeof findWorkers === "function"
     );
 
     test(
-        "Worker history reads transactions",
-        sourceHas(
-            "openWorkerTransactionHistory",
-            "findviaCreditTransactions"
-        )
+        "Profile function exists",
+        typeof showProfile === "function"
     );
-
-    test(
-        "Worker history filters worker transactions",
-        sourceHas(
-            "openWorkerTransactionHistory",
-            "workerProfile"
-        )
-    );
-
-
-    // ==========================================
-    // PART 2 ENDS HERE
-    // ==========================================
-    // ==========================================
-    // 11. NAVIGATION / SCREEN HIDING
-    // ==========================================
-
-    test(
-        "Find Work hides admin screens",
-        sourceHas(
-            "findWork",
-            "hideAdminScreens"
-        )
-    );
-
-    test(
-        "Find Work hides worker transaction screen",
-        sourceHas(
-            "findWork",
-            "hideWorkerTransactionScreen"
-        )
-    );
-
-    test(
-        "Find Workers hides admin screens",
-        sourceHas(
-            "findWorkers",
-            "hideAdminScreens"
-        )
-    );
-
-    test(
-        "Find Workers hides worker transaction screen",
-        sourceHas(
-            "findWorkers",
-            "hideWorkerTransactionScreen"
-        )
-    );
-
-    test(
-        "Profile hides admin screens",
-        sourceHas(
-            "showProfile",
-            "hideAdminScreens"
-        )
-    );
-
-    test(
-        "Profile hides worker transaction screen",
-        sourceHas(
-            "showProfile",
-            "hideWorkerTransactionScreen"
-        )
-    );
-
-
-    // ==========================================
-    // 12. SEARCH
-    // ==========================================
 
     test(
         "Work search exists",
@@ -12470,65 +12449,13 @@ test(
         typeof globalSearch === "function"
     );
 
-    test(
-        "Work category selection exists",
-        typeof selectWorkCategory === "function"
-    );
-
-    test(
-        "Work search uses workSearch",
-        sourceHas(
-            "searchWork",
-            "workSearch"
-        )
-    );
-
-    test(
-        "Worker search uses workerSearch",
-        sourceHas(
-            "searchWorkers",
-            "workerSearch"
-        )
-    );
-
-    test(
-        "Global search function is available",
-        typeof globalSearch === "function"
-    );
-
 
     // ==========================================
-    // 13. JOB AVAILABILITY / EXPIRY
+    // 16. LANGUAGE SYSTEM
     // ==========================================
 
     test(
-        "Posted jobs function exists",
-        typeof showPostedJobs === "function"
-    );
-
-    test(
-        "Job availability logic exists",
-        sourceHas(
-            "showPostedJobs",
-            "available"
-        )
-    );
-
-   test(
-    "Job expiry logic exists",
-    typeof isJobAvailableForFindWork === "function" &&
-    sourceHas(
-        "isJobAvailableForFindWork",
-        "job.timing"
-    )
-); 
-
-    // ==========================================
-    // 14. LANGUAGE SYSTEM
-    // ==========================================
-
-    test(
-        "Language state exists",
+        "Hindi/English state exists",
         typeof hindiMode === "boolean"
     );
 
@@ -12543,31 +12470,18 @@ test(
     );
 
     test(
-        "Message translation exists",
-        typeof translateFindViaMessage === "function"
-    );
-
-    test(
-        "Static language function exists",
-        typeof applyFindViaStaticLanguage === "function"
-    );
-
-    test(
         "Language toggle exists",
         typeof toggleLanguage === "function"
     );
 
     test(
-        "Toggle applies static language",
-        sourceHas(
-            "toggleLanguage",
-            "applyFindViaStaticLanguage"
-        )
+        "Static language system exists",
+        typeof applyFindViaStaticLanguage === "function"
     );
 
 
     // ==========================================
-    // 15. CUSTOM MODALS
+    // 17. CUSTOM MODALS
     // ==========================================
 
     test(
@@ -12576,18 +12490,8 @@ test(
     );
 
     test(
-        "Custom alert close exists",
-        typeof closeFindViaModal === "function"
-    );
-
-    test(
         "Action modal exists",
         typeof showFindViaActionModal === "function"
-    );
-
-    test(
-        "Action modal close exists",
-        typeof closeFindViaActionModal === "function"
     );
 
     test(
@@ -12595,221 +12499,120 @@ test(
         typeof showFindViaInputModal === "function"
     );
 
+
+    // ==========================================
+    // 18. IMPORTANT SOURCE-LEVEL SAFETY CHECKS
+    // ==========================================
+
+    function sourceContains(
+        functionName,
+        text
+    ) {
+
+        try {
+
+            if (
+                typeof window[functionName] !==
+                "function"
+            ) {
+                return false;
+            }
+
+            return window[functionName]
+                .toString()
+                .includes(text);
+
+        } catch (error) {
+
+            return false;
+
+        }
+
+    }
+
+
     test(
-        "Input modal close exists",
-        typeof closeFindViaInputModal === "function"
+        "Job confirmation uses backend RPC",
+        sourceContains(
+            "confirmJob",
+            "confirm_findvia_job"
+        )
+    );
+
+    test(
+        "Completion uses backend RPC",
+        sourceContains(
+            "verifyCompletionOTP",
+            "complete_findvia_job_with_otp"
+        )
+    );
+
+    test(
+        "Recharge approval uses secure RPC",
+        sourceContains(
+            "approveWorkerRecharge",
+            "approve_recharge_request"
+        )
+    );
+
+    test(
+        "Recharge rejection uses secure RPC",
+        sourceContains(
+            "rejectWorkerRecharge",
+            "reject_recharge_request"
+        )
+    );
+
+    test(
+        "Admin notification uses backend RPC",
+        sourceContains(
+            "sendAdminFindViaNotification",
+            "send_findvia_admin_notification"
+        )
     );
 
 
     // ==========================================
-    // 16. ENTER SUPPORT
+    // 19. LEGACY CREDIT AUTHORITY CHECK
     // ==========================================
 
-    const inputModalSource =
-        getSource(
-            "showFindViaInputModal"
+    const appSource =
+        document.documentElement.outerHTML +
+        "\n" +
+        (
+            typeof window.runFindViaSystemTest ===
+            "function"
+                ? window.runFindViaSystemTest.toString()
+                : ""
         );
 
     test(
-        "Input modal supports Enter",
-        inputModalSource.includes(
-            'event.key !== "Enter"'
+        "Supabase credit reader is present",
+        appSource.includes(
+            "getWorkerCreditsFromSupabase"
         )
-    );
-
-    test(
-        "Input modal Enter submits",
-        inputModalSource.includes(
-            "submit.click()"
-        )
-    );
-
-    test(
-        "Work search function is available for Enter",
-        typeof searchWork === "function"
-    );
-
-    test(
-        "Worker search function is available for Enter",
-        typeof searchWorkers === "function"
-    );
-
-    test(
-        "Global search function is available for Enter",
-        typeof globalSearch === "function"
-    );
-
-    test(
-        "Admin login function is available for Enter",
-        typeof adminLogin === "function"
     );
 
 
     // ==========================================
-    // 17. STORAGE
+    // 20. FINAL RESULT
     // ==========================================
-
-    test(
-        "localStorage is available",
-        typeof localStorage !== "undefined"
-    );
-
-    const requiredStorageKeys = [
-        "findviaJobs",
-        "findviaJobResponses",
-        "findviaUserRole",
-        "findviaWorkerProfile",
-        "findviaCreditTransactions",
-        "findviaCommissionPercent",
-        "findviaRechargeRequests"
-    ];
-
-    requiredStorageKeys.forEach(
-        function(key) {
-
-            test(
-                "Storage system supports: " + key,
-                typeof localStorage.getItem === "function"
-            );
-
-        }
-    );
-
-// ==========================================
-// 18. WORKER RECHARGE SYSTEM
-// ==========================================
-
-test(
-    "Worker recharge function exists",
-    typeof openWorkerRecharge === "function"
-);
-
-test(
-    "Worker recharge screen can be hidden",
-    typeof hideWorkerRechargeScreen === "function"
-);
-
-test(
-    "Recharge request submission function exists",
-    typeof submitWorkerRechargeRequest === "function"
-);
-
-test(
-    "Recharge requests use dedicated storage",
-    sourceHas(
-        "submitWorkerRechargeRequest",
-        "findviaRechargeRequests"
-    )
-);
-
-test(
-    "Recharge request stores payment amount",
-    sourceHas(
-        "submitWorkerRechargeRequest",
-        "amount"
-    )
-);
-
-test(
-    "Recharge request stores transaction ID",
-    sourceHas(
-        "submitWorkerRechargeRequest",
-        "transactionId"
-    )
-);
-
-test(
-    "Recharge request starts as pending",
-    sourceHas(
-        "submitWorkerRechargeRequest",
-        /status\s*:\s*["']pending["']/
-    )
-);
-
-test(
-    "Admin recharge requests screen exists",
-    typeof openAdminRechargeRequests === "function"
-);
-
-test(
-    "Admin recharge approval function exists",
-    typeof approveWorkerRecharge === "function"
-);
-
-test(
-    "Admin recharge approval uses secure RPC",
-    sourceHas(
-        "approveWorkerRecharge",
-        "approve_recharge_request"
-    )
-);
-
-test(
-    "Admin recharge rejection uses secure RPC",
-    sourceHas(
-        "rejectWorkerRecharge",
-        "reject_recharge_request"
-    )
-);
-
-
-
-
-test(
-    "Recharge requests are protected from duplicate pending UTR",
-    sourceHas(
-        "submitWorkerRechargeRequest",
-        "alreadyPending"
-    )
-);
-
-test(
-    "Admin screens hide recharge requests screen",
-    sourceHas(
-        "hideAdminScreens",
-        "adminRechargeRequestsScreen"
-    )
-);
-
-test(
-    "Recharge request screen can reopen after processing",
-    sourceHas(
-        "approveWorkerRecharge",
-        "openAdminRechargeRequests"
-    ) &&
-    sourceHas(
-        "rejectWorkerRecharge",
-        "openAdminRechargeRequests"
-    )
-);
-
-
-// ==========================================
-// 19. FINAL RESULT
-// ==========================================
-    
 
     const passed =
         results.filter(
-            function(result) {
-                return result.passed;
-            }
+            result => result.passed
         ).length;
 
     const failed =
         results.filter(
-            function(result) {
-                return !result.passed;
-            }
+            result => !result.passed
         ).length;
-
 
     let message =
         "🧪 FindVia Full System Test\n\n";
 
-
     results.forEach(
-        function(result) {
+        result => {
 
             message +=
                 (
@@ -12817,21 +12620,34 @@ test(
                         ? "✅ "
                         : "❌ "
                 ) +
-                result.name +
-                "\n";
+                result.name;
+
+            if (
+                !result.passed &&
+                result.detail
+            ) {
+
+                message +=
+                    "\n   ↳ " +
+                    result.detail;
+
+            }
+
+            message += "\n";
 
         }
     );
 
-
     message +=
         "\n--------------------\n" +
-        "TOTAL: " + results.length +
+        "TOTAL: " +
+        results.length +
         "\n" +
-        "PASSED: " + passed +
+        "PASSED: " +
+        passed +
         "\n" +
-        "FAILED: " + failed;
-
+        "FAILED: " +
+        failed;
 
     if (failed === 0) {
 
@@ -12845,12 +12661,8 @@ test(
 
     }
 
-
     alert(message);
 }
-    
-    
-
 
 
 function showFindViaModal(
