@@ -154,6 +154,14 @@ function openAuthScreen() {
     document.getElementById("homeContent").style.display =
         "none";
 
+    document.getElementById("findviaNotificationsScreen").style.display =
+    "none";
+
+hideAdminScreens();
+hideWorkerTransactionScreen();
+hideWorkerRechargeScreen();
+hideWorkerVerificationScreen();
+
     document.getElementById("findWorkScreen")
         ?.classList.remove("active");
 
@@ -478,7 +486,8 @@ async function handleFindViaAuth() {
             password: password,
             options: {
                 emailRedirectTo:
-                    "https://toolton.github.io/FindVia/"
+    window.location.origin +
+    window.location.pathname
             }
         });
 
