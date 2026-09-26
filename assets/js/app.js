@@ -30,6 +30,7 @@ async function getFindViaCurrentUser() {
 
 let findViaCurrentUser = null;
 let findViaAuthMode = "login";
+let findViaPasswordRecoveryMode = false;
 
 function updateFindViaAuthVisibility() {
     const authButton = document.querySelector(
@@ -105,11 +106,18 @@ function updateFindViaAuthUI() {
 
         subtitle.textContent =
             "Login to continue using your FindVia account.";
+mainButton.textContent = "Login";
 
-        mainButton.textContent = "Login";
+const forgotButton =
+    document.getElementById("authForgotButton");
 
-        toggleButton.textContent =
-            "Create a new account";
+if (forgotButton) {
+    forgotButton.style.display = "block";
+}
+
+toggleButton.textContent =
+    "Create a new account";
+        
     } else {
         title.textContent =
             "Create FindVia Account";
@@ -118,10 +126,17 @@ function updateFindViaAuthUI() {
             "Create your account using email and password.";
 
         mainButton.textContent =
-            "Sign Up";
+    "Sign Up";
 
-        toggleButton.textContent =
-            "Already have an account? Login";
+const forgotButton =
+    document.getElementById("authForgotButton");
+
+if (forgotButton) {
+    forgotButton.style.display = "none";
+}
+
+toggleButton.textContent =
+    "Already have an account? Login";
     }
 }
 
@@ -178,6 +193,230 @@ function closeAuthScreen() {
     showProfile();
 }
 
+
+async function sendFindViaPasswordReset() {
+
+    const emailInput =
+        document.getElementById("authEmail");
+
+    const status =
+        document.getElementById("authStatus");
+
+    if (!emailInput || !status) {
+        return;
+    }
+
+    const email =
+        emailInput.value.trim();
+
+    if (!email) {
+        status.textContent =
+            "Please enter your email first.";
+
+        emailInput.focus();
+        return;
+    }
+
+    status.textContent =
+        "Sending password reset email...";
+
+    const redirectTo =
+        window.location.origin +
+        window.location.pathname;
+
+    const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo: redirectTo
+            }
+        );
+
+    if (error) {
+        console.error(
+            "FindVia password reset error:",
+            error
+        );
+
+        status.textContent =
+            error.message;
+
+        return;
+    }
+
+    status.textContent =
+        "Password reset email sent. Please check your email.";
+
+    showFindViaModal(
+        "Password reset link email par bhej diya gaya hai. Email open karke password reset karein.",
+        "Reset Email Sent",
+        "📧"
+    );
+}
+
+
+function showFindViaPasswordResetScreen() {
+
+    findViaPasswordRecoveryMode = true;
+
+    const authFormBox =
+        document.getElementById("authFormBox");
+
+    const loggedInAuthBox =
+        document.getElementById("loggedInAuthBox");
+
+    const resetBox =
+        document.getElementById("passwordResetBox");
+
+    const title =
+        document.getElementById("authTitle");
+
+    const subtitle =
+        document.getElementById("authSubtitle");
+
+    if (!resetBox) {
+        return;
+    }
+
+    if (authFormBox) {
+        authFormBox.style.display = "none";
+    }
+
+    if (loggedInAuthBox) {
+        loggedInAuthBox.style.display = "none";
+    }
+
+    resetBox.style.display = "block";
+
+    if (title) {
+        title.textContent = "Set New Password";
+    }
+
+    if (subtitle) {
+        subtitle.textContent =
+            "Create a new password for your FindVia account.";
+    }
+
+    const newPassword =
+        document.getElementById("resetNewPassword");
+
+    if (newPassword) {
+        newPassword.value = "";
+        newPassword.focus();
+    }
+}
+
+
+async function handleFindViaPasswordReset() {
+
+    const newPasswordInput =
+        document.getElementById("resetNewPassword");
+
+    const confirmPasswordInput =
+        document.getElementById("resetConfirmPassword");
+
+    const status =
+        document.getElementById("resetPasswordStatus");
+
+    if (
+        !newPasswordInput ||
+        !confirmPasswordInput ||
+        !status
+    ) {
+        return;
+    }
+
+    const newPassword =
+        newPasswordInput.value;
+
+    const confirmPassword =
+        confirmPasswordInput.value;
+
+    if (newPassword.length < 6) {
+        status.textContent =
+            "Password must be at least 6 characters.";
+
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        status.textContent =
+            "Passwords do not match.";
+
+        return;
+    }
+
+    status.textContent =
+        "Updating password...";
+
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.updateUser({
+        password: newPassword
+    });
+
+    if (error || !data?.user) {
+        console.error(
+            "FindVia password update error:",
+            error
+        );
+
+        status.textContent =
+            error?.message ||
+            "Password update failed.";
+
+        return;
+    }
+
+    findViaPasswordRecoveryMode = false;
+    findViaAuthMode = "login";
+
+    newPasswordInput.value = "";
+    confirmPasswordInput.value = "";
+
+    const resetBox =
+        document.getElementById("passwordResetBox");
+
+    if (resetBox) {
+        resetBox.style.display = "none";
+    }
+
+    await supabaseClient.auth.signOut();
+
+    findViaCurrentUser = null;
+
+    updateFindViaAuthUI();
+    updateFindViaAuthVisibility();
+
+    showFindViaModal(
+        "Password successfully changed. Ab ab apne naye password se login karein.",
+        "Password Updated",
+        "✅"
+    );
+
+    showProfile();
+}
+
+
+function cancelFindViaPasswordReset() {
+
+    findViaPasswordRecoveryMode = false;
+
+    const resetBox =
+        document.getElementById("passwordResetBox");
+
+    if (resetBox) {
+        resetBox.style.display = "none";
+    }
+
+    findViaAuthMode = "login";
+
+    updateFindViaAuthUI();
+    updateFindViaAuthVisibility();
+
+    showProfile();
+}
 function toggleFindViaAuthMode() {
     if (findViaCurrentUser) {
         return;
@@ -373,10 +612,25 @@ supabaseClient.auth.onAuthStateChange(
     function(event, session) {
 
         findViaCurrentUser =
-            session?.user || null;
+    session?.user || null;
 
-        updateFindViaAuthUI();
-        updateFindViaAuthVisibility();
+if (event === "PASSWORD_RECOVERY") {
+
+    setTimeout(
+        function() {
+
+            openAuthScreen();
+            showFindViaPasswordResetScreen();
+
+        },
+        0
+    );
+
+    return;
+}
+
+updateFindViaAuthUI();
+updateFindViaAuthVisibility();
 
         setTimeout(
             function() {
@@ -2019,6 +2273,8 @@ return;
 }
 
 function postJob() {
+
+   document.getElementById("findviaNotificationsScreen").style.display = "none"; 
 hideWorkerTransactionScreen();
 hideWorkerRechargeScreen();
 
@@ -2963,7 +3219,7 @@ async function respondToJob(jobId) {
 
 function goHome() {
 document.getElementById("authScreen").style.display = "none";
-    
+ document.getElementById("findviaNotificationsScreen").style.display = "none";   
 hideAdminScreens();
   hideWorkerTransactionScreen();  
 hideWorkerRechargeScreen();
@@ -2993,7 +3249,7 @@ document.getElementById("postJobScreen").classList.remove("active");
 function showProfile() {
 
 document.getElementById("authScreen").style.display = "none";
-
+document.getElementById("findviaNotificationsScreen").style.display = "none";
     
 hideAdminScreens();
 hideWorkerTransactionScreen();
@@ -3027,7 +3283,7 @@ loadWorkerProfileSummary();
 function closeScreens() {
 
 document.getElementById("authScreen").style.display = "none";
-    
+  document.getElementById("findviaNotificationsScreen").style.display = "none";  
 
 hideWorkerVerificationScreen();
    hideWorkerRechargeScreen(); 
@@ -3656,7 +3912,7 @@ function searchWorkers() {
 }
 
 function openSearch() {
-
+document.getElementById("findviaNotificationsScreen").style.display = "none";
 document.getElementById("authScreen").style.display = "none";
    hideWorkerVerificationScreen(); 
 hideAdminScreens();
@@ -7264,7 +7520,51 @@ async function openAdminPanel() {
         behavior: "smooth"
     });
 }
+async function adminForgotPassword() {
 
+    const emailInput =
+        document.getElementById("adminEmailInput");
+
+    if (!emailInput) {
+        return;
+    }
+
+    const email =
+        emailInput.value.trim();
+
+    if (!email) {
+        alert("Pehle Admin email enter karein.");
+        emailInput.focus();
+        return;
+    }
+
+    const redirectTo =
+        window.location.origin +
+        window.location.pathname;
+
+    const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo: redirectTo
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "Admin password reset error:",
+            error
+        );
+
+        alert(error.message);
+        return;
+    }
+
+    alert(
+        "Password reset email bhej diya gaya hai. Email open karke naya password set karein."
+    );
+}
 
 async function adminLogin() {
 
@@ -7348,6 +7648,8 @@ async function adminLogin() {
 
 
 function openAdminLogin() {
+
+    document.getElementById("findviaNotificationsScreen").style.display = "none";
 
     document.getElementById("homeContent").style.display = "none";
 
