@@ -1114,6 +1114,22 @@
             Login
         </button>
 
+        <button
+    type="button"
+    id="authForgotButton"
+    onclick="sendFindViaPasswordReset()"
+    style="
+        width:100%;
+        margin-top:10px;
+        padding:10px;
+        border:none;
+        background:none;
+        color:#2563eb;
+        cursor:pointer;
+    "
+>
+    Forgot Password?
+        </button>
 
         <button
             type="button"
@@ -1139,7 +1155,69 @@
             style="margin-top:15px;"
         ></p>
 
+<div
+    id="passwordResetBox"
+    style="
+        display:none;
+        margin-top:16px;
+    "
+>
+    <label for="resetNewPassword">
+        New Password
+    </label>
 
+    <input
+        type="password"
+        id="resetNewPassword"
+        placeholder="Enter new password"
+        autocomplete="new-password"
+    >
+
+    <label
+        for="resetConfirmPassword"
+        style="margin-top:12px;"
+    >
+        Confirm New Password
+    </label>
+
+    <input
+        type="password"
+        id="resetConfirmPassword"
+        placeholder="Confirm new password"
+        autocomplete="new-password"
+    >
+
+    <button
+        type="button"
+        class="primary-btn"
+        onclick="handleFindViaPasswordReset()"
+        style="margin-top:14px;"
+    >
+        Update Password
+    </button>
+
+    <button
+        type="button"
+        onclick="cancelFindViaPasswordReset()"
+        style="
+            width:100%;
+            margin-top:10px;
+            padding:10px;
+            border:none;
+            background:none;
+            color:#2563eb;
+            cursor:pointer;
+        "
+    >
+        Back to Login
+    </button>
+
+    <p
+        id="resetPasswordStatus"
+        class="form-note"
+        style="margin-top:12px;"
+    ></p>
+</div>
         
     </div>
 
@@ -1358,6 +1436,23 @@
 >
     🔓 Login to Admin Panel
 </button>  
+
+
+            <button
+    type="button"
+    onclick="adminForgotPassword()"
+    style="
+        width:100%;
+        margin-top:10px;
+        padding:10px;
+        border:none;
+        background:none;
+        color:#2563eb;
+        cursor:pointer;
+    "
+>
+    Forgot Password?
+            </button>
 
         </div>
 
