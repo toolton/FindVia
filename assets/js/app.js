@@ -9970,18 +9970,28 @@ async function openAdminWorkers() {
 async function adminAddWorkerCreditsFromList(workerId) {
 
     if (!workerId) {
-        alert("Worker account ID nahi mila.");
+        alert(
+            "Worker account ID nahi mila."
+        );
+
         return;
     }
+
 
     const user =
         await getFindViaCurrentUser();
 
     if (!user) {
-        alert("Admin login required.");
+
+        alert(
+            "Admin login required."
+        );
+
         openAuthScreen();
+
         return;
     }
+
 
     const {
         data: adminUser,
@@ -9992,10 +10002,19 @@ async function adminAddWorkerCreditsFromList(workerId) {
         .eq("id", user.id)
         .maybeSingle();
 
-    if (adminError || !adminUser) {
-        alert("Admin access required.");
+
+    if (
+        adminError ||
+        !adminUser
+    ) {
+
+        alert(
+            "Admin access required."
+        );
+
         return;
     }
+
 
     const {
         data: worker,
@@ -10006,13 +10025,18 @@ async function adminAddWorkerCreditsFromList(workerId) {
         .eq("id", workerId)
         .maybeSingle();
 
-    if (workerError || !worker) {
+
+    if (
+        workerError ||
+        !worker
+    ) {
 
         alert(
             "Worker profile nahi mili." +
             (
                 workerError
-                    ? "\n\n" + workerError.message
+                    ? "\n\n" +
+                      workerError.message
                     : ""
             )
         );
@@ -10020,20 +10044,28 @@ async function adminAddWorkerCreditsFromList(workerId) {
         return;
     }
 
+
     const amount =
         prompt(
-            `Worker: ${worker.name || "-"}\n\nKitne credits add karne hain?`
+            `Worker: ${
+                worker.name || "-"
+            }\n\nKitne credits add karne hain?`
         );
+
 
     if (amount === null) {
         return;
     }
 
+
     const creditAmount =
         Number(amount);
 
+
     if (
-        !Number.isFinite(creditAmount) ||
+        !Number.isFinite(
+            creditAmount
+        ) ||
         creditAmount <= 0
     ) {
 
@@ -10044,126 +10076,54 @@ async function adminAddWorkerCreditsFromList(workerId) {
         return;
     }
 
+
     const {
-        data: wallet,
-        error: walletError
+        data: newBalance,
+        error: creditError
     } = await supabaseClient
-        .from("worker_credits")
-        .select("id, balance")
-        .eq("worker_id", workerId)
-        .maybeSingle();
+        .rpc(
+            "admin_add_worker_credits",
+            {
+                p_worker_id:
+                    workerId,
 
-    if (walletError) {
+                p_amount:
+                    creditAmount,
 
-        alert(
-            "Worker credits load nahi ho sake.\n\n" +
-            walletError.message
+                p_note:
+                    "Admin manually added credits"
+            }
         );
 
-        return;
-    }
 
-    const currentBalance =
-        Number(wallet?.balance) || 0;
-
-    let updateError = null;
-
-    if (wallet) {
-
-        const result =
-            await supabaseClient
-                .from("worker_credits")
-                .update({
-                    balance:
-                        currentBalance +
-                        creditAmount,
-
-                    updated_at:
-                        new Date().toISOString()
-                })
-                .eq(
-                    "worker_id",
-                    workerId
-                );
-
-        updateError =
-            result.error;
-
-    } else {
-
-        const result =
-            await supabaseClient
-                .from("worker_credits")
-                .insert({
-                    worker_id:
-                        workerId,
-
-                    balance:
-                        creditAmount
-                });
-
-        updateError =
-            result.error;
-    }
-
-    if (updateError) {
+    if (creditError) {
 
         console.error(
             "Admin credit update error:",
-            updateError
+            creditError
         );
 
         alert(
             "Credits add nahi ho sake.\n\n" +
-            updateError.message
+            creditError.message
         );
 
         return;
     }
 
-    const {
-        error: transactionError
-    } = await supabaseClient
-        .from("credit_transactions")
-        .insert({
-            worker_id:
-                workerId,
-
-            amount:
-                creditAmount,
-
-            transaction_type:
-                "admin_credit",
-
-            note:
-                "Admin manually added credits"
-        });
-
-    if (transactionError) {
-
-        console.error(
-            "Admin credit transaction error:",
-            transactionError
-        );
-
-        alert(
-            "Credits add ho gaye, lekin transaction ledger entry save nahi ho saki.\n\n" +
-            transactionError.message
-        );
-
-        await openAdminWorkers();
-
-        return;
-    }
 
     alert(
         `₹${creditAmount} credits added successfully to ${
             worker.name || "worker"
-        }.`
+        }.\n\nNew balance: ₹${Number(
+            newBalance
+        ) || 0}`
     );
+
 
     await openAdminWorkers();
 }
+            
 
 async function openWorkerTransactionsById(workerId) {
 
@@ -12093,33 +12053,34 @@ async function approveWorker(workerId) {
         return;
     }
 
-    const {
-        error: updateError
-    } = await supabaseClient
-        .from("worker_profiles")
-        .update({
-            verification_status:
+const {
+    error: updateError
+} = await supabaseClient
+    .rpc(
+        "admin_update_worker_verification",
+        {
+            p_worker_id:
+                workerId,
+
+            p_status:
                 "approved"
-        })
-        .eq(
-            "id",
-            workerId
-        );
+        }
+    );
 
-    if (updateError) {
+if (updateError) {
 
-        console.error(
-            "Worker approval error:",
-            updateError
-        );
+    console.error(
+        "Worker approval error:",
+        updateError
+    );
 
-        alert(
-            "Worker approve nahi ho saka.\n\n" +
-            updateError.message
-        );
+    alert(
+        "Worker approve nahi ho saka.\n\n" +
+        updateError.message
+    );
 
-        return;
-    }
+    return;
+}
 
     alert(
         "✅ Worker approved successfully."
@@ -12202,33 +12163,33 @@ async function rejectWorker(workerId) {
     }
 
     const {
-        error: updateError
-    } = await supabaseClient
-        .from("worker_profiles")
-        .update({
-            verification_status:
+    error: updateError
+} = await supabaseClient
+    .rpc(
+        "admin_update_worker_verification",
+        {
+            p_worker_id:
+                workerId,
+
+            p_status:
                 "rejected"
-        })
-        .eq(
-            "id",
-            workerId
-        );
+        }
+    );
 
-    if (updateError) {
+if (updateError) {
 
-        console.error(
-            "Worker rejection error:",
-            updateError
-        );
+    console.error(
+        "Worker rejection error:",
+        updateError
+    );
 
-        alert(
-            "Worker reject nahi ho saka.\n\n" +
-            updateError.message
-        );
+    alert(
+        "Worker reject nahi ho saka.\n\n" +
+        updateError.message
+    );
 
-        return;
-    }
-
+    return;
+}
     alert(
         "❌ Worker rejected."
     );
@@ -12498,7 +12459,15 @@ async function checkRpc(
         {}
     );
 
+await checkRpc(
+    "admin_update_worker_verification",
+    "Admin worker verification RPC exists"
+);
 
+await checkRpc(
+    "admin_add_worker_credits",
+    "Admin worker credit RPC exists"
+);
     // ==========================================
     // 5. COMMISSION / CREDIT RPCs
     // ==========================================
