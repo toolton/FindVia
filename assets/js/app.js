@@ -11061,7 +11061,7 @@ async function openWorkerVerificationReview(workerId) {
                     <button
                         class="primary-btn"
                         style="margin-top:14px;"
-                        onclick="approveWorkerFromVerification(${index})"
+                        onclick="approveWorkerFromVerification('${worker.id}')"
                     >
                         ✅ Approve Worker
                     </button>
@@ -11075,7 +11075,7 @@ async function openWorkerVerificationReview(workerId) {
                     <button
                         class="primary-btn"
                         style="margin-top:8px;"
-                        onclick="rejectWorkerFromVerification(${index})"
+                        onclick="rejectWorkerFromVerification('${worker.id}')"
                     >
                         ❌ Reject Worker
                     </button>
