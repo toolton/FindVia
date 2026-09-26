@@ -12870,7 +12870,69 @@ async function checkRpc(
 
     }
 
+    test(
+        "FindVia auth state manager exists",
+        typeof refreshFindViaAuthState === "function"
+    );
 
+    test(
+        "FindVia auth UI manager exists",
+        typeof updateFindViaAuthUI === "function"
+    );
+
+    test(
+        "FindVia login/signup handler exists",
+        typeof handleFindViaAuth === "function"
+    );
+
+    test(
+        "FindVia logout function exists",
+        typeof signOutFindVia === "function"
+    );
+
+    test(
+        "FindVia password reset email function exists",
+        typeof sendFindViaPasswordReset === "function"
+    );
+
+    test(
+        "FindVia password reset screen exists",
+        typeof showFindViaPasswordResetScreen === "function"
+    );
+
+    test(
+        "FindVia password update function exists",
+        typeof handleFindViaPasswordReset === "function"
+    );
+
+    test(
+        "Admin password reset function exists",
+        typeof adminForgotPassword === "function"
+    );
+
+    test(
+        "Password recovery event is handled",
+        sourceContains(
+            "initializeFindViaAuth",
+            "PASSWORD_RECOVERY"
+        )
+    );
+
+    test(
+        "Signup confirmation redirect uses current app URL",
+        sourceContains(
+            "handleFindViaAuth",
+            "window.location.origin"
+        )
+    );
+
+    test(
+        "Password reset uses current app URL",
+        sourceContains(
+            "sendFindViaPasswordReset",
+            "window.location.origin"
+        )
+    );
     test(
         "Job confirmation uses backend RPC",
         sourceContains(
