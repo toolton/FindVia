@@ -10724,6 +10724,19 @@ async function openWorkerVerificationReview(workerId) {
             ).toLocaleString()
             : "Not submitted";
 
+    console.log(
+    "FindVia verification files:",
+    {
+        workerId: worker.id,
+        government_id_file:
+            worker.government_id_file,
+        selfie_file:
+            worker.selfie_file,
+        skill_proof_file:
+            worker.skill_proof_file
+    }
+);
+
     let governmentIdUrl = null;
     let selfieUrl = null;
     let skillProofUrl = null;
