@@ -3303,45 +3303,60 @@ hideWorkerVerificationScreen();
 }
 
 
-           function selectWorkerCategory(category) {
+    async function selectWorkerCategory(category) {
 
-    const workerProfiles = JSON.parse(
-        localStorage.getItem("findviaWorkerProfiles") || "[]"
-    );
+    const {
+        data: workerProfiles,
+        error
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, service, experience, area, availability, verification_status"
+        )
+        .eq(
+            "verification_status",
+            "approved"
+        )
+        .eq(
+            "service",
+            category
+        );
 
-    const approvedWorkers = [];
+    const resultsBox =
+        document.getElementById(
+            "workerResults"
+        );
 
-    workerProfiles.forEach(function(profileData) {
+    if (!resultsBox) {
+        return;
+    }
 
-        try {
+    if (error) {
 
-            const worker =
-                typeof profileData === "string"
-                    ? JSON.parse(profileData)
-                    : profileData;
+        console.error(
+            "Worker category load error:",
+            error
+        );
 
-            if (
-                worker &&
-                worker.verificationStatus === "approved" &&
-                worker.service === category
-            ) {
+        resultsBox.innerHTML = `
+            <div class="empty-state">
 
-                approvedWorkers.push(worker);
+                <h3>
+                    Workers could not be loaded
+                </h3>
 
-            }
+                <p>
+                    ${escapeHTML(error.message)}
+                </p>
 
-        } catch (error) {
+            </div>
+        `;
 
-            console.log(
-                "Invalid worker profile skipped."
-            );
-
-        }
-
-    });
+        return;
+    }
 
     const selectedWorkers =
-        approvedWorkers;
+        workerProfiles || [];
 
     let html = `
         <div class="worker-results-header">
@@ -3385,78 +3400,83 @@ hideWorkerVerificationScreen();
             </div>
         `;
 
-        document.getElementById(
-            "workerResults"
-        ).innerHTML = html;
+        resultsBox.innerHTML =
+            html;
 
         return;
     }
 
-    selectedWorkers.forEach(function(worker) {
+    selectedWorkers.forEach(
+        function(worker) {
 
-        const workerName =
-            worker.name || "Worker";
+            const workerName =
+                worker.name || "Worker";
 
-        const workerInitial =
-            workerName.charAt(0).toUpperCase();
+            const workerInitial =
+                workerName
+                    .charAt(0)
+                    .toUpperCase();
 
-        html += `
-            <div class="worker-card premium-worker-card">
+            html += `
+                <div class="worker-card premium-worker-card">
 
-                <div class="worker-avatar">
-                    ${escapeHTML(workerInitial)}
-                </div>
-
-                <div class="worker-info">
-
-                    <div class="worker-name-row">
-
-                        <h4>
-                            ${escapeHTML(workerName)}
-                        </h4>
-
-                        <span class="verified-badge">
-                            ✓ Verified
-                        </span>
-
+                    <div class="worker-avatar">
+                        ${escapeHTML(workerInitial)}
                     </div>
 
-                    <div class="worker-status">
+                    <div class="worker-info">
 
-                        <span class="online-dot"></span>
+                        <div class="worker-name-row">
 
-                        ${escapeHTML(
-                            worker.availability || "Available"
-                        )}
+                            <h4>
+                                ${escapeHTML(workerName)}
+                            </h4>
 
-                    </div>
+                            <span class="verified-badge">
+                                ✓ Verified
+                            </span>
 
-                    <p>
-                        📍 ${escapeHTML(
-                            worker.area || "Area not specified"
-                        )}
-                    </p>
+                        </div>
 
-                    <div class="worker-stats">
+                        <div class="worker-status">
 
-                        <span>
-                            💼 ${escapeHTML(
-                                worker.experience || "Experience not specified"
+                            <span class="online-dot"></span>
+
+                            ${escapeHTML(
+                                worker.availability ||
+                                "Available"
                             )}
-                        </span>
+
+                        </div>
+
+                        <p>
+                            📍 ${escapeHTML(
+                                worker.area ||
+                                "Area not specified"
+                            )}
+                        </p>
+
+                        <div class="worker-stats">
+
+                            <span>
+                                💼 ${escapeHTML(
+                                    worker.experience ||
+                                    "Experience not specified"
+                                )}
+                            </span>
+
+                        </div>
 
                     </div>
 
                 </div>
+            `;
+        }
+    );
 
-            </div>
-        `;
-    });
-
-    document.getElementById(
-        "workerResults"
-    ).innerHTML = html;
-           }     
+    resultsBox.innerHTML =
+        html;
+    }       
     
     
 
@@ -10306,69 +10326,144 @@ async function openWorkerTransactionsById(workerId) {
 }
 
 
-function openWorkerTransactions(index) {
+async function openWorkerTransactionsById(workerId) {
 
-    const workerProfiles = JSON.parse(
-        localStorage.getItem("findviaWorkerProfiles") || "[]"
-    );
+    if (!workerId) {
 
-    const profileString = workerProfiles[index];
+        alert(
+            "Worker not found."
+        );
 
-    if (!profileString) {
-        alert("Worker not found.");
         return;
     }
 
-    const worker = JSON.parse(profileString);
+    const {
+        data: worker,
+        error: workerError
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name"
+        )
+        .eq(
+            "id",
+            workerId
+        )
+        .maybeSingle();
 
-    const transactions = JSON.parse(
-        localStorage.getItem("findviaCreditTransactions") || "[]"
-    );
+    if (workerError) {
 
-    const workerTransactions = transactions.filter(
-        function(transaction) {
-            return transaction.workerProfile === profileString;
-        }
-    );
+        console.error(
+            "Worker transaction profile load error:",
+            workerError
+        );
 
-    const transactionScreen = document.getElementById(
-        "adminWorkerTransactionsScreen"
-    );
+        alert(
+            "Worker profile load nahi ho saki.\n\n" +
+            workerError.message
+        );
 
-    const transactionList = document.getElementById(
-        "adminWorkerTransactionsList"
-    );
+        return;
+    }
 
-    const workerName = document.getElementById(
-        "adminTransactionWorkerName"
-    );
+    if (!worker) {
+
+        alert(
+            "Worker not found."
+        );
+
+        return;
+    }
+
+    const {
+        data: transactions,
+        error: transactionError
+    } = await supabaseClient
+        .from("credit_transactions")
+        .select(
+            "id, worker_id, amount, transaction_type, note, created_at"
+        )
+        .eq(
+            "worker_id",
+            workerId
+        )
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
+
+    if (transactionError) {
+
+        console.error(
+            "Worker transactions load error:",
+            transactionError
+        );
+
+        alert(
+            "Transaction history load nahi ho saki.\n\n" +
+            transactionError.message
+        );
+
+        return;
+    }
+
+    const transactionScreen =
+        document.getElementById(
+            "adminWorkerTransactionsScreen"
+        );
+
+    const transactionList =
+        document.getElementById(
+            "adminWorkerTransactionsList"
+        );
+
+    const workerName =
+        document.getElementById(
+            "adminTransactionWorkerName"
+        );
 
     if (
         !transactionScreen ||
         !transactionList ||
         !workerName
     ) {
-        alert("Transaction screen not found.");
+
+        alert(
+            "Transaction screen not found."
+        );
+
         return;
     }
 
-    document.getElementById("adminWorkersScreen").style.display =
-        "none";
+    document.getElementById(
+        "adminWorkersScreen"
+    ).style.display = "none";
 
-    transactionScreen.style.display = "block";
+    transactionScreen.style.display =
+        "block";
 
     workerName.textContent =
-        worker.name + " • Transaction History";
+        worker.name +
+        " • Transaction History";
 
-    if (workerTransactions.length === 0) {
+    if (
+        !transactions ||
+        transactions.length === 0
+    ) {
 
         transactionList.innerHTML = `
             <div class="job-card">
-                <h3>No transactions yet</h3>
+
+                <h3>
+                    No transactions yet
+                </h3>
 
                 <p class="job-description">
                     Is worker ke liye abhi koi credit transaction nahi hai.
                 </p>
+
             </div>
         `;
 
@@ -10384,91 +10479,98 @@ function openWorkerTransactions(index) {
 
     let runningBalance = 0;
 
-workerTransactions
-    .slice()
-    .sort(function(a, b) {
-        return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
-    })
-    .forEach(function(transaction) {
+    transactions.forEach(
+        function(transaction) {
 
-        const amount = Number(transaction.amount) || 0;
+            const amount =
+                Number(transaction.amount) || 0;
 
-        runningBalance += amount;
+            runningBalance +=
+                amount;
 
-        const balanceAfter =
-            transaction.balanceAfter !== undefined
-                ? Number(transaction.balanceAfter)
-                : runningBalance;
+            const isDebit =
+                amount < 0;
 
-        const isDebit = amount < 0;
+            const displayAmount =
+                Math.abs(amount);
 
-        const displayAmount = Math.abs(amount);
+            const date =
+                transaction.created_at
+                    ? new Date(
+                        transaction.created_at
+                    ).toLocaleString()
+                    : "Date unavailable";
 
-        const date = transaction.createdAt
-            ? new Date(transaction.createdAt).toLocaleString()
-            : "Date unavailable";
+            const card =
+                document.createElement(
+                    "div"
+                );
 
-        const card = document.createElement("div");
+            card.className =
+                "job-card";
 
-        card.className = "job-card";
+            card.innerHTML = `
+                <div class="job-card-top">
 
-        card.innerHTML = `
-            <div class="job-card-top">
+                    <div>
 
-                <div>
+                        <span class="job-category">
+                            ${escapeHTML(
+                                transaction.transaction_type ||
+                                "Credit Transaction"
+                            )}
+                        </span>
 
-                    <span class="job-category">
-                        ${transaction.type || "Credit Transaction"}
+                        <h3>
+                            ${
+                                isDebit
+                                    ? "💸 −"
+                                    : "💰 +"
+                            }₹${displayAmount}
+                        </h3>
+
+                    </div>
+
+                    <span class="job-status">
+                        ${
+                            isDebit
+                                ? "Deducted"
+                                : "Added"
+                        }
                     </span>
-
-                    <h3>
-                        ${isDebit ? "💸 −" : "💰 +"}₹${displayAmount}
-                    </h3>
 
                 </div>
 
-                <span class="job-status">
-                    ${isDebit ? "Deducted" : "Added"}
-                </span>
+                <p class="job-description">
 
-            </div>
+                    📅 ${escapeHTML(date)}
 
-            <p class="job-description">
+                    <br>
 
-                📅 ${date}
+                    💰 Balance after:
+                    <strong>
+                        ₹${runningBalance}
+                    </strong>
 
-                <br>
+                    ${
+                        transaction.note
+                            ? `
+                                <br>
+                                📝 ${escapeHTML(
+                                    transaction.note
+                                )}
+                            `
+                            : ""
+                    }
 
-                💰 Balance after:
-                <strong>₹${balanceAfter}</strong>
+                </p>
+            `;
 
-                ${
-                    transaction.note
-                    ? `<br>📝 ${transaction.note}`
-                    : ""
-                }      
-${
-    transaction.jobId
-    ? `
-        <br>🔧 Job ID:
-        <strong>#${transaction.jobId}</strong>
-
-        <br>💵 Job Amount:
-        <strong>₹${transaction.jobAmount}</strong>
-
-        <br>📊 Commission:
-        <strong>
-            ${transaction.commissionPercent}%
-            (₹${transaction.commissionAmount})
-        </strong>
-    `
-    : ""
-}
-            </p>
-        `;
-
-        transactionList.appendChild(card);
-    });
+            transactionList.appendChild(
+                card
+            );
+        }
+    );
 
     window.scrollTo({
         top: 0,
