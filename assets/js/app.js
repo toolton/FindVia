@@ -2478,20 +2478,7 @@ async function loadWorkerServices() {
 
     });
 
-    const savedProfile =
-        JSON.parse(
-            localStorage.getItem(
-                "findviaWorkerProfile"
-            ) || "null"
-        );
-
-    if (
-        savedProfile &&
-        savedProfile.service
-    ) {
-        serviceSelect.value =
-            savedProfile.service;
-    }
+    
 }
 
 async function saveJob() {
@@ -3703,7 +3690,8 @@ async function searchWork() {
 }
 
 
-function searchWorkers() {
+ 
+async function searchWorkers() {
 
     const searchInput =
         document.getElementById("workerSearch");
@@ -3713,11 +3701,16 @@ function searchWorkers() {
         ? searchInput.value.trim().toLowerCase()
         : "";
 
+    const resultsBox =
+        document.getElementById("workerResults");
+
+    if (!resultsBox) {
+        return;
+    }
+
     if (search === "") {
 
-        document.getElementById(
-            "workerResults"
-        ).innerHTML = `
+        resultsBox.innerHTML = `
             <div class="empty-state">
                 <strong>Search workers or services.</strong>
                 <p>
@@ -3729,75 +3722,71 @@ function searchWorkers() {
         return;
     }
 
-    const workerProfiles = JSON.parse(
-        localStorage.getItem(
-            "findviaWorkerProfiles"
-        ) || "[]"
-    );
-
-    const matchedWorkers = [];
-
-    workerProfiles.forEach(function(profileData) {
-
-        try {
-
-            const worker =
-                typeof profileData === "string"
-                    ? JSON.parse(profileData)
-                    : profileData;
-
-            if (
-                !worker ||
-                worker.verificationStatus !== "approved"
-            ) {
-                return;
-            }
-
-            const name =
-                String(worker.name || "").toLowerCase();
-
-            const service =
-                String(worker.service || "").toLowerCase();
-
-            const area =
-                String(worker.area || "").toLowerCase();
-
-            const experience =
-                String(worker.experience || "").toLowerCase();
-
-            const availability =
-                String(worker.availability || "").toLowerCase();
-
-            if (
-                name.includes(search) ||
-                service.includes(search) ||
-                area.includes(search) ||
-                experience.includes(search) ||
-                availability.includes(search)
-            ) {
-
-                matchedWorkers.push(worker);
-
-            }
-
-        } catch (error) {
-
-            console.log(
-                "Invalid worker profile skipped."
-            );
-
-        }
-
-    });
-
-    const resultsBox =
-        document.getElementById(
-            "workerResults"
+    const {
+        data: workerProfiles,
+        error
+    } = await supabaseClient
+        .from("worker_profiles")
+        .select(
+            "id, name, service, experience, area, availability, verification_status"
+        )
+        .eq(
+            "verification_status",
+            "approved"
         );
 
-    if (!resultsBox) {
+    if (error) {
+
+        console.error(
+            "Worker search error:",
+            error
+        );
+
+        resultsBox.innerHTML = `
+            <div class="empty-state">
+                <strong>Workers could not be loaded.</strong>
+                <p>
+                    ${escapeHTML(error.message)}
+                </p>
+            </div>
+        `;
+
         return;
     }
+
+    const matchedWorkers =
+        (workerProfiles || []).filter(
+            function(worker) {
+
+                const name =
+                    String(worker.name || "")
+                        .toLowerCase();
+
+                const service =
+                    String(worker.service || "")
+                        .toLowerCase();
+
+                const area =
+                    String(worker.area || "")
+                        .toLowerCase();
+
+                const experience =
+                    String(worker.experience || "")
+                        .toLowerCase();
+
+                const availability =
+                    String(worker.availability || "")
+                        .toLowerCase();
+
+                return (
+                    name.includes(search) ||
+                    service.includes(search) ||
+                    area.includes(search) ||
+                    experience.includes(search) ||
+                    availability.includes(search)
+                );
+            }
+        );
 
     let html = `
         <div class="worker-results-header">
@@ -3844,81 +3833,87 @@ function searchWorkers() {
         return;
     }
 
-    matchedWorkers.forEach(function(worker) {
+    matchedWorkers.forEach(
+        function(worker) {
 
-        const workerName =
-            worker.name || "Worker";
+            const workerName =
+                worker.name || "Worker";
 
-        const workerInitial =
-            workerName
-            .charAt(0)
-            .toUpperCase();
+            const workerInitial =
+                workerName
+                    .charAt(0)
+                    .toUpperCase();
 
-        html += `
-            <div class="worker-card premium-worker-card">
+            html += `
+                <div class="worker-card premium-worker-card">
 
-                <div class="worker-avatar">
-                    ${escapeHTML(workerInitial)}
-                </div>
-
-                <div class="worker-info">
-
-                    <div class="worker-name-row">
-
-                        <h4>
-                            ${escapeHTML(workerName)}
-                        </h4>
-
-                        <span class="verified-badge">
-                            ✓ Verified
-                        </span>
-
+                    <div class="worker-avatar">
+                        ${escapeHTML(workerInitial)}
                     </div>
 
-                    <div class="worker-status">
+                    <div class="worker-info">
 
-                        <span class="online-dot"></span>
+                        <div class="worker-name-row">
 
-                        ${escapeHTML(
-                            worker.availability ||
-                            "Available"
-                        )}
+                            <h4>
+                                ${escapeHTML(workerName)}
+                            </h4>
 
-                    </div>
+                            <span class="verified-badge">
+                                ✓ Verified
+                            </span>
 
-                    <p>
-                        🔧 ${escapeHTML(
-                            worker.service ||
-                            "Service not specified"
-                        )}
-                    </p>
+                        </div>
 
-                    <p>
-                        📍 ${escapeHTML(
-                            worker.area ||
-                            "Area not specified"
-                        )}
-                    </p>
+                        <div class="worker-status">
 
-                    <div class="worker-stats">
+                            <span class="online-dot"></span>
 
-                        <span>
-                            💼 ${escapeHTML(
-                                worker.experience ||
-                                "Experience not specified"
+                            ${escapeHTML(
+                                worker.availability ||
+                                "Available"
                             )}
-                        </span>
+
+                        </div>
+
+                        <p>
+                            🔧 ${escapeHTML(
+                                worker.service ||
+                                "Service not specified"
+                            )}
+                        </p>
+
+                        <p>
+                            📍 ${escapeHTML(
+                                worker.area ||
+                                "Area not specified"
+                            )}
+                        </p>
+
+                        <div class="worker-stats">
+
+                            <span>
+                                💼 ${escapeHTML(
+                                    worker.experience ||
+                                    "Experience not specified"
+                                )}
+                            </span>
+
+                        </div>
 
                     </div>
 
                 </div>
-
-            </div>
-        `;
-    });
+            `;
+        }
+    );
 
     resultsBox.innerHTML = html;
 }
+    
+
+            
+                    
 
 function openSearch() {
 document.getElementById("findviaNotificationsScreen").style.display = "none";
@@ -4522,23 +4517,7 @@ const commissionPreference =
         return;
     }
 
-    const workerProfile = {
-    name: name,
-    service: service,
-    experience: experience,
-    area: area,
-    availability: availability,
-    commissionPreference:
-        commissionPreference,
-    verificationStatus:
-        verificationStatus
-};
-
-    localStorage.setItem(
-        "findviaWorkerProfile",
-        JSON.stringify(workerProfile)
-    );
-
+    
     alert(
         "Worker profile saved successfully."
     );
@@ -4986,98 +4965,7 @@ if (!profile) {
         }
 
 
-        /*
-         * Keep local profile data
-         * for current frontend screens.
-         */
-        profile.verificationStatus =
-            "pending";
-
-        profile.verificationSubmitted =
-            true;
-
-        profile.verificationSubmittedAt =
-            new Date().toISOString();
-
-        profile.verificationDocuments = {
-
-            governmentId:
-                governmentPath,
-
-            selfie:
-                selfiePath,
-
-            skillProof:
-                skillPath || ""
-        };
-
-
-        const profileString =
-            JSON.stringify(profile);
-
-
-        localStorage.setItem(
-            "findviaWorkerProfile",
-            profileString
-        );
-
-
-        /*
-         * Keep existing admin/local
-         * verification list compatible.
-         */
-        let workerProfiles =
-            JSON.parse(
-                localStorage.getItem(
-                    "findviaWorkerProfiles"
-                ) || "[]"
-            );
-
-
-        const oldProfile =
-            workerProfiles.findIndex(
-                function(item) {
-
-                    try {
-
-                        const worker =
-                            typeof item === "string"
-                                ? JSON.parse(item)
-                                : item;
-
-                        return (
-                            worker &&
-                            worker.name ===
-                                profile.name
-                        );
-
-                    } catch (error) {
-
-                        return false;
-                    }
-                }
-            );
-
-
-        if (oldProfile !== -1) {
-
-            workerProfiles[oldProfile] =
-                profileString;
-
-        } else {
-
-            workerProfiles.push(
-                profileString
-            );
-        }
-
-
-        localStorage.setItem(
-            "findviaWorkerProfiles",
-            JSON.stringify(
-                workerProfiles
-            )
-        );
+        
 
 
         alert(
