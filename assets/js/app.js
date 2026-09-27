@@ -2507,20 +2507,48 @@ async function saveJob() {
         document.getElementById("jobTiming").value;
 
     const budget =
-        document.getElementById("jobBudget").value.trim();
+    document.getElementById("jobBudget").value.trim();
 
-    const photoInput =
-        document.getElementById("jobPhoto");
+const customerName =
+    document.getElementById("jobCustomerName").value.trim();
 
+const customerPhone =
+    document.getElementById("jobCustomerPhone").value.trim();
 
-    if (
-        !title ||
-        !category ||
-        !description ||
-        !area ||
-        !timing ||
-        !budget
-    ) {
+const customerAddress =
+    document.getElementById("jobCustomerAddress").value.trim();
+
+const photoInput =
+    document.getElementById("jobPhoto");
+
+if (
+    !title ||
+    !category ||
+    !description ||
+    !area ||
+    !timing ||
+    !customerName ||
+    !customerPhone ||
+    !customerAddress ||
+    !budget
+) {
+    alert(
+        "Please complete all required job details."
+    );
+
+    return;
+}
+
+if (
+    !/^[0-9]{10}$/.test(customerPhone)
+) {
+    alert(
+        "Please enter a valid 10-digit mobile number."
+    );
+
+    return;
+}
+   {
         alert(
             "Please complete all required job details."
         );
@@ -2587,7 +2615,36 @@ async function saveJob() {
                 return;
             }
 
+const {
+    error: contactError
+} = await supabaseClient
+    .from("findvia_customer_job_contacts")
+    .upsert(
+        {
+            job_id: jobId,
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            customer_address: customerAddress
+        },
+        {
+            onConflict: "job_id"
+        }
+    );
 
+if (contactError) {
+
+    console.error(
+        "FindVia customer contact save error:",
+        contactError
+    );
+
+    alert(
+        "Job create ho gayi, lekin contact details save nahi ho saki.\n\n" +
+        contactError.message
+    );
+
+    return;
+}
             alert(
                 "Your job has been posted successfully."
             );
@@ -2616,6 +2673,18 @@ async function saveJob() {
             document.getElementById(
                 "jobBudget"
             ).value = "";
+
+            document.getElementById(
+    "jobCustomerName"
+).value = "";
+
+document.getElementById(
+    "jobCustomerPhone"
+).value = "";
+
+document.getElementById(
+    "jobCustomerAddress"
+).value = "";
 
             document.getElementById(
                 "jobPhoto"
@@ -4443,10 +4512,14 @@ async function saveWorkerProfile() {
         document.getElementById("workerExperience").value;
 
     const area =
-        document.getElementById("workerArea").value.trim();
+    document.getElementById("workerArea").value.trim();
 
-    const availability =
-        document.getElementById("workerAvailability").value;
+const phone =
+    document.getElementById("workerPhone").value.trim();
+
+const availability =
+    document.getElementById("workerAvailability").value;
+    
 const commissionPreference =
     document.getElementById("workerCommissionPreference")?.value ||
     "percentage";
@@ -4455,13 +4528,22 @@ const commissionPreference =
     if (
     !name ||
     !service ||
-    !experience ||
-    !area ||
+    !experience ||    
+        !area ||
+!phone ||     
     !availability ||
     !commissionPreference
 ) {
         alert("Please complete all worker profile details.");
         return;
+    }
+
+    if (!/^[0-9]{10}$/.test(phone)) {
+    alert(
+        "Please enter a valid 10-digit mobile number."
+    );
+
+    return;
     }
 
     const user =
@@ -4504,7 +4586,8 @@ const commissionPreference =
     service: service,
     experience: experience,
     area: area,
-    availability: availability,
+phone: phone,
+availability: availability,
     commission_preference:
         commissionPreference,
     verification_status:
@@ -5026,7 +5109,7 @@ async function loadWorkerProfile() {
     } = await supabaseClient
         .from("worker_profiles")
         .select(
-    "id, name, service, experience, area, availability, commission_preference, verification_status"
+    "id, name, service, experience, area, phone, availability, commission_preference, verification_status"
 )
         .eq("id", user.id)
         .maybeSingle();
@@ -5055,6 +5138,9 @@ document.getElementById("workerExperience").value =
 
 document.getElementById("workerArea").value =
     profile.area || "";
+
+    document.getElementById("workerPhone").value =
+    profile.phone || "";
 
 document.getElementById("workerAvailability").value =
     profile.availability || "";
@@ -5354,12 +5440,24 @@ async function loadMyJobs() {
 
     let actionButton = "";
 
-    if (job.job_status === "confirmed") {
+       if (
+    job.job_status === "confirmed" ||
+    job.status === "confirmed"
+) {
 
-        statusText =
-            "✅ Job Confirmed";
+    statusText =
+        "✅ Job Confirmed";
 
-    } else if (
+    actionButton = `
+        <button
+            class="primary-btn"
+            onclick="openFindViaJobContacts('${job.id}')"
+        >
+            📞 View Contact Details
+        </button>
+    `;
+       }     
+     else if (
         job.price_status === "accepted"
     ) {
 
@@ -5625,17 +5723,21 @@ jobs.forEach(function(job) {
         `;
 
     } else if (
-        job.job_status === "confirmed"
-    ) {
+    job.job_status === "confirmed" ||
+    job.status === "confirmed"
+) {
 
-        statusText =
-            "✅ Job Confirmed";
+    statusText =
+        "✅ Job Confirmed";
 
-        actionButton = `
-            <div class="job-private-note">
-                🔓 Job confirmed. Contact details will be available after confirmation.
-            </div>
-        `;
+    actionButton = `
+        <button
+            class="primary-btn"
+            onclick="openFindViaJobContacts('${job.id}')"
+        >
+            📞 View Contact Details
+        </button>
+    `;
 
     } else if (
         job.price_status === "accepted"
@@ -6989,7 +7091,37 @@ showFindViaActionModal(
 
                         return;
                     }
+const {
+    data: contactsUnlocked,
+    error: contactUnlockError
+} = await supabaseClient.rpc(
+    "unlock_findvia_job_contacts",
+    {
+        p_job_id: jobId
+    }
+);
 
+if (contactUnlockError || !contactsUnlocked) {
+
+    console.error(
+        "FindVia contact unlock error:",
+        contactUnlockError
+    );
+
+    closeFindViaActionModal();
+
+    alert(
+        "Job confirm ho gayi hai, lekin contact details unlock nahi ho saki.\n\n" +
+        (
+            contactUnlockError?.message ||
+            "Please open the job again."
+        )
+    );
+
+    await showMyJobs();
+
+    return;
+}
 
                     const {
                         data: confirmedJob,
@@ -7063,7 +7195,149 @@ showFindViaActionModal(
     );
 }
 
+async function openFindViaJobContacts(jobId) {
 
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        alert("Please login to continue.");
+        return;
+    }
+
+    const {
+        data: job,
+        error: jobError
+    } = await supabaseClient
+        .from("jobs")
+        .select(`
+            id,
+            customer_id,
+            matched_worker_id,
+            status,
+            match_status
+        `)
+        .eq("id", jobId)
+        .maybeSingle();
+
+    if (jobError) {
+
+        console.error(
+            "FindVia contact job error:",
+            jobError
+        );
+
+        alert(
+            "Job details load nahi ho saki.\n\n" +
+            jobError.message
+        );
+
+        return;
+    }
+
+    if (!job) {
+        alert("Job nahi mili.");
+        return;
+    }
+
+    const isCustomer =
+        job.customer_id === user.id;
+
+    const isWorker =
+        job.matched_worker_id === user.id;
+
+    if (!isCustomer && !isWorker) {
+
+        alert(
+            "Contact details aapke liye available nahi hain."
+        );
+
+        return;
+    }
+
+    if (
+        job.status !== "confirmed" &&
+        job.match_status !== "confirmed"
+    ) {
+
+        alert(
+            "Contact details job confirmation ke baad hi available hongi."
+        );
+
+        return;
+    }
+
+    const {
+        data: contacts,
+        error: contactError
+    } = await supabaseClient
+        .from("findvia_job_contacts")
+        .select(`
+            customer_name,
+            customer_phone,
+            customer_address,
+            worker_name,
+            worker_phone
+        `)
+        .eq("job_id", jobId)
+        .maybeSingle();
+
+    if (contactError) {
+
+        console.error(
+            "FindVia contact load error:",
+            contactError
+        );
+
+        alert(
+            "Contact details load nahi ho saki.\n\n" +
+            contactError.message
+        );
+
+        return;
+    }
+
+    if (!contacts) {
+
+        alert(
+            "Contact details abhi available nahi hain. Please try again."
+        );
+
+        return;
+    }
+
+    let message = "";
+
+    if (isCustomer) {
+
+        message =
+            "Worker Contact\n\n" +
+            "Name: " +
+            (contacts.worker_name || "Not available") +
+            "\n\n" +
+            "Mobile: " +
+            (contacts.worker_phone || "Not available");
+
+    } else {
+
+        message =
+            "Customer Contact\n\n" +
+            "Name: " +
+            contacts.customer_name +
+            "\n\n" +
+            "Mobile: " +
+            contacts.customer_phone +
+            "\n\n" +
+            "Job Address:\n" +
+            contacts.customer_address;
+    }
+
+    showFindViaModal(
+        message,
+        "Contact Details",
+        "📞"
+    );
+}
 
 async function generateCompletionOTP(jobId) {
 
