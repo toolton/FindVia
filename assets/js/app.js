@@ -5349,93 +5349,102 @@ async function loadMyJobs() {
 
         matchedJobs.forEach(function(job) {
 
-            let statusText =
-                "✅ Worker Matched";
+    let statusText =
+        "✅ Worker Matched";
 
-            if (job.job_status === "confirmed") {
+    let actionButton = "";
 
-                statusText =
-                    "✅ Job Confirmed";
+    if (job.job_status === "confirmed") {
 
-            } else if (
-                job.price_status === "accepted"
-            ) {
+        statusText =
+            "✅ Job Confirmed";
 
-                statusText =
-                    "💰 Price Accepted";
+    } else if (
+        job.price_status === "accepted"
+    ) {
 
-            } else if (
-                job.price_status === "counter_offer"
-            ) {
+        statusText =
+            "💰 Price Accepted";
 
-                statusText =
-                    "💰 Counter Offer Sent";
+    } else if (
+        job.price_status === "counter_offer"
+    ) {
 
-            } else if (
-                job.price_status === "rejected"
-            ) {
+        statusText =
+            "💰 Counter Offer Sent";
 
-                statusText =
-                    "❌ Offer Rejected";
+    } else if (
+        job.price_status === "rejected"
+    ) {
 
-            } else if (
-                job.customer_offer
-            ) {
+        statusText =
+            "❌ Offer Rejected";
 
-                statusText =
-                    "💰 Price Offer Received";
-            }
+    } else if (
+        job.customer_offer
+    ) {
 
+        statusText =
+            "💰 Price Offer Received";
 
-            html += `
-                <div class="job-card">
+        actionButton = `
+            <button
+                class="primary-btn"
+                onclick="openWorkerOffer('${job.id}')"
+            >
+                View Private Offer
+            </button>
+        `;
+    }
 
-                    <div class="job-card-top">
+    html += `
+        <div class="job-card">
 
-                        <div>
+            <div class="job-card-top">
 
-                            <span class="job-category">
-                                ${escapeHTML(job.category)}
-                            </span>
+                <div>
 
-                            <h3>
-                                ${escapeHTML(job.title)}
-                            </h3>
+                    <span class="job-category">
+                        ${escapeHTML(job.category)}
+                    </span>
 
-                        </div>
-
-                        <span class="job-status">
-                            ${statusText}
-                        </span>
-
-                    </div>
-
-
-                    <p class="job-description">
-                        ${escapeHTML(job.description)}
-                    </p>
-
-
-                    <div class="job-meta">
-
-                        <span>
-                            📍 ${escapeHTML(job.area)}
-                        </span>
-
-                        <span>
-                            🕒 ${escapeHTML(job.timing)}
-                        </span>
-
-                    </div>
-
-
-                    <div class="job-private-note">
-                        🔒 Ye job aapke saath privately matched hai.
-                    </div>
+                    <h3>
+                        ${escapeHTML(job.title)}
+                    </h3>
 
                 </div>
-            `;
-        });
+
+                <span class="job-status">
+                    ${statusText}
+                </span>
+
+            </div>
+
+            <p class="job-description">
+                ${escapeHTML(job.description)}
+            </p>
+
+            <div class="job-meta">
+
+                <span>
+                    📍 ${escapeHTML(job.area)}
+                </span>
+
+                <span>
+                    🕒 ${escapeHTML(job.timing)}
+                </span>
+
+            </div>
+
+            <div class="job-private-note">
+                🔒 Ye job aapke saath privately matched hai.
+            </div>
+
+            ${actionButton}
+
+        </div>
+    `;
+});
 
 
         box.innerHTML =
@@ -5589,107 +5598,162 @@ async function loadMyJobs() {
 
     let html = "";
 
+jobs.forEach(function(job) {
 
-    jobs.forEach(function(job) {
+    const isMatched =
+        job.match_status === "matched";
 
-        const responseCount =
-            responseList.filter(function(response) {
+    let statusText =
+        "Open";
 
-                return response.job_id === job.id;
+    let actionButton = "";
 
-            }).length;
+    if (!isMatched) {
 
+        statusText =
+            job.status === "open"
+                ? "Open"
+                : "Closed";
 
-        const isMatched =
-            job.match_status === "matched";
+        actionButton = `
+            <button
+                class="primary-btn"
+                onclick="showJobResponses('${job.id}')"
+            >
+                View Responses
+            </button>
+        `;
 
+    } else if (
+        job.job_status === "confirmed"
+    ) {
 
-        html += `
-            <div class="job-card">
+        statusText =
+            "✅ Job Confirmed";
 
-                <div class="job-card-top">
-
-                    <div>
-
-                        <span class="job-category">
-                            ${escapeHTML(job.category)}
-                        </span>
-
-                        <h3>
-                            ${escapeHTML(job.title)}
-                        </h3>
-
-                    </div>
-
-                    <span class="job-status">
-                        ${
-                            isMatched
-                                ? "✅ Worker Matched"
-                                : (
-                                    job.status === "open"
-                                        ? "Open"
-                                        : "Closed"
-                                )
-                        }
-                    </span>
-
-                </div>
-
-
-                <p class="job-description">
-                    ${escapeHTML(job.description)}
-                </p>
-
-
-                <div class="job-meta">
-
-                    <span>
-                        📍 ${escapeHTML(job.area)}
-                    </span>
-
-                    <span>
-                        🕒 ${escapeHTML(job.timing)}
-                    </span>
-
-                </div>
-
-
-                <div class="response-count-box">
-
-                    👥
-
-                    <strong>
-                        ${responseCount}
-                    </strong>
-
-                    worker${responseCount === 1 ? "" : "s"}
-                    interested
-
-                </div>
-
-
-                ${
-                    isMatched
-                    ? `
-                        <div class="job-private-note">
-                            🔒 Worker successfully matched.
-                            Private pricing will be handled in the next step.
-                        </div>
-                    `
-                    : `
-                        <button
-                            class="primary-btn"
-                            onclick="showJobResponses('${job.id}')"
-                        >
-                            View Responses
-                        </button>
-                    `
-                }
-
+        actionButton = `
+            <div class="job-private-note">
+                🔓 Job confirmed. Contact details will be available after confirmation.
             </div>
         `;
-    });
 
+    } else if (
+        job.price_status === "accepted"
+    ) {
+
+        statusText =
+            "💰 Price Accepted";
+
+        actionButton = `
+            <button
+                class="primary-btn"
+                onclick="confirmJob('${job.id}')"
+            >
+                Confirm Job
+            </button>
+        `;
+
+    } else if (
+        job.price_status === "counter_offer"
+    ) {
+
+        statusText =
+            "💰 Worker Counter Offer";
+
+        actionButton = `
+            <button
+                class="primary-btn"
+                onclick="openCustomerPriceResponse('${job.id}')"
+            >
+                View Counter Offer
+            </button>
+        `;
+
+    } else if (
+        job.customer_offer
+    ) {
+
+        statusText =
+            "💰 Price Offer Sent";
+
+        actionButton = `
+            <button
+                class="primary-btn"
+                onclick="openCustomerPriceResponse('${job.id}')"
+            >
+                View Price Status
+            </button>
+        `;
+
+    } else {
+
+        statusText =
+            "✅ Worker Matched";
+
+        actionButton = `
+            <button
+                class="primary-btn"
+                onclick="openPricingForJob('${job.id}')"
+            >
+                Set Private Price
+            </button>
+        `;
+    }
+
+    html += `
+        <div class="job-card">
+
+            <div class="job-card-top">
+
+                <div>
+
+                    <span class="job-category">
+                        ${escapeHTML(job.category)}
+                    </span>
+
+                    <h3>
+                        ${escapeHTML(job.title)}
+                    </h3>
+
+                </div>
+
+                <span class="job-status">
+                    ${statusText}
+                </span>
+
+            </div>
+
+            <p class="job-description">
+                ${escapeHTML(job.description)}
+            </p>
+
+            <div class="job-meta">
+
+                <span>
+                    📍 ${escapeHTML(job.area)}
+                </span>
+
+                <span>
+                    🕒 ${escapeHTML(job.timing)}
+                </span>
+
+            </div>
+
+            <div class="response-count-box">
+                👥
+                <strong>
+                    ${responseCount}
+                </strong>
+                worker${responseCount === 1 ? "" : "s"}
+                interested
+            </div>
+
+            ${actionButton}
+
+        </div>
+    `;
+});
+    
 
     box.innerHTML =
         html;
