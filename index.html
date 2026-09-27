@@ -566,9 +566,10 @@
 
     <div class="profile-header">
         <div class="profile-avatar">📋</div>
+
         <div>
             <h2>Post a Job</h2>
-            <p>Apni work requirement share karein.</p>
+            <p>Share your work requirement.</p>
         </div>
     </div>
 
@@ -583,11 +584,12 @@
 
         <label for="jobCategory">काम की category</label>
 
-<select id="jobCategory">
-    <option value="">Category load ho rahi hai...</option>
-</select>
+        <select id="jobCategory">
+            <option value="">Category load हो रही है...</option>
+        </select>
 
         <label for="jobDescription">काम की जानकारी</label>
+
         <textarea
             id="jobDescription"
             rows="4"
@@ -595,6 +597,7 @@
         ></textarea>
 
         <label for="jobArea">काम कहाँ करना है?</label>
+
         <input
             type="text"
             id="jobArea"
@@ -602,6 +605,7 @@
         >
 
         <label for="jobTiming">काम कब चाहिए?</label>
+
         <select id="jobTiming">
             <option value="">Timing चुनें</option>
             <option value="As soon as possible">As soon as possible</option>
@@ -611,7 +615,38 @@
             <option value="Flexible">Flexible</option>
         </select>
 
+        <label for="jobCustomerName">आपका नाम</label>
+
+        <input
+            type="text"
+            id="jobCustomerName"
+            placeholder="अपना नाम"
+        >
+
+        <label for="jobCustomerPhone">मोबाइल नंबर</label>
+
+        <input
+            type="tel"
+            id="jobCustomerPhone"
+            placeholder="10 अंकों का मोबाइल नंबर"
+            inputmode="numeric"
+            maxlength="10"
+        >
+
+        <label for="jobCustomerAddress">काम का पूरा पता</label>
+
+        <textarea
+            id="jobCustomerAddress"
+            rows="3"
+            placeholder="घर/दुकान/स्थान का पूरा पता"
+        ></textarea>
+
+        <p class="form-note">
+            🔒 आपका नाम, मोबाइल नंबर और पूरा पता job confirm होने तक worker को नहीं दिखाया जाएगा।
+        </p>
+
         <label for="jobBudget">आपका maximum budget</label>
+
         <input
             type="number"
             id="jobBudget"
@@ -620,10 +655,11 @@
         >
 
         <p class="form-note">
-            🔒 आपका maximum budget अभी workers को नहीं दिखाया जाएगा।
+            🔒 आपका maximum budget workers को नहीं दिखाया जाएगा।
         </p>
 
         <label for="jobPhoto">काम की photo (optional)</label>
+
         <input
             type="file"
             id="jobPhoto"
@@ -641,7 +677,6 @@
     </div>
 
 </section>
-
 
  <!-- My Jobs Screen -->
 
@@ -733,6 +768,20 @@
             placeholder="जैसे Hindaun City"
         >
 
+<label for="workerPhone">मोबाइल नंबर</label>
+
+<input
+    type="tel"
+    id="workerPhone"
+    placeholder="10 अंकों का मोबाइल नंबर"
+    inputmode="numeric"
+    maxlength="10"
+>
+
+<p class="form-note">
+    🔒 आपका मोबाइल नंबर customer को job confirm होने के बाद ही दिखेगा।
+</p>
+        
         <label for="workerAvailability">Availability</label>
         <select id="workerAvailability">
             <option value="">Availability चुनें</option>
@@ -2170,7 +2219,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/app.js?v=124"></script>
+<script src="assets/js/app.js?v=125"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
