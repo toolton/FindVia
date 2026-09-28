@@ -2552,22 +2552,58 @@ function applyFindViaStaticLanguage() {
         textNodes.push(walker.currentNode);
     }
 
+        const sourceDictionary =
+        translations.en;
+
     textNodes.forEach(function(node) {
 
-        const original =
+        const currentText =
             node.textContent.trim();
 
-        if (!original) {
+        if (!currentText) {
             return;
         }
 
+        let sourceText =
+            currentText;
+
+        /*
+         * If the current text is already translated,
+         * find its original source text first.
+         */
         if (
-            dictionary[original] !== undefined
+            sourceDictionary[currentText] ===
+            undefined
         ) {
+
+            Object.keys(sourceDictionary)
+                .some(function(key) {
+
+                    if (
+                        sourceDictionary[key] ===
+                        currentText
+                    ) {
+                        sourceText =
+                            key;
+
+                        return true;
+                    }
+
+                    return false;
+                });
+        }
+
+        const translatedText =
+            dictionary[sourceText];
+
+        if (
+            translatedText !== undefined
+        ) {
+
             node.textContent =
                 node.textContent.replace(
-                    original,
-                    dictionary[original]
+                    currentText,
+                    translatedText
                 );
         }
 
@@ -2579,18 +2615,54 @@ function applyFindViaStaticLanguage() {
         )
         .forEach(function(input) {
 
-            const original =
+            const currentPlaceholder =
                 input.getAttribute(
                     "placeholder"
                 );
 
+            if (!currentPlaceholder) {
+                return;
+            }
+
+            let sourcePlaceholder =
+                currentPlaceholder;
+
             if (
-                original &&
-                dictionary[original]
+                sourceDictionary[
+                    currentPlaceholder
+                ] === undefined
             ) {
+
+                Object.keys(sourceDictionary)
+                    .some(function(key) {
+
+                        if (
+                            sourceDictionary[key] ===
+                            currentPlaceholder
+                        ) {
+                            sourcePlaceholder =
+                                key;
+
+                            return true;
+                        }
+
+                        return false;
+                    });
+            }
+
+            const translatedPlaceholder =
+                dictionary[
+                    sourcePlaceholder
+                ];
+
+            if (
+                translatedPlaceholder !==
+                undefined
+            ) {
+
                 input.setAttribute(
                     "placeholder",
-                    dictionary[original]
+                    translatedPlaceholder
                 );
             }
 
