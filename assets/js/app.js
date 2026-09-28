@@ -2609,27 +2609,30 @@ function applyFindViaStaticLanguage() {
          * find its original source text first.
          */
         if (
-            sourceDictionary[currentText] ===
-            undefined
-        ) {
+    sourceDictionary[currentText] ===
+    undefined
+) {
 
-            Object.keys(sourceDictionary)
-                .some(function(key) {
+    Object.keys(sourceDictionary)
+        .some(function(key) {
 
-                    if (
-                        sourceDictionary[key] ===
-                        currentText
-                    ) {
-                        sourceText =
-                            key;
+            if (
+                sourceDictionary[key] ===
+                    currentText ||
+                translations.hi[key] ===
+                    currentText
+            ) {
+                sourceText =
+                    key;
 
-                        return true;
-                    }
+                return true;
+            }
 
-                    return false;
-                });
+            return false;
+        });
         }
 
+        
         const translatedText =
             dictionary[sourceText];
 
@@ -2665,26 +2668,28 @@ function applyFindViaStaticLanguage() {
                 currentPlaceholder;
 
             if (
-                sourceDictionary[
+    sourceDictionary[
+        currentPlaceholder
+    ] === undefined
+) {
+
+    Object.keys(sourceDictionary)
+        .some(function(key) {
+
+            if (
+                sourceDictionary[key] ===
+                    currentPlaceholder ||
+                translations.hi[key] ===
                     currentPlaceholder
-                ] === undefined
             ) {
+                sourcePlaceholder =
+                    key;
 
-                Object.keys(sourceDictionary)
-                    .some(function(key) {
+                return true;
+            }
 
-                        if (
-                            sourceDictionary[key] ===
-                            currentPlaceholder
-                        ) {
-                            sourcePlaceholder =
-                                key;
-
-                            return true;
-                        }
-
-                        return false;
-                    });
+            return false;
+        });
             }
 
             const translatedPlaceholder =
