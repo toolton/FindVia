@@ -5307,7 +5307,9 @@ hideWorkerTransactionScreen();
 }
 
 
-async function loadMyJobs() {
+
+
+ async function loadMyJobs() {
 
     const box =
         document.getElementById("myJobsResults");
@@ -5359,7 +5361,6 @@ async function loadMyJobs() {
                 job_status
             `)
             .eq("matched_worker_id", user.id)
-            .eq("match_status", "matched")
             .order("created_at", {
                 ascending: false
             });
@@ -5435,114 +5436,238 @@ async function loadMyJobs() {
 
         matchedJobs.forEach(function(job) {
 
-    let statusText =
-        "✅ Worker Matched";
+            let statusText =
+                "✅ Worker Matched";
 
-    let actionButton = "";
+            let actionButton = "";
 
-       if (
-    job.job_status === "confirmed" ||
-    job.status === "confirmed"
-) {
 
-    statusText =
-        "✅ Job Confirmed";
+            if (
+                job.status === "cancelled" ||
+                job.job_status === "cancelled" ||
+                job.match_status === "cancelled"
+            ) {
 
-    actionButton = `
-        <button
-            class="primary-btn"
-            onclick="openFindViaJobContacts('${job.id}')"
-        >
-            📞 View Contact Details
-        </button>
-    `;
-       }     
-     else if (
-        job.price_status === "accepted"
-    ) {
+                statusText =
+                    "❌ Job Cancelled";
 
-        statusText =
-            "💰 Price Accepted";
+                actionButton = `
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
 
-    } else if (
-        job.price_status === "counter_offer"
-    ) {
+            } else if (
+                job.job_status === "completed" ||
+                job.status === "completed"
+            ) {
 
-        statusText =
-            "💰 Counter Offer Sent";
+                statusText =
+                    "✅ Job Completed";
 
-    } else if (
-        job.price_status === "rejected"
-    ) {
+                actionButton = `
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
 
-        statusText =
-            "❌ Offer Rejected";
+            } else if (
+                job.job_status === "confirmed" ||
+                job.status === "confirmed"
+            ) {
 
-    } else if (
-        job.customer_offer
-    ) {
+                statusText =
+                    "✅ Job Confirmed";
 
-        statusText =
-            "💰 Price Offer Received";
+                actionButton = `
+                    <button
+                        class="primary-btn"
+                        onclick="openFindViaJobContacts('${job.id}')"
+                    >
+                        📞 View Contact Details
+                    </button>
 
-        actionButton = `
-            <button
-                class="primary-btn"
-                onclick="openWorkerOffer('${job.id}')"
-            >
-                View Private Offer
-            </button>
-        `;
-    }
+                    <button
+                        class="back-btn"
+                        onclick="cancelFindViaJob('${job.id}')"
+                    >
+                        ❌ Cancel Job
+                    </button>
 
-    html += `
-        <div class="job-card">
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
 
-            <div class="job-card-top">
+            } else if (
+                job.price_status === "accepted"
+            ) {
 
-                <div>
+                statusText =
+                    "💰 Price Accepted";
 
-                    <span class="job-category">
-                        ${escapeHTML(job.category)}
-                    </span>
+                actionButton = `
+                    <button
+                        class="back-btn"
+                        onclick="cancelFindViaJob('${job.id}')"
+                    >
+                        ❌ Cancel Job
+                    </button>
 
-                    <h3>
-                        ${escapeHTML(job.title)}
-                    </h3>
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
+
+            } else if (
+                job.price_status === "counter_offer"
+            ) {
+
+                statusText =
+                    "💰 Counter Offer Sent";
+
+                actionButton = `
+                    <button
+                        class="back-btn"
+                        onclick="cancelFindViaJob('${job.id}')"
+                    >
+                        ❌ Cancel Job
+                    </button>
+
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
+
+            } else if (
+                job.price_status === "rejected"
+            ) {
+
+                statusText =
+                    "❌ Offer Rejected";
+
+                actionButton = `
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
+
+            } else if (
+                job.customer_offer
+            ) {
+
+                statusText =
+                    "💰 Price Offer Received";
+
+                actionButton = `
+                    <button
+                        class="primary-btn"
+                        onclick="openWorkerOffer('${job.id}')"
+                    >
+                        View Private Offer
+                    </button>
+
+                    <button
+                        class="back-btn"
+                        onclick="cancelFindViaJob('${job.id}')"
+                    >
+                        ❌ Cancel Job
+                    </button>
+
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
+
+            } else {
+
+                actionButton = `
+                    <button
+                        class="back-btn"
+                        onclick="cancelFindViaJob('${job.id}')"
+                    >
+                        ❌ Cancel Job
+                    </button>
+
+                    <button
+                        class="back-btn"
+                        onclick="reportFindViaJob('${job.id}')"
+                    >
+                        🚩 Report / Dispute
+                    </button>
+                `;
+            }
+
+
+            html += `
+                <div class="job-card">
+
+                    <div class="job-card-top">
+
+                        <div>
+
+                            <span class="job-category">
+                                ${escapeHTML(job.category)}
+                            </span>
+
+                            <h3>
+                                ${escapeHTML(job.title)}
+                            </h3>
+
+                        </div>
+
+                        <span class="job-status">
+                            ${statusText}
+                        </span>
+
+                    </div>
+
+                    <p class="job-description">
+                        ${escapeHTML(job.description)}
+                    </p>
+
+                    <div class="job-meta">
+
+                        <span>
+                            📍 ${escapeHTML(job.area)}
+                        </span>
+
+                        <span>
+                            🕒 ${escapeHTML(job.timing)}
+                        </span>
+
+                    </div>
+
+                    <div class="job-private-note">
+                        🔒 Ye job aapke saath privately matched hai.
+                    </div>
+
+                    ${actionButton}
 
                 </div>
-
-                <span class="job-status">
-                    ${statusText}
-                </span>
-
-            </div>
-
-            <p class="job-description">
-                ${escapeHTML(job.description)}
-            </p>
-
-            <div class="job-meta">
-
-                <span>
-                    📍 ${escapeHTML(job.area)}
-                </span>
-
-                <span>
-                    🕒 ${escapeHTML(job.timing)}
-                </span>
-
-            </div>
-
-            <div class="job-private-note">
-                🔒 Ye job aapke saath privately matched hai.
-            </div>
-
-            ${actionButton}
-
-        </div>
-    `;
-});
+            `;
+        });
 
 
         box.innerHTML =
@@ -5696,171 +5821,429 @@ async function loadMyJobs() {
 
     let html = "";
 
-jobs.forEach(function(job) {
+    jobs.forEach(function(job) {
 
-    const isMatched =
-        job.match_status === "matched";
+        const isMatched =
+            job.match_status === "matched";
 
-    let statusText =
-        "Open";
+        let statusText =
+            "Open";
 
-    let actionButton = "";
+        let actionButton = "";
 
-    if (!isMatched) {
 
-        statusText =
-            job.status === "open"
-                ? "Open"
-                : "Closed";
+        if (
+            job.status === "cancelled" ||
+            job.job_status === "cancelled" ||
+            job.match_status === "cancelled"
+        ) {
 
-        actionButton = `
-            <button
-                class="primary-btn"
-                onclick="showJobResponses('${job.id}')"
-            >
-                View Responses
-            </button>
-        `;
+            statusText =
+                "❌ Job Cancelled";
 
-    } else if (
-    job.job_status === "confirmed" ||
-    job.status === "confirmed"
-) {
+            actionButton = `
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
 
-    statusText =
-        "✅ Job Confirmed";
+        } else if (
+            job.job_status === "completed" ||
+            job.status === "completed"
+        ) {
 
-    actionButton = `
-        <button
-            class="primary-btn"
-            onclick="openFindViaJobContacts('${job.id}')"
-        >
-            📞 View Contact Details
-        </button>
-    `;
+            statusText =
+                "✅ Job Completed";
 
-    } else if (
-        job.price_status === "accepted"
-    ) {
+            actionButton = `
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
 
-        statusText =
-            "💰 Price Accepted";
+        } else if (!isMatched) {
 
-        actionButton = `
-            <button
-                class="primary-btn"
-                onclick="confirmJob('${job.id}')"
-            >
-                Confirm Job
-            </button>
-        `;
+            statusText =
+                job.status === "open"
+                    ? "Open"
+                    : "Closed";
 
-    } else if (
-        job.price_status === "counter_offer"
-    ) {
+            actionButton = `
+                <button
+                    class="primary-btn"
+                    onclick="showJobResponses('${job.id}')"
+                >
+                    View Responses
+                </button>
 
-        statusText =
-            "💰 Worker Counter Offer";
+                <button
+                    class="back-btn"
+                    onclick="cancelFindViaJob('${job.id}')"
+                >
+                    ❌ Cancel Job
+                </button>
 
-        actionButton = `
-            <button
-                class="primary-btn"
-                onclick="openCustomerPriceResponse('${job.id}')"
-            >
-                View Counter Offer
-            </button>
-        `;
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
 
-    } else if (
-        job.customer_offer
-    ) {
+        } else if (
+            job.job_status === "confirmed" ||
+            job.status === "confirmed"
+        ) {
 
-        statusText =
-            "💰 Price Offer Sent";
+            statusText =
+                "✅ Job Confirmed";
 
-        actionButton = `
-            <button
-                class="primary-btn"
-                onclick="openCustomerPriceResponse('${job.id}')"
-            >
-                View Price Status
-            </button>
-        `;
+            actionButton = `
+                <button
+                    class="primary-btn"
+                    onclick="openFindViaJobContacts('${job.id}')"
+                >
+                    📞 View Contact Details
+                </button>
 
-    } else {
+                <button
+                    class="back-btn"
+                    onclick="cancelFindViaJob('${job.id}')"
+                >
+                    ❌ Cancel Job
+                </button>
 
-        statusText =
-            "✅ Worker Matched";
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
 
-        actionButton = `
-            <button
-                class="primary-btn"
-                onclick="openPricingForJob('${job.id}')"
-            >
-                Set Private Price
-            </button>
-        `;
-    }
+        } else if (
+            job.price_status === "accepted"
+        ) {
 
-    html += `
-        <div class="job-card">
+            statusText =
+                "💰 Price Accepted";
 
-            <div class="job-card-top">
+            actionButton = `
+                <button
+                    class="primary-btn"
+                    onclick="confirmJob('${job.id}')"
+                >
+                    Confirm Job
+                </button>
 
-                <div>
+                <button
+                    class="back-btn"
+                    onclick="cancelFindViaJob('${job.id}')"
+                >
+                    ❌ Cancel Job
+                </button>
 
-                    <span class="job-category">
-                        ${escapeHTML(job.category)}
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
+
+        } else if (
+            job.price_status === "counter_offer"
+        ) {
+
+            statusText =
+                "💰 Worker Counter Offer";
+
+            actionButton = `
+                <button
+                    class="primary-btn"
+                    onclick="openCustomerPriceResponse('${job.id}')"
+                >
+                    View Counter Offer
+                </button>
+
+                <button
+                    class="back-btn"
+                    onclick="cancelFindViaJob('${job.id}')"
+                >
+                    ❌ Cancel Job
+                </button>
+
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
+
+        } else if (
+            job.customer_offer
+        ) {
+
+            statusText =
+                "💰 Price Offer Sent";
+
+            actionButton = `
+                <button
+                    class="primary-btn"
+                    onclick="openCustomerPriceResponse('${job.id}')"
+                >
+                    View Price Status
+                </button>
+
+                <button
+                    class="back-btn"
+                    onclick="cancelFindViaJob('${job.id}')"
+                >
+                    ❌ Cancel Job
+                </button>
+
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
+
+        } else {
+
+            statusText =
+                "✅ Worker Matched";
+
+            actionButton = `
+                <button
+                    class="primary-btn"
+                    onclick="openPricingForJob('${job.id}')"
+                >
+                    Set Private Price
+                </button>
+
+                <button
+                    class="back-btn"
+                    onclick="cancelFindViaJob('${job.id}')"
+                >
+                    ❌ Cancel Job
+                </button>
+
+                <button
+                    class="back-btn"
+                    onclick="reportFindViaJob('${job.id}')"
+                >
+                    🚩 Report / Dispute
+                </button>
+            `;
+        }
+
+
+        const responseCount =
+            responseList.filter(function(response) {
+                return response.job_id === job.id;
+            }).length;
+
+
+        html += `
+            <div class="job-card">
+
+                <div class="job-card-top">
+
+                    <div>
+
+                        <span class="job-category">
+                            ${escapeHTML(job.category)}
+                        </span>
+
+                        <h3>
+                            ${escapeHTML(job.title)}
+                        </h3>
+
+                    </div>
+
+                    <span class="job-status">
+                        ${statusText}
                     </span>
-
-                    <h3>
-                        ${escapeHTML(job.title)}
-                    </h3>
 
                 </div>
 
-                <span class="job-status">
-                    ${statusText}
-                </span>
+                <p class="job-description">
+                    ${escapeHTML(job.description)}
+                </p>
+
+                <div class="job-meta">
+
+                    <span>
+                        📍 ${escapeHTML(job.area)}
+                    </span>
+
+                    <span>
+                        🕒 ${escapeHTML(job.timing)}
+                    </span>
+
+                </div>
+
+                <div class="response-count-box">
+                    👥
+                    <strong>
+                        ${responseCount}
+                    </strong>
+                    worker${responseCount === 1 ? "" : "s"}
+                    interested
+                </div>
+
+                ${actionButton}
 
             </div>
+        `;
+    });
 
-            <p class="job-description">
-                ${escapeHTML(job.description)}
-            </p>
-
-            <div class="job-meta">
-
-                <span>
-                    📍 ${escapeHTML(job.area)}
-                </span>
-
-                <span>
-                    🕒 ${escapeHTML(job.timing)}
-                </span>
-
-            </div>
-
-            <div class="response-count-box">
-                👥
-                <strong>
-                    ${responseCount}
-                </strong>
-                worker${responseCount === 1 ? "" : "s"}
-                interested
-            </div>
-
-            ${actionButton}
-
-        </div>
-    `;
-});
-    
 
     box.innerHTML =
         html;
+ }   
+            
+
+            
+    async function cancelFindViaJob(jobId) {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to cancel this job?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const user =
+            await getFindViaCurrentUser();
+
+        if (!user) {
+            alert("Please login to continue.");
+            return;
+        }
+
+        const {
+            error
+        } = await supabaseClient.rpc(
+            "cancel_findvia_job",
+            {
+                p_job_id: jobId
+            }
+        );
+
+        if (error) {
+            console.error(
+                "FindVia cancel job error:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Job cancel nahi ho saki."
+            );
+
+            return;
+        }
+
+        alert(
+            "Job cancelled successfully."
+        );
+
+        await loadMyJobs();
+
+    } catch (error) {
+
+        console.error(
+            "FindVia cancel job exception:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Job cancel nahi ho saki."
+        );
+    }
 }
 
+
+function reportFindViaJob(jobId) {
+
+    showFindViaInputModal(
+        "Report / Dispute",
+        "Please describe the issue or dispute.",
+        async function(details) {
+
+            try {
+
+                const reason =
+                    "Job Report / Dispute";
+
+                const {
+                    error
+                } = await supabaseClient.rpc(
+                    "create_findvia_job_report",
+                    {
+                        p_job_id: jobId,
+                        p_reason: reason,
+                        p_details: details
+                    }
+                );
+
+                if (error) {
+
+                    console.error(
+                        "FindVia report error:",
+                        error
+                    );
+
+                    alert(
+                        error.message ||
+                        "Report submit nahi ho saki."
+                    );
+
+                    return;
+                }
+
+                alert(
+                    "Report submitted successfully. Admin will review it."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "FindVia report exception:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "Report submit nahi ho saki."
+                );
+            }
+
+        },
+        "text",
+        "Describe the issue...",
+        "Please enter the issue.",
+        "🚩"
+    );
+}            
+        
+            
 
 function showJobResponses(jobId) {
 
