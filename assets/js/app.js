@@ -2849,12 +2849,105 @@ async function showPostedJobs(categoryFilter = "") {
     `;
 
 
+    let jobsQuery =
+    supabaseClient
+        .from("jobs")
+        .select(
+            "id, title, category, description, area, timing, photo_data, status, match_status, matched_worker_id, job_status, created_at"
+        )
+        .eq("status", "open");
+
+
+const currentRole =
+    localStorage.getItem(
+        "findviaUserRole"
+    );
+
+
+if (currentRole === "worker") {
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        resultsBox.innerHTML = `
+            <div class="empty-state">
+                <strong>Please login to continue.</strong>
+            </div>
+        `;
+        return;
+    }
+
+
     const {
-        data: jobs,
-        error
+        data: workerProfile,
+        error: workerProfileError
     } =
         await supabaseClient
-            .from("jobs")
+            .from("worker_profiles")
+            .select("area")
+            .eq("id", user.id)
+            .maybeSingle();
+
+
+    if (workerProfileError) {
+
+        console.error(
+            "FindVia worker area load error:",
+            workerProfileError
+        );
+
+        resultsBox.innerHTML = `
+            <div class="empty-state">
+                <strong>Worker area load nahi ho saka.</strong>
+                <p>
+                    ${escapeHTML(workerProfileError.message)}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const workerArea =
+        workerProfile?.area?.trim();
+
+
+    if (!workerArea) {
+
+        resultsBox.innerHTML = `
+            <div class="empty-state">
+                <strong>Worker area select karein.</strong>
+                <p>
+                    Jobs dekhne ke liye pehle apne Worker Profile mein area select karein.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    jobsQuery =
+        jobsQuery.eq(
+            "area",
+            workerArea
+        );
+}
+
+
+const {
+    data: jobs,
+    error
+} =
+    await jobsQuery
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
             .select(
                 "id, title, category, description, area, timing, photo_data, status, match_status, matched_worker_id, job_status, created_at"
             )
