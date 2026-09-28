@@ -2235,30 +2235,42 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/app.js?v=127"></script>
+<script src="assets/js/app.js?v=128"></script>
 
 <script>
+
 document.addEventListener("DOMContentLoaded", function() {
     applyFindViaLanguage();
     applyFindViaStaticLanguage();
     initializeFindViaIconSystem();
     initializeFindViaAuth();
 
-    const savedLocation =
-        localStorage.getItem("findviaLocation");
-
     const locationSelect =
-        document.getElementById("locationSelect");
+        document.getElementById(
+            "locationSelect"
+        );
+
+    const currentRole =
+        localStorage.getItem(
+            "findviaUserRole"
+        );
 
     if (
         locationSelect &&
-        savedLocation
+        currentRole !== "worker"
     ) {
-        locationSelect.value =
-            savedLocation;
+
+        const savedLocation =
+            localStorage.getItem(
+                "findviaLocation"
+            );
+
+        if (savedLocation) {
+            locationSelect.value =
+                savedLocation;
+        }
     }
 });
-
 </script>
     
 </body>
