@@ -2185,7 +2185,7 @@ function toggleLanguage() {
     applyFindViaStaticLanguage();
 }
 
-function selectLocation(locationValue) {
+async function selectLocation(locationValue) {
 
     const locationSelect =
         document.getElementById(
@@ -2220,13 +2220,65 @@ function selectLocation(locationValue) {
         return;
     }
 
-    localStorage.setItem(
-        "findviaLocation",
-        cleanLocation
+   localStorage.setItem(
+    "findviaLocation",
+    cleanLocation
+);
+
+locationSelect.value =
+    cleanLocation;
+
+const currentRole =
+    localStorage.getItem(
+        "findviaUserRole"
     );
 
-    locationSelect.value =
-        cleanLocation;
+if (currentRole === "worker") {
+
+    const user =
+        await getFindViaCurrentUser();
+
+    if (!user) {
+        return;
+    }
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from("worker_profiles")
+            .update({
+                area: cleanLocation,
+                updated_at:
+                    new Date().toISOString()
+            })
+            .eq("id", user.id);
+
+    if (error) {
+
+        console.error(
+            "Worker area sync error:",
+            error
+        );
+
+        alert(
+            "Worker area update nahi ho saka.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    const workerArea =
+        document.getElementById(
+            "workerArea"
+        );
+
+    if (workerArea) {
+        workerArea.value =
+            cleanLocation;
+    }
+} 
 }
 
 function findWork() {
@@ -5218,6 +5270,23 @@ document.getElementById("workerExperience").value =
 
 document.getElementById("workerArea").value =
     profile.area || "";
+    if (profile.area) {
+
+    localStorage.setItem(
+        "findviaLocation",
+        profile.area
+    );
+
+    const locationSelect =
+        document.getElementById(
+            "locationSelect"
+        );
+
+    if (locationSelect) {
+        locationSelect.value =
+            profile.area;
+    }
+    }
 
     document.getElementById("workerPhone").value =
     profile.phone || "";
