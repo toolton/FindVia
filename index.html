@@ -94,18 +94,13 @@
 
     <div>
         <small id="yourLocationLabel">Your Location</small>
-
-        <select
-            id="locationSelect"
-            onchange="selectLocation(this.value)"
-        >
-            <option value="">Select your location</option>
-            <option value="Hindaun City">Hindaun City</option>
-            <option value="Shri Mahaveerji">Shri Mahaveerji</option>
-            <option value="Suroth">Suroth</option>
-            <option value="Bayana">Bayana</option>
-            <option value="Karauli">Karauli</option>
-        </select>
+<select
+    id="locationSelect"
+    onchange="selectLocation(this.value)"
+>
+    <option value="">Loading locations...</option>
+</select>
+        
     </div>
 </section>
 
@@ -608,12 +603,7 @@
         <label for="jobArea">काम कहाँ करना है?</label>
 
 <select id="jobArea">
-    <option value="">Select area</option>
-    <option value="Hindaun City">Hindaun City</option>
-    <option value="Shri Mahaveerji">Shri Mahaveerji</option>
-    <option value="Suroth">Suroth</option>
-    <option value="Bayana">Bayana</option>
-    <option value="Karauli">Karauli</option>
+    <option value="">Loading locations...</option>
 </select>
 
         <label for="jobTiming">काम कब चाहिए?</label>
@@ -776,12 +766,7 @@
         <label for="workerArea">आप किस area में काम करते हैं?</label>
 
 <select id="workerArea">
-    <option value="">Select area</option>
-    <option value="Hindaun City">Hindaun City</option>
-    <option value="Shri Mahaveerji">Shri Mahaveerji</option>
-    <option value="Suroth">Suroth</option>
-    <option value="Bayana">Bayana</option>
-    <option value="Karauli">Karauli</option>
+    <option value="">Loading locations...</option>
 </select>
 
 <label for="workerPhone">मोबाइल नंबर</label>
@@ -1701,6 +1686,43 @@
         <div>
 
             <span class="job-category">
+                LOCATIONS
+            </span>
+
+            <h3>
+                📍 Location Management
+            </h3>
+
+        </div>
+
+        <span class="job-status">
+            Admin
+        </span>
+
+    </div>
+
+    <p class="job-description">
+        FindVia ke active service areas manage karein.
+    </p>
+
+    <button
+        class="primary-btn"
+        style="margin-top:12px;"
+        onclick="openAdminLocations()"
+    >
+        📍 Manage Locations
+    </button>
+
+</div>
+
+        
+<div class="job-card">
+
+    <div class="job-card-top">
+
+        <div>
+
+            <span class="job-category">
                 FINANCE
             </span>
 
@@ -1856,6 +1878,75 @@
         id="workerTransactionHistoryList"
     >
         <!-- Worker transactions will appear here -->
+    </div>
+
+</section>
+
+    <!-- Admin Locations Screen -->
+
+<section
+    id="adminLocationsScreen"
+    style="display:none;"
+>
+
+    <button
+        class="back-btn"
+        onclick="openAdminPanel()"
+    >
+        Back
+    </button>
+
+    <div class="profile-header">
+
+        <div class="profile-avatar">
+            📍
+        </div>
+
+        <div>
+            <h2>Location Management</h2>
+            <p>FindVia service areas manage karein.</p>
+        </div>
+
+    </div>
+
+    <div
+        class="results-box"
+        id="adminLocationsList"
+    >
+    </div>
+
+    <div class="job-card">
+
+        <h3>Add Location</h3>
+
+        <input
+            type="text"
+            id="adminLocationName"
+            placeholder="Location name"
+        >
+
+        <input
+            type="text"
+            id="adminLocationNameHi"
+            placeholder="Location name in Hindi"
+        >
+
+        <input
+            type="number"
+            id="adminLocationSortOrder"
+            placeholder="Sort order"
+            min="0"
+            value="10"
+        >
+
+        <button
+            class="primary-btn"
+            onclick="adminAddLocation()"
+            style="margin-top:12px;"
+        >
+            Add Location
+        </button>
+
     </div>
 
 </section>
@@ -2235,7 +2326,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/app.js?v=131"></script>
+<script src="assets/js/app.js?v=132"></script>
 
 <script>
 
@@ -2246,7 +2337,7 @@ applyFindViaRuntimeLanguage();
 initializeFindViaLanguageObserver();
 initializeFindViaIconSystem();
 initializeFindViaAuth();
-
+initializeFindViaLocations();
     const locationSelect =
         document.getElementById(
             "locationSelect"
