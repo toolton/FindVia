@@ -42,7 +42,10 @@ function updateFindViaAuthVisibility() {
     }
 
     if (findViaCurrentUser) {
-        authButton.textContent = "👤 Account";
+        authButton.textContent =
+    hindiMode
+        ? "👤 खाता"
+        : "👤 Account";
     } else {
         authButton.textContent = "🔐 Login / Sign Up";
     }
@@ -82,10 +85,16 @@ function updateFindViaAuthUI() {
     }
 
     if (findViaCurrentUser) {
-        title.textContent = "FindVia Account";
+        title.textContent =
+    hindiMode
+        ? "FindVia खाता"
+        : "FindVia Account";
 
+        
         subtitle.textContent =
-            "Your FindVia account is currently logged in.";
+    hindiMode
+        ? "आपका FindVia खाता अभी लॉगिन है।"
+        : "Your FindVia account is currently logged in.";
 
         authFormBox.style.display = "none";
         loggedInAuthBox.style.display = "block";
@@ -102,11 +111,19 @@ function updateFindViaAuthUI() {
     loggedInAuthBox.style.display = "none";
 
     if (findViaAuthMode === "login") {
-        title.textContent = "Login to FindVia";
+        title.textContent =
+    hindiMode
+        ? "FindVia में लॉगिन करें"
+        : "Login to FindVia";
 
         subtitle.textContent =
-            "Login to continue using your FindVia account.";
-mainButton.textContent = "Login";
+    hindiMode
+        ? "अपने FindVia खाते का उपयोग जारी रखने के लिए लॉगिन करें।"
+        : "Login to continue using your FindVia account.";
+mainButton.textContent =
+    hindiMode
+        ? "लॉगिन"
+        : "Login";
 
 const forgotButton =
     document.getElementById("authForgotButton");
@@ -116,17 +133,25 @@ if (forgotButton) {
 }
 
 toggleButton.textContent =
-    "Create a new account";
+    hindiMode
+        ? "नया खाता बनाएं"
+        : "Create a new account";
         
     } else {
         title.textContent =
-            "Create FindVia Account";
+    hindiMode
+        ? "FindVia खाता बनाएं"
+        : "Create FindVia Account";
 
         subtitle.textContent =
-            "Create your account using email and password.";
+    hindiMode
+        ? "ईमेल और पासवर्ड से अपना खाता बनाएं।"
+        : "Create your account using email and password.";
 
         mainButton.textContent =
-    "Sign Up";
+    hindiMode
+        ? "साइन अप"
+        : "Sign Up";
 
 const forgotButton =
     document.getElementById("authForgotButton");
@@ -136,7 +161,9 @@ if (forgotButton) {
 }
 
 toggleButton.textContent =
-    "Already have an account? Login";
+    hindiMode
+        ? "पहले से खाता है? लॉगिन करें"
+        : "Already have an account? Login";
     }
 }
 
@@ -749,10 +776,12 @@ async function loadFindViaNotifications() {
 
         list.innerHTML = `
             <div class="job-card">
-                <h3>Login required</h3>
-                <p class="job-description">
-                    Please login to view notifications.
-                </p>
+               <h3>${translateFindViaRuntimeText("Login required")}</h3>
+<p class="job-description">
+    ${translateFindViaRuntimeText(
+        "Please login to view notifications."
+    )}
+</p> 
             </div>
         `;
 
@@ -761,10 +790,10 @@ async function loadFindViaNotifications() {
 
     list.innerHTML = `
         <div class="job-card">
-            <h3>Loading notifications...</h3>
-            <p class="job-description">
-                Please wait.
-            </p>
+           <h3>${translateFindViaRuntimeText("Loading notifications...")}</h3>
+<p class="job-description">
+    ${translateFindViaRuntimeText("Please wait.")}
+</p> 
         </div>
     `;
 
@@ -797,7 +826,11 @@ async function loadFindViaNotifications() {
 
         list.innerHTML = `
             <div class="job-card">
-                <h3>Notifications could not be loaded</h3>
+                <h3>
+    ${translateFindViaRuntimeText(
+        "Notifications could not be loaded"
+    )}
+</h3>
                 <p class="job-description">
                     ${escapeHTML(error.message)}
                 </p>
@@ -826,12 +859,16 @@ async function loadFindViaNotifications() {
                 </div>
 
                 <h3>
-                    No notifications
-                </h3>
+    ${translateFindViaRuntimeText(
+        "No notifications"
+    )}
+</h3>
 
-                <p class="job-description">
-                    You are all caught up.
-                </p>
+<p class="job-description">
+    ${translateFindViaRuntimeText(
+        "You are all caught up."
+    )}
+</p>
 
             </div>
         `;
@@ -861,7 +898,7 @@ async function loadFindViaNotifications() {
                                 font-weight:600;
                             "
                         >
-                            NEW
+                            ${translateFindViaRuntimeText("NEW")}
                         </span>
                     `;
 
@@ -891,7 +928,7 @@ async function loadFindViaNotifications() {
                             <span class="job-category">
                                 ${escapeHTML(
                                     notification.notification_type ||
-                                    "SYSTEM"
+translateFindViaRuntimeText("SYSTEM")
                                 )}
                             </span>
 
@@ -935,7 +972,7 @@ async function loadFindViaNotifications() {
                                 "
                                 onclick="markFindViaNotificationRead('${notification.id}')"
                             >
-                                Mark as read
+                                ${translateFindViaRuntimeText("Mark as read")}
                             </button>
                         `
                     }
@@ -2670,7 +2707,411 @@ function applyFindViaStaticLanguage() {
 
 }
 
+/* =========================================
+   FindVia Dynamic Language System
+   ========================================= */
 
+const findViaRuntimeTranslations = {
+    "Account": {
+        en: "Account",
+        hi: "खाता"
+    },
+
+    "Login / Sign Up": {
+        en: "Login / Sign Up",
+        hi: "लॉगिन / साइन अप"
+    },
+
+    "FindVia Account": {
+        en: "FindVia Account",
+        hi: "FindVia खाता"
+    },
+
+    "Your FindVia account is currently logged in.": {
+        en: "Your FindVia account is currently logged in.",
+        hi: "आपका FindVia खाता अभी लॉगिन है।"
+    },
+
+    "Login to FindVia": {
+        en: "Login to FindVia",
+        hi: "FindVia में लॉगिन करें"
+    },
+
+    "Login to continue using your FindVia account.": {
+        en: "Login to continue using your FindVia account.",
+        hi: "अपने FindVia खाते का उपयोग जारी रखने के लिए लॉगिन करें।"
+    },
+
+    "Login": {
+        en: "Login",
+        hi: "लॉगिन"
+    },
+
+    "Create a new account": {
+        en: "Create a new account",
+        hi: "नया खाता बनाएं"
+    },
+
+    "Create FindVia Account": {
+        en: "Create FindVia Account",
+        hi: "FindVia खाता बनाएं"
+    },
+
+    "Create your account using email and password.": {
+        en: "Create your account using email and password.",
+        hi: "ईमेल और पासवर्ड से अपना खाता बनाएं।"
+    },
+
+    "Sign Up": {
+        en: "Sign Up",
+        hi: "साइन अप"
+    },
+
+    "Already have an account? Login": {
+        en: "Already have an account? Login",
+        hi: "पहले से खाता है? लॉगिन करें"
+    },
+
+    "Please enter your email first.": {
+        en: "Please enter your email first.",
+        hi: "कृपया पहले अपना ईमेल दर्ज करें।"
+    },
+
+    "Sending password reset email...": {
+        en: "Sending password reset email...",
+        hi: "पासवर्ड रीसेट ईमेल भेजा जा रहा है..."
+    },
+
+    "Password reset email sent. Please check your email.": {
+        en: "Password reset email sent. Please check your email.",
+        hi: "पासवर्ड रीसेट ईमेल भेज दिया गया है। कृपया अपना ईमेल देखें।"
+    },
+
+    "Set New Password": {
+        en: "Set New Password",
+        hi: "नया पासवर्ड सेट करें"
+    },
+
+    "Password must be at least 6 characters.": {
+        en: "Password must be at least 6 characters.",
+        hi: "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।"
+    },
+
+    "Passwords do not match.": {
+        en: "Passwords do not match.",
+        hi: "पासवर्ड मेल नहीं खाते।"
+    },
+
+    "Updating password...": {
+        en: "Updating password...",
+        hi: "पासवर्ड अपडेट किया जा रहा है..."
+    },
+
+    "Password update failed.": {
+        en: "Password update failed.",
+        hi: "पासवर्ड अपडेट नहीं हो सका।"
+    },
+
+    "Account Created": {
+        en: "Account Created",
+        hi: "खाता बन गया"
+    },
+
+    "Account created successfully. Please check your email and confirm your account before logging in.": {
+        en: "Account created successfully. Please check your email and confirm your account before logging in.",
+        hi: "खाता सफलतापूर्वक बन गया है। लॉगिन करने से पहले कृपया अपना ईमेल देखकर खाते की पुष्टि करें।"
+    },
+
+    "Please confirm your email before login.": {
+        en: "Please confirm your email before login.",
+        hi: "लॉगिन करने से पहले कृपया अपने ईमेल की पुष्टि करें।"
+    },
+
+    "Your FindVia account has been created successfully.": {
+        en: "Your FindVia account has been created successfully.",
+        hi: "आपका FindVia खाता सफलतापूर्वक बन गया है।"
+    },
+
+    "Login Successful": {
+        en: "Login Successful",
+        hi: "लॉगिन सफल"
+    },
+
+    "Login successful. Welcome back to FindVia!": {
+        en: "Login successful. Welcome back to FindVia!",
+        hi: "लॉगिन सफल। FindVia में आपका फिर से स्वागत है!"
+    },
+
+    "Login failed. Please try again.": {
+        en: "Login failed. Please try again.",
+        hi: "लॉगिन विफल रहा। कृपया फिर से प्रयास करें।"
+    },
+
+    "Logged Out": {
+        en: "Logged Out",
+        hi: "लॉगआउट हो गया"
+    },
+
+    "You have been logged out of FindVia.": {
+        en: "You have been logged out of FindVia.",
+        hi: "आप FindVia से लॉगआउट हो गए हैं।"
+    },
+
+    "Logout Failed": {
+        en: "Logout Failed",
+        hi: "लॉगआउट विफल"
+    },
+
+    "Reset Email Sent": {
+        en: "Reset Email Sent",
+        hi: "रीसेट ईमेल भेज दिया गया"
+    },
+
+    "Login required": {
+        en: "Login required",
+        hi: "लॉगिन आवश्यक है"
+    },
+
+    "Please login to view notifications.": {
+        en: "Please login to view notifications.",
+        hi: "नोटिफिकेशन देखने के लिए कृपया लॉगिन करें।"
+    },
+
+    "Loading notifications...": {
+        en: "Loading notifications...",
+        hi: "नोटिफिकेशन लोड हो रहे हैं..."
+    },
+
+    "Please wait.": {
+        en: "Please wait.",
+        hi: "कृपया प्रतीक्षा करें।"
+    },
+
+    "Notifications could not be loaded": {
+        en: "Notifications could not be loaded",
+        hi: "नोटिफिकेशन लोड नहीं हो सके"
+    },
+
+    "No notifications": {
+        en: "No notifications",
+        hi: "कोई नोटिफिकेशन नहीं है"
+    },
+
+    "You are all caught up.": {
+        en: "You are all caught up.",
+        hi: "आपने सभी नोटिफिकेशन देख लिए हैं।"
+    },
+
+    "NEW": {
+        en: "NEW",
+        hi: "नया"
+    },
+
+    "Mark as read": {
+        en: "Mark as read",
+        hi: "पढ़ा हुआ चिन्हित करें"
+    },
+
+    "SYSTEM": {
+        en: "SYSTEM",
+        hi: "सिस्टम"
+    },
+
+    "Cancel": {
+        en: "Cancel",
+        hi: "रद्द करें"
+    },
+
+    "Continue": {
+        en: "Continue",
+        hi: "आगे बढ़ें"
+    },
+
+    "Select Worker": {
+        en: "Select Worker",
+        hi: "Worker चुनें"
+    },
+
+    "Accept Offer": {
+        en: "Accept Offer",
+        hi: "Offer स्वीकार करें"
+    },
+
+    "Counter Offer": {
+        en: "Counter Offer",
+        hi: "Counter Offer दें"
+    },
+
+    "Reject Offer": {
+        en: "Reject Offer",
+        hi: "Offer अस्वीकार करें"
+    },
+
+    "Confirm Job": {
+        en: "Confirm Job",
+        hi: "Job confirm करें"
+    },
+
+    "Enter here": {
+        en: "Enter here",
+        hi: "यहाँ दर्ज करें"
+    },
+
+    "Please value enter karein.": {
+        en: "Please enter a value.",
+        hi: "कृपया मान दर्ज करें।"
+    }
+};
+
+
+/*
+ * Translate a runtime-generated text value.
+ */
+function translateFindViaRuntimeText(
+    value
+) {
+
+    const cleanValue =
+        String(value || "").trim();
+
+    if (!cleanValue) {
+        return value;
+    }
+
+    const translation =
+        findViaRuntimeTranslations[
+            cleanValue
+        ];
+
+    if (!translation) {
+        return value;
+    }
+
+    return hindiMode
+        ? translation.hi
+        : translation.en;
+}
+
+
+/*
+ * Apply runtime translations to
+ * dynamically generated DOM content.
+ */
+function applyFindViaRuntimeLanguage() {
+
+    const walker =
+        document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT
+        );
+
+    const textNodes = [];
+
+    let node;
+
+    while (
+        node =
+            walker.nextNode()
+    ) {
+        textNodes.push(node);
+    }
+
+    textNodes.forEach(function(textNode) {
+
+        const originalText =
+            textNode.textContent.trim();
+
+        if (!originalText) {
+            return;
+        }
+
+        const translatedText =
+            translateFindViaRuntimeText(
+                originalText
+            );
+
+        if (
+            translatedText !==
+            originalText
+        ) {
+
+            textNode.textContent =
+                textNode.textContent.replace(
+                    originalText,
+                    translatedText
+                );
+        }
+
+    });
+
+    document
+        .querySelectorAll(
+            "input[placeholder], textarea[placeholder]"
+        )
+        .forEach(function(input) {
+
+            const placeholder =
+                input.getAttribute(
+                    "placeholder"
+                );
+
+            if (!placeholder) {
+                return;
+            }
+
+            const translatedPlaceholder =
+                translateFindViaRuntimeText(
+                    placeholder
+                );
+
+            if (
+                translatedPlaceholder !==
+                placeholder
+            ) {
+
+                input.setAttribute(
+                    "placeholder",
+                    translatedPlaceholder
+                );
+            }
+
+        });
+
+}
+
+
+/*
+ * Observe dynamically created UI.
+ */
+let findViaLanguageObserver = null;
+
+function initializeFindViaLanguageObserver() {
+
+    if (
+        findViaLanguageObserver ||
+        !document.body
+    ) {
+        return;
+    }
+
+    findViaLanguageObserver =
+        new MutationObserver(
+            function() {
+
+                applyFindViaRuntimeLanguage();
+
+            }
+        );
+
+    findViaLanguageObserver.observe(
+        document.body,
+        {
+            childList: true,
+            subtree: true
+        }
+    );
+
+}
 
 /*
  * Set text safely by element ID.
@@ -2732,6 +3173,8 @@ function toggleLanguage() {
 
     applyFindViaLanguage();
     applyFindViaStaticLanguage();
+    applyFindViaRuntimeLanguage();
+
 }
 
 async function selectLocation(locationValue) {
@@ -14456,16 +14899,16 @@ function showFindViaActionModal(
             </div>
 
             <h3>
-                ${escapeHTML(
-                    title
-                )}
-            </h3>
+    ${escapeHTML(
+        translateFindViaRuntimeText(title)
+    )}
+</h3>
 
-            <p>
-                ${escapeHTML(
-                    message
-                )}
-            </p>
+<p>
+    ${escapeHTML(
+        translateFindViaRuntimeText(message)
+    )}
+</p>
 
             <div class="findvia-action-buttons">
 
@@ -14584,18 +15027,26 @@ function showFindViaInputModal(
             </div>
 
             <h3>
-                ${escapeHTML(title)}
-            </h3>
+    ${escapeHTML(
+        translateFindViaRuntimeText(title)
+    )}
+</h3>
 
-            <p>
-                ${escapeHTML(message)}
-            </p>
+<p>
+    ${escapeHTML(
+        translateFindViaRuntimeText(message)
+    )}
+</p>
 
-            <input
-                type="${inputType}"
-                id="findviaModalInput"
-                class="findvia-modal-input"
-                placeholder="${escapeHTML(placeholder)}"
+<input
+    type="${inputType}"
+    id="findviaModalInput"
+    class="findvia-modal-input"
+    placeholder="${escapeHTML(
+        translateFindViaRuntimeText(
+            placeholder
+        )
+    )}"
                 min="1"
                 inputmode="text"
             >
