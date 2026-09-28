@@ -85,20 +85,29 @@
 
 
         <!-- Location -->
-        <section class="location-box">
-            <img
-    src="assets/icons/location.png"
-    class="findvia-icon"
-    alt="Location"
->
-            <div>
-                <small>Your Location</small>
-                <strong id="locationText">Select your location</strong>
-            </div>
+<section class="location-box">
+    <img
+        src="assets/icons/location.png"
+        class="findvia-icon"
+        alt="Location"
+    >
 
-            <button onclick="selectLocation()">Change</button>
-        </section>
+    <div>
+        <small id="yourLocationLabel">Your Location</small>
 
+        <select
+            id="locationSelect"
+            onchange="selectLocation(this.value)"
+        >
+            <option value="">Select your location</option>
+            <option value="Hindaun City">Hindaun City</option>
+            <option value="Shri Mahaveerji">Shri Mahaveerji</option>
+            <option value="Suroth">Suroth</option>
+            <option value="Bayana">Bayana</option>
+            <option value="Karauli">Karauli</option>
+        </select>
+    </div>
+</section>
 
         <!-- Main Actions -->
         <section class="action-grid">
@@ -598,11 +607,14 @@
 
         <label for="jobArea">काम कहाँ करना है?</label>
 
-        <input
-            type="text"
-            id="jobArea"
-            placeholder="जैसे Hindaun City"
-        >
+<select id="jobArea">
+    <option value="">Select area</option>
+    <option value="Hindaun City">Hindaun City</option>
+    <option value="Shri Mahaveerji">Shri Mahaveerji</option>
+    <option value="Suroth">Suroth</option>
+    <option value="Bayana">Bayana</option>
+    <option value="Karauli">Karauli</option>
+</select>
 
         <label for="jobTiming">काम कब चाहिए?</label>
 
@@ -762,11 +774,15 @@
         </select>
 
         <label for="workerArea">आप किस area में काम करते हैं?</label>
-        <input
-            type="text"
-            id="workerArea"
-            placeholder="जैसे Hindaun City"
-        >
+
+<select id="workerArea">
+    <option value="">Select area</option>
+    <option value="Hindaun City">Hindaun City</option>
+    <option value="Shri Mahaveerji">Shri Mahaveerji</option>
+    <option value="Suroth">Suroth</option>
+    <option value="Bayana">Bayana</option>
+    <option value="Karauli">Karauli</option>
+</select>
 
 <label for="workerPhone">मोबाइल नंबर</label>
 
@@ -2219,7 +2235,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/app.js?v=125"></script>
+<script src="assets/js/app.js?v=126"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -2227,6 +2243,20 @@ document.addEventListener("DOMContentLoaded", function() {
     applyFindViaStaticLanguage();
     initializeFindViaIconSystem();
     initializeFindViaAuth();
+
+    const savedLocation =
+        localStorage.getItem("findviaLocation");
+
+    const locationSelect =
+        document.getElementById("locationSelect");
+
+    if (
+        locationSelect &&
+        savedLocation
+    ) {
+        locationSelect.value =
+            savedLocation;
+    }
 });
 
 </script>
