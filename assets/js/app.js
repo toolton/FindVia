@@ -2185,61 +2185,48 @@ function toggleLanguage() {
     applyFindViaStaticLanguage();
 }
 
-function selectLocation() {
+function selectLocation(locationValue) {
 
-    const currentLocation =
+    const locationSelect =
         document.getElementById(
-            "locationText"
-        )?.textContent || "";
-
-    showFindViaInputModal(
-    "Select Location",
-    "Apna location enter karein:",
-    function(location) {
-
-        const cleanLocation =
-            location.trim();
-
-        if (!cleanLocation) {
-
-            alert(
-                "Please location enter karein."
-            );
-
-            return;
-        }
-
-        const locationText =
-            document.getElementById(
-                "locationText"
-            );
-
-        if (locationText) {
-
-            locationText.textContent =
-                cleanLocation;
-        }
-    },
-    "text",
-    "Enter location",
-    "Please location enter karein.",
-    "📍"
-);
-
-    const input =
-        document.getElementById(
-            "findviaModalInput"
+            "locationSelect"
         );
 
-    if (
-        input &&
-        currentLocation &&
-        currentLocation !== "Select Location"
-    ) {
-
-        input.value =
-            currentLocation;
+    if (!locationSelect) {
+        return;
     }
+
+    const cleanLocation =
+        String(locationValue || "").trim();
+
+    if (!cleanLocation) {
+        return;
+    }
+
+    const allowedLocations = [
+        "Hindaun City",
+        "Shri Mahaveerji",
+        "Suroth",
+        "Bayana",
+        "Karauli"
+    ];
+
+    if (!allowedLocations.includes(cleanLocation)) {
+        alert(
+            "Please select a valid FindVia launch area."
+        );
+
+        locationSelect.value = "";
+        return;
+    }
+
+    localStorage.setItem(
+        "findviaLocation",
+        cleanLocation
+    );
+
+    locationSelect.value =
+        cleanLocation;
 }
 
 function findWork() {
