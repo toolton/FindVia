@@ -2992,7 +2992,6 @@ function translateFindViaRuntimeText(
         : translation.en;
 }
 
-
 /*
  * Apply runtime translations to
  * dynamically generated DOM content.
