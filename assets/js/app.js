@@ -2966,6 +2966,9 @@ const findViaRuntimeTranslations = {
 
 /*
  * Translate a runtime-generated text value.
+ * Supports both English -> Hindi and
+ * Hindi -> English so language switching
+ * remains reversible.
  */
 function translateFindViaRuntimeText(
     value
@@ -2978,14 +2981,45 @@ function translateFindViaRuntimeText(
         return value;
     }
 
-    const translation =
+    const directTranslation =
         findViaRuntimeTranslations[
             cleanValue
         ];
 
-    if (!translation) {
+    if (directTranslation) {
+
+        return hindiMode
+            ? directTranslation.hi
+            : directTranslation.en;
+    }
+
+    const sourceKey =
+        Object.keys(
+            findViaRuntimeTranslations
+        ).find(function(key) {
+
+            const translation =
+                findViaRuntimeTranslations[
+                    key
+                ];
+
+            return (
+                translation.en ===
+                    cleanValue ||
+                translation.hi ===
+                    cleanValue
+            );
+
+        });
+
+    if (!sourceKey) {
         return value;
     }
+
+    const translation =
+        findViaRuntimeTranslations[
+            sourceKey
+        ];
 
     return hindiMode
         ? translation.hi
