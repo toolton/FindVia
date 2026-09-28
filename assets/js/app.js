@@ -2057,6 +2057,483 @@ function applyFindViaStaticLanguage() {
         }
     };
 
+    /*
+     * Additional app-wide translations.
+     * These cover text that is rendered directly
+     * from index.html and was not part of the
+     * original translation dictionary.
+     */
+    const extraTranslations = {
+
+        en: {
+
+            "Back": "Back",
+            "Aap apne purpose ke according role select kar sakte hain.":
+                "Choose your role according to your purpose.",
+            "काम ढूँढना है":
+                "I'm looking for work",
+            "काम करवाना है":
+                "I need a worker",
+            "Worker Profile Setup":
+                "Worker Profile Setup",
+            "Role select karne ke baad FindVia aapke liye relevant options dikhayega.":
+                "After selecting your role, FindVia will show relevant options for you.",
+
+            "Complete Verification":
+                "Complete Verification",
+
+            "काम की category":
+                "Job category",
+            "Category load हो रही है...":
+                "Loading categories...",
+            "काम की जानकारी":
+                "Work details",
+            "काम कहाँ करना है?":
+                "Where is the work?",
+            "Select area":
+                "Select area",
+            "काम कब चाहिए?":
+                "When is the work needed?",
+            "Timing चुनें":
+                "Select timing",
+            "As soon as possible":
+                "As soon as possible",
+            "Today":
+                "Today",
+            "Tomorrow":
+                "Tomorrow",
+            "Within this week":
+                "Within this week",
+            "Flexible":
+                "Flexible",
+            "आपका नाम":
+                "Your name",
+            "मोबाइल नंबर":
+                "Mobile number",
+            "काम का पूरा पता":
+                "Full work address",
+            "🔒 आपका नाम, मोबाइल नंबर और पूरा पता job confirm होने तक worker को नहीं दिखाया जाएगा।":
+                "🔒 Your name, mobile number and full address will not be shown to the worker until the job is confirmed.",
+            "आपका maximum budget":
+                "Your maximum budget",
+            "🔒 आपका maximum budget workers को नहीं दिखाया जाएगा।":
+                "🔒 Your maximum budget will not be shown to workers.",
+            "काम की photo (optional)":
+                "Work photo (optional)",
+
+            "Aapki posted work requirements.":
+                "Your posted work requirements.",
+            "Loading your jobs...":
+                "Loading your jobs...",
+
+            "Is job mein interested workers.":
+                "Workers interested in this job.",
+            "Loading responses...":
+                "Loading responses...",
+
+            "Apne kaam ke baare mein basic information dein.":
+                "Provide basic information about your work.",
+            "आप कौन सा काम करते हैं?":
+                "What work do you do?",
+            "Service load हो रही है...":
+                "Loading services...",
+            "Experience चुनें":
+                "Select experience",
+            "Less than 1 year":
+                "Less than 1 year",
+            "1-3 years":
+                "1-3 years",
+            "3-5 years":
+                "3-5 years",
+            "5-10 years":
+                "5-10 years",
+            "10+ years":
+                "10+ years",
+            "आप किस area में काम करते हैं?":
+                "Which area do you work in?",
+            "Availability चुनें":
+                "Select availability",
+            "Available now":
+                "Available now",
+            "Available today":
+                "Available today",
+            "Available on request":
+                "Available on request",
+            "Commission Preference":
+                "Commission Preference",
+            "Percentage Based":
+                "Percentage Based",
+            "Fixed Fee":
+                "Fixed Fee",
+            "Your preference will apply when the job category allows both options.":
+                "Your preference will apply when the job category allows both options.",
+            "Save Worker Profile":
+                "Save Worker Profile",
+
+            "Complete your verification to work on FindVia.":
+                "Complete your verification to work on FindVia.",
+            "Please submit the following documents for verification.":
+                "Please submit the following documents for verification.",
+            "Your documents will only be used for FindVia verification.":
+                "Your documents will only be used for FindVia verification.",
+            "Government ID (Aadhaar Card, Voter ID, Driving Licence, etc.)":
+                "Government ID (Aadhaar Card, Voter ID, Driving Licence, etc.)",
+            "Recent Photo / Selfie":
+                "Recent Photo / Selfie",
+            "Skill / Experience Proof (Optional)":
+                "Skill / Experience Proof (Optional)",
+            "I confirm that the information and documents submitted by me are genuine and may be used for FindVia verification.":
+                "I confirm that the information and documents submitted by me are genuine and may be used for FindVia verification.",
+            "Submit for Verification":
+                "Submit for Verification",
+
+            "Add credits to your FindVia wallet.":
+                "Add credits to your FindVia wallet.",
+            "Recharge your credits":
+                "Recharge your credits",
+            "Scan the QR code below and make your payment.":
+                "Scan the QR code below and make your payment.",
+            "QR code will be added before deployment.":
+                "QR code will be added before deployment.",
+            "Payment Instructions":
+                "Payment Instructions",
+            "Scan the FindVia payment QR.":
+                "Scan the FindVia payment QR.",
+            "Pay the amount you want to add.":
+                "Pay the amount you want to add.",
+            "Enter the exact amount paid below.":
+                "Enter the exact amount paid below.",
+            "Enter your payment transaction ID / UTR.":
+                "Enter your payment transaction ID / UTR.",
+            "Submit the recharge request.":
+                "Submit the recharge request.",
+            "Amount Paid":
+                "Amount Paid",
+            "Payment Transaction ID / UTR":
+                "Payment Transaction ID / UTR",
+            "Submit Recharge Request":
+                "Submit Recharge Request",
+            "Credits will be added after payment verification.":
+                "Credits will be added after payment verification.",
+
+            "Login or create your FindVia account.":
+                "Login or create your FindVia account.",
+            "Login":
+                "Login",
+            "Forgot Password?":
+                "Forgot Password?",
+            "Create a new account":
+                "Create a new account",
+            "New Password":
+                "New Password",
+            "Confirm New Password":
+                "Confirm New Password",
+            "Update Password":
+                "Update Password",
+            "Back to Login":
+                "Back to Login",
+            "You are logged in":
+                "You are logged in",
+            "Logout":
+                "Logout",
+
+            "Your FindVia updates and messages.":
+                "Your FindVia updates and messages.",
+            "Mark all as read":
+                "Mark all as read",
+            "Loading notifications...":
+                "Loading notifications...",
+
+            "Authorized access only":
+                "Authorized access only",
+            "Apne authorized FindVia account se login karein.":
+                "Login with your authorized FindVia account.",
+            "FindVia system management":
+                "FindVia system management",
+            "Apne authorized FindVia account se login karein.":
+                "Login with your authorized FindVia account.",
+            "Workers, credits aur verification ko manage karein.":
+                "Manage workers, credits and verification.",
+            "Admin Jobs, agreed price aur job-wise commission ko manage karein.":
+                "Manage jobs, agreed prices and job-wise commission.",
+            "Admin Worker credits aur FindVia commission settings yahan manage hongi.":
+                "Manage worker credits and FindVia commission settings here.",
+            "Current commission:":
+                "Current commission:",
+            "Save Commission":
+                "Save Commission",
+            "Admin Review worker payment requests and approve credits.":
+                "Review worker payment requests and approve credits.",
+            "Kisi specific FindVia user ko direct in-app message bhejein.":
+                "Send a direct in-app message to a specific FindVia user.",
+            "Manage Job Categories":
+                "Manage Job Categories",
+            "Platform Overview":
+                "Platform Overview",
+            "Active FindVia ke important system controls.":
+                "Important active FindVia system controls.",
+            "Run System Test":
+                "Run System Test",
+            "Worker transactions":
+                "Worker transactions",
+            "Worker payment verification":
+                "Worker payment verification",
+            "Send a direct message to a FindVia user.":
+                "Send a direct message to a FindVia user.",
+            "Select User":
+                "Select User",
+            "Loading users...":
+                "Loading users...",
+            "Notification Title":
+                "Notification Title",
+            "Message":
+                "Message",
+            "Send Notification":
+                "Send Notification"
+
+        },
+
+        hi: {
+
+            "Back":
+                "वापस",
+            "Aap apne purpose ke according role select kar sakte hain.":
+                "अपने उद्देश्य के अनुसार भूमिका चुनें।",
+            "काम ढूँढना है":
+                "काम ढूँढना है",
+            "काम करवाना है":
+                "काम करवाना है",
+            "Worker Profile Setup":
+                "वर्कर प्रोफ़ाइल सेटअप",
+            "Role select karne ke baad FindVia aapke liye relevant options dikhayega.":
+                "भूमिका चुनने के बाद FindVia आपके लिए संबंधित विकल्प दिखाएगा।",
+
+            "Complete Verification":
+                "सत्यापन पूरा करें",
+
+            "काम की category":
+                "काम की श्रेणी",
+            "Category load हो रही है...":
+                "श्रेणियाँ लोड हो रही हैं...",
+            "काम की जानकारी":
+                "काम की जानकारी",
+            "काम कहाँ करना है?":
+                "काम कहाँ करना है?",
+            "Select area":
+                "क्षेत्र चुनें",
+            "काम कब चाहिए?":
+                "काम कब चाहिए?",
+            "Timing चुनें":
+                "समय चुनें",
+            "As soon as possible":
+                "जितनी जल्दी हो सके",
+            "Today":
+                "आज",
+            "Tomorrow":
+                "कल",
+            "Within this week":
+                "इस सप्ताह के भीतर",
+            "Flexible":
+                "लचीला",
+            "आपका नाम":
+                "आपका नाम",
+            "मोबाइल नंबर":
+                "मोबाइल नंबर",
+            "काम का पूरा पता":
+                "काम का पूरा पता",
+            "🔒 आपका नाम, मोबाइल नंबर और पूरा पता job confirm होने तक worker को नहीं दिखाया जाएगा।":
+                "🔒 आपका नाम, मोबाइल नंबर और पूरा पता काम की पुष्टि होने तक वर्कर को नहीं दिखाया जाएगा।",
+            "आपका maximum budget":
+                "आपका अधिकतम बजट",
+            "🔒 आपका maximum budget workers को नहीं दिखाया जाएगा।":
+                "🔒 आपका अधिकतम बजट वर्करों को नहीं दिखाया जाएगा।",
+            "काम की photo (optional)":
+                "काम की फोटो (वैकल्पिक)",
+
+            "Aapki posted work requirements.":
+                "आपकी पोस्ट की गई काम की आवश्यकताएँ।",
+            "Loading your jobs...":
+                "आपके काम लोड हो रहे हैं...",
+
+            "Is job mein interested workers.":
+                "इस काम में रुचि रखने वाले वर्कर।",
+            "Loading responses...":
+                "जवाब लोड हो रहे हैं...",
+
+            "Apne kaam ke baare mein basic information dein.":
+                "अपने काम के बारे में बुनियादी जानकारी दें।",
+            "आप कौन सा काम करते हैं?":
+                "आप कौन सा काम करते हैं?",
+            "Service load हो रही है...":
+                "सेवाएँ लोड हो रही हैं...",
+            "Experience चुनें":
+                "अनुभव चुनें",
+            "Less than 1 year":
+                "1 वर्ष से कम",
+            "1-3 years":
+                "1–3 वर्ष",
+            "3-5 years":
+                "3–5 वर्ष",
+            "5-10 years":
+                "5–10 वर्ष",
+            "10+ years":
+                "10+ वर्ष",
+            "आप किस area में काम करते हैं?":
+                "आप किस क्षेत्र में काम करते हैं?",
+            "Availability चुनें":
+                "उपलब्धता चुनें",
+            "Available now":
+                "अभी उपलब्ध",
+            "Available today":
+                "आज उपलब्ध",
+            "Available on request":
+                "अनुरोध पर उपलब्ध",
+            "Commission Preference":
+                "कमीशन प्राथमिकता",
+            "Percentage Based":
+                "प्रतिशत आधारित",
+            "Fixed Fee":
+                "निश्चित शुल्क",
+            "Your preference will apply when the job category allows both options.":
+                "जब काम की श्रेणी दोनों विकल्पों की अनुमति देगी, तब आपकी प्राथमिकता लागू होगी।",
+            "Save Worker Profile":
+                "वर्कर प्रोफ़ाइल सेव करें",
+
+            "Complete your verification to work on FindVia.":
+                "FindVia पर काम करने के लिए अपना सत्यापन पूरा करें।",
+            "Please submit the following documents for verification.":
+                "सत्यापन के लिए निम्नलिखित दस्तावेज़ जमा करें।",
+            "Your documents will only be used for FindVia verification.":
+                "आपके दस्तावेज़ों का उपयोग केवल FindVia सत्यापन के लिए किया जाएगा।",
+            "Government ID (Aadhaar Card, Voter ID, Driving Licence, etc.)":
+                "सरकारी पहचान पत्र (आधार कार्ड, वोटर आईडी, ड्राइविंग लाइसेंस आदि)",
+            "Recent Photo / Selfie":
+                "हाल की फोटो / सेल्फी",
+            "Skill / Experience Proof (Optional)":
+                "कौशल / अनुभव प्रमाण (वैकल्पिक)",
+            "I confirm that the information and documents submitted by me are genuine and may be used for FindVia verification.":
+                "मैं पुष्टि करता/करती हूँ कि मेरे द्वारा जमा की गई जानकारी और दस्तावेज़ वास्तविक हैं और FindVia सत्यापन के लिए उपयोग किए जा सकते हैं।",
+            "Submit for Verification":
+                "सत्यापन के लिए जमा करें",
+
+            "Add credits to your FindVia wallet.":
+                "अपने FindVia वॉलेट में क्रेडिट जोड़ें।",
+            "Recharge your credits":
+                "अपने क्रेडिट रिचार्ज करें",
+            "Scan the QR code below and make your payment.":
+                "नीचे दिए गए QR कोड को स्कैन करके भुगतान करें।",
+            "QR code will be added before deployment.":
+                "QR कोड डिप्लॉयमेंट से पहले जोड़ा जाएगा।",
+            "Payment Instructions":
+                "भुगतान निर्देश",
+            "Scan the FindVia payment QR.":
+                "FindVia भुगतान QR को स्कैन करें।",
+            "Pay the amount you want to add.":
+                "जितनी राशि जोड़नी है उसका भुगतान करें।",
+            "Enter the exact amount paid below.":
+                "नीचे भुगतान की गई सटीक राशि दर्ज करें।",
+            "Enter your payment transaction ID / UTR.":
+                "अपना भुगतान ट्रांज़ैक्शन आईडी / UTR दर्ज करें।",
+            "Submit the recharge request.":
+                "रिचार्ज अनुरोध जमा करें।",
+            "Amount Paid":
+                "भुगतान की गई राशि",
+            "Payment Transaction ID / UTR":
+                "भुगतान ट्रांज़ैक्शन आईडी / UTR",
+            "Submit Recharge Request":
+                "रिचार्ज अनुरोध जमा करें",
+            "Credits will be added after payment verification.":
+                "भुगतान सत्यापन के बाद क्रेडिट जोड़े जाएंगे।",
+
+            "Login or create your FindVia account.":
+                "अपने FindVia खाते में लॉगिन करें या नया खाता बनाएँ।",
+            "Login":
+                "लॉगिन",
+            "Forgot Password?":
+                "पासवर्ड भूल गए?",
+            "Create a new account":
+                "नया खाता बनाएँ",
+            "New Password":
+                "नया पासवर्ड",
+            "Confirm New Password":
+                "नए पासवर्ड की पुष्टि करें",
+            "Update Password":
+                "पासवर्ड अपडेट करें",
+            "Back to Login":
+                "लॉगिन पर वापस जाएँ",
+            "You are logged in":
+                "आप लॉगिन हैं",
+            "Logout":
+                "लॉगआउट",
+
+            "Your FindVia updates and messages.":
+                "आपके FindVia अपडेट और संदेश।",
+            "Mark all as read":
+                "सभी को पढ़ा हुआ करें",
+            "Loading notifications...":
+                "नोटिफिकेशन लोड हो रहे हैं...",
+
+            "Authorized access only":
+                "केवल अधिकृत पहुँच",
+            "Apne authorized FindVia account se login karein.":
+                "अपने अधिकृत FindVia खाते से लॉगिन करें।",
+            "FindVia system management":
+                "FindVia सिस्टम प्रबंधन",
+            "Workers, credits aur verification ko manage karein.":
+                "वर्कर, क्रेडिट और सत्यापन प्रबंधित करें।",
+            "Admin Jobs, agreed price aur job-wise commission ko manage karein.":
+                "काम, तय कीमत और काम के अनुसार कमीशन प्रबंधित करें।",
+            "Admin Worker credits aur FindVia commission settings yahan manage hongi.":
+                "वर्कर क्रेडिट और FindVia कमीशन सेटिंग यहाँ प्रबंधित होंगी।",
+            "Current commission:":
+                "वर्तमान कमीशन:",
+            "Save Commission":
+                "कमीशन सेव करें",
+            "Admin Review worker payment requests and approve credits.":
+                "वर्कर के भुगतान अनुरोधों की समीक्षा करें और क्रेडिट स्वीकृत करें।",
+            "Kisi specific FindVia user ko direct in-app message bhejein.":
+                "किसी विशिष्ट FindVia उपयोगकर्ता को सीधे इन-ऐप संदेश भेजें।",
+            "Manage Job Categories":
+                "काम की श्रेणियाँ प्रबंधित करें",
+            "Platform Overview":
+                "प्लेटफ़ॉर्म अवलोकन",
+            "Active FindVia ke important system controls.":
+                "FindVia के महत्वपूर्ण सक्रिय सिस्टम नियंत्रण।",
+            "Run System Test":
+                "सिस्टम टेस्ट चलाएँ",
+            "Worker transactions":
+                "वर्कर लेन-देन",
+            "Worker payment verification":
+                "वर्कर भुगतान सत्यापन",
+            "Send a direct message to a FindVia user.":
+                "किसी FindVia उपयोगकर्ता को सीधा संदेश भेजें।",
+            "Select User":
+                "उपयोगकर्ता चुनें",
+            "Loading users...":
+                "उपयोगकर्ता लोड हो रहे हैं...",
+            "Notification Title":
+                "नोटिफिकेशन शीर्षक",
+            "Message":
+                "संदेश",
+            "Send Notification":
+                "नोटिफिकेशन भेजें"
+        }
+    };
+
+    Object.assign(
+        translations.en,
+        extraTranslations.en
+    );
+
+    Object.assign(
+        translations.hi,
+        extraTranslations.hi
+    );
+
+    document.documentElement.lang =
+        hindiMode ? "hi" : "en";
+
+    
     const language =
         hindiMode ? "hi" : "en";
 
