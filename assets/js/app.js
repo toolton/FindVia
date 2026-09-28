@@ -3215,6 +3215,151 @@ function toggleLanguage() {
 
 }
 
+let findViaActiveLocations = [];
+
+async function loadFindViaLocations() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "get_findvia_active_locations"
+    );
+
+    if (error) {
+
+        console.error(
+            "FindVia locations load error:",
+            error
+        );
+
+        return false;
+    }
+
+    findViaActiveLocations =
+        Array.isArray(data)
+            ? data.map(
+                function(location) {
+                    return String(
+                        location.name || ""
+                    ).trim();
+                }
+            ).filter(Boolean)
+            : [];
+
+    const selects = [
+        document.getElementById(
+            "locationSelect"
+        ),
+        document.getElementById(
+            "jobArea"
+        ),
+        document.getElementById(
+            "workerArea"
+        )
+    ];
+
+    selects.forEach(
+        function(select) {
+
+            if (!select) {
+                return;
+            }
+
+            const previousValue =
+                select.value;
+
+            select.innerHTML = "";
+
+            const emptyOption =
+                document.createElement(
+                    "option"
+                );
+
+            emptyOption.value = "";
+            emptyOption.textContent =
+                "Select your location";
+
+            select.appendChild(
+                emptyOption
+            );
+
+            data.forEach(
+                function(location) {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        location.name;
+
+                    option.textContent =
+                        location.name;
+
+                    select.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+            if (
+                previousValue &&
+                findViaActiveLocations.includes(
+                    previousValue
+                )
+            ) {
+                select.value =
+                    previousValue;
+            }
+
+        }
+    );
+
+    return true;
+}
+
+
+async function initializeFindViaLocations() {
+
+    await loadFindViaLocations();
+
+    const currentRole =
+        localStorage.getItem(
+            "findviaUserRole"
+        );
+
+    const locationSelect =
+        document.getElementById(
+            "locationSelect"
+        );
+
+    if (
+        currentRole !== "worker" &&
+        locationSelect
+    ) {
+
+        const savedLocation =
+            localStorage.getItem(
+                "findviaLocation"
+            );
+
+        if (
+            savedLocation &&
+            findViaActiveLocations.includes(
+                savedLocation
+            )
+        ) {
+            locationSelect.value =
+                savedLocation;
+        }
+
+    }
+
+}
+
 async function selectLocation(locationValue) {
 
     const locationSelect =
@@ -3233,22 +3378,27 @@ async function selectLocation(locationValue) {
         return;
     }
 
-    const allowedLocations = [
-        "Hindaun City",
-        "Shri Mahaveerji",
-        "Suroth",
-        "Bayana",
-        "Karauli"
-    ];
+        if (
+        !Array.isArray(findViaActiveLocations) ||
+        !findViaActiveLocations.includes(cleanLocation)
+    ) {
 
-    if (!allowedLocations.includes(cleanLocation)) {
-        alert(
-            "Please select a valid FindVia launch area."
-        );
+        await loadFindViaLocations();
 
-        locationSelect.value = "";
-        return;
-    }
+        if (
+            !findViaActiveLocations.includes(
+                cleanLocation
+            )
+        ) {
+
+            alert(
+                "Please select an active FindVia location."
+            );
+
+            locationSelect.value = "";
+            return;
+        }
+        }
 
     const currentRole =
         localStorage.getItem(
@@ -9531,6 +9681,16 @@ function openAdminLogin() {
 
 function hideAdminScreens() {
 
+        const adminLocationsScreen =
+        document.getElementById(
+            "adminLocationsScreen"
+        );
+
+    if (adminLocationsScreen) {
+        adminLocationsScreen.style.display =
+            "none";
+    }
+
     document.getElementById("adminCategoriesScreen").style.display = "none";
 
     const adminLoginScreen = document.getElementById(
@@ -10102,6 +10262,394 @@ function hideWorkerVerificationScreen() {
 
     screen.classList.remove("active");
     screen.style.display = "none";
+}
+
+async function openAdminLocations() {
+
+    const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+
+        alert(
+            "Admin access required."
+        );
+
+        return;
+    }
+
+    hideAdminScreens();
+
+    const adminPanelScreen =
+        document.getElementById(
+            "adminPanelScreen"
+        );
+
+    if (adminPanelScreen) {
+        adminPanelScreen.style.display =
+            "none";
+    }
+
+    const screen =
+        document.getElementById(
+            "adminLocationsScreen"
+        );
+
+    if (!screen) {
+        return;
+    }
+
+    screen.style.display =
+        "block";
+
+    await loadAdminLocations();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+async function loadAdminLocations() {
+
+    const container =
+        document.getElementById(
+            "adminLocationsList"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML =
+        "<p>Loading locations...</p>";
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "admin_list_findvia_locations"
+    );
+
+    if (error) {
+
+        console.error(
+            "Admin locations load error:",
+            error
+        );
+
+        container.innerHTML =
+            "<p>Locations load nahi ho saki.</p>";
+
+        return;
+    }
+
+    if (
+        !Array.isArray(data) ||
+        data.length === 0
+    ) {
+
+        container.innerHTML =
+            "<p>No locations found.</p>";
+
+        return;
+    }
+
+    container.innerHTML =
+        data.map(
+            function(location) {
+
+                const safeName =
+                    escapeHTML(
+                        location.name || ""
+                    );
+
+                const safeNameHi =
+                    escapeHTML(
+                        location.name_hi || ""
+                    );
+
+                return `
+                    <div class="job-card">
+
+                        <div class="job-card-top">
+
+                            <div>
+
+                                <span class="job-category">
+                                    LOCATION
+                                </span>
+
+                                <h3>
+                                    📍 ${safeName}
+                                </h3>
+
+                                <p>
+                                    ${safeNameHi}
+                                </p>
+
+                            </div>
+
+                            <span class="job-status">
+                                ${
+                                    location.active
+                                        ? "Active"
+                                        : "Disabled"
+                                }
+                            </span>
+
+                        </div>
+
+                        <p class="job-description">
+                            Sort order:
+                            ${Number(
+                                location.sort_order
+                            ) || 0}
+                        </p>
+
+                        <button
+                            class="primary-btn"
+                            onclick="
+                                adminEditLocation(
+                                    '${location.id}',
+                                    '${escapeHTML(
+                                        location.name || ""
+                                    )}',
+                                    '${escapeHTML(
+                                        location.name_hi || ""
+                                    )}',
+                                    ${location.active},
+                                    ${Number(
+                                        location.sort_order
+                                    ) || 0}
+                                )
+                            "
+                        >
+                            ✏️ Edit / ${
+                                location.active
+                                    ? "Disable"
+                                    : "Enable"
+                            }
+                        </button>
+
+                    </div>
+                `;
+            }
+        ).join("");
+}
+
+
+async function adminAddLocation() {
+
+    const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+        alert("Admin access required.");
+        return;
+    }
+
+    const name =
+        document.getElementById(
+            "adminLocationName"
+        ).value.trim();
+
+    const nameHi =
+        document.getElementById(
+            "adminLocationNameHi"
+        ).value.trim();
+
+    const sortOrder =
+        Number(
+            document.getElementById(
+                "adminLocationSortOrder"
+            ).value || 0
+        );
+
+    if (!name) {
+
+        alert(
+            "Location name is required."
+        );
+
+        return;
+    }
+
+    if (
+        !Number.isFinite(sortOrder) ||
+        sortOrder < 0
+    ) {
+
+        alert(
+            "Sort order invalid hai."
+        );
+
+        return;
+    }
+
+    const {
+        error
+    } = await supabaseClient.rpc(
+        "admin_add_findvia_location",
+        {
+            p_name:
+                name,
+
+            p_name_hi:
+                nameHi,
+
+            p_sort_order:
+                sortOrder
+        }
+    );
+
+    if (error) {
+
+        console.error(
+            "Admin location add error:",
+            error
+        );
+
+        alert(
+            "Location add nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    alert(
+        "Location added successfully."
+    );
+
+    document.getElementById(
+        "adminLocationName"
+    ).value = "";
+
+    document.getElementById(
+        "adminLocationNameHi"
+    ).value = "";
+
+    document.getElementById(
+        "adminLocationSortOrder"
+    ).value = "10";
+
+    await loadAdminLocations();
+    await loadFindViaLocations();
+}
+
+
+async function adminEditLocation(
+    locationId,
+    currentName,
+    currentNameHi,
+    currentActive,
+    currentSortOrder
+) {
+
+    const isAdmin =
+        await isFindViaAdmin();
+
+    if (!isAdmin) {
+        alert("Admin access required.");
+        return;
+    }
+
+    const name =
+        prompt(
+            "Location name:",
+            currentName
+        );
+
+    if (name === null) {
+        return;
+    }
+
+    const nameHi =
+        prompt(
+            "Location Hindi name:",
+            currentNameHi
+        );
+
+    if (nameHi === null) {
+        return;
+    }
+
+    const sortOrder =
+        prompt(
+            "Sort order:",
+            currentSortOrder
+        );
+
+    if (sortOrder === null) {
+        return;
+    }
+
+    const sortNumber =
+        Number(sortOrder);
+
+    if (
+        !name.trim() ||
+        !Number.isFinite(sortNumber) ||
+        sortNumber < 0
+    ) {
+
+        alert(
+            "Location details invalid hain."
+        );
+
+        return;
+    }
+
+    const newStatus =
+        !currentActive;
+
+    const {
+        error
+    } = await supabaseClient.rpc(
+        "admin_update_findvia_location",
+        {
+            p_location_id:
+                locationId,
+
+            p_name:
+                name.trim(),
+
+            p_name_hi:
+                nameHi.trim(),
+
+            p_active:
+                newStatus,
+
+            p_sort_order:
+                sortNumber
+        }
+    );
+
+    if (error) {
+
+        console.error(
+            "Admin location update error:",
+            error
+        );
+
+        alert(
+            "Location update nahi ho saki.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    alert(
+        newStatus
+            ? "Location enabled successfully."
+            : "Location disabled successfully."
+    );
+
+    await loadAdminLocations();
+    await loadFindViaLocations();
 }
 
 function openAdminCategories() {
