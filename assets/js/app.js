@@ -2993,24 +2993,14 @@ const {
     data: jobs,
     error
 } =
-    await jobsQuery
-        .order(
-            "created_at",
-            {
-                ascending: false
-            }
-        );
-            .select(
-                "id, title, category, description, area, timing, photo_data, status, match_status, matched_worker_id, job_status, created_at"
-            )
-            .eq("status", "open")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
+    
+await jobsQuery
+    .order(
+        "created_at",
+        {
+            ascending: false
+        }
+    );
 
     if (error) {
 
