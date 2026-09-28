@@ -2220,65 +2220,87 @@ async function selectLocation(locationValue) {
         return;
     }
 
-   localStorage.setItem(
-    "findviaLocation",
-    cleanLocation
-);
+    const currentRole =
+        localStorage.getItem(
+            "findviaUserRole"
+        );
 
-locationSelect.value =
-    cleanLocation;
+    /*
+     * Worker location is stored in Supabase.
+     * Supabase worker_profiles.area is the
+     * single source of truth for workers.
+     */
+    if (currentRole === "worker") {
 
-const currentRole =
-    localStorage.getItem(
-        "findviaUserRole"
-    );
+        const user =
+            await getFindViaCurrentUser();
 
-if (currentRole === "worker") {
+        if (!user) {
+            return;
+        }
 
-    const user =
-        await getFindViaCurrentUser();
-
-    if (!user) {
-        return;
-    }
-
-    const {
-        error
-    } =
-        await supabaseClient
-            .from("worker_profiles")
-            .update({
-                area: cleanLocation,
-                updated_at:
-                    new Date().toISOString()
-            })
-            .eq("id", user.id);
-
-    if (error) {
-
-        console.error(
-            "Worker area sync error:",
+        const {
             error
-        );
+        } =
+            await supabaseClient
+                .from("worker_profiles")
+                .update({
+                    area: cleanLocation,
+                    updated_at:
+                        new Date().toISOString()
+                })
+                .eq("id", user.id);
 
-        alert(
-            "Worker area update nahi ho saka.\n\n" +
-            error.message
+        if (error) {
+
+            console.error(
+                "Worker area sync error:",
+                error
+            );
+
+            alert(
+                "Worker area update nahi ho saka.\n\n" +
+                error.message
+            );
+
+            return;
+        }
+
+        /*
+         * Supabase update succeeded.
+         * Now sync both visible UI fields.
+         */
+        const workerArea =
+            document.getElementById(
+                "workerArea"
+            );
+
+        if (workerArea) {
+            workerArea.value =
+                cleanLocation;
+        }
+
+        locationSelect.value =
+            cleanLocation;
+
+        localStorage.setItem(
+            "findviaLocation",
+            cleanLocation
         );
 
         return;
     }
 
-    const workerArea =
-        document.getElementById(
-            "workerArea"
-        );
+    /*
+     * Customer location remains independent.
+     */
+    locationSelect.value =
+        cleanLocation;
 
-    if (workerArea) {
-        workerArea.value =
-            cleanLocation;
-    }
-} 
+    localStorage.setItem(
+        "findviaLocation",
+        cleanLocation
+    );
 }
 
 function findWork() {
