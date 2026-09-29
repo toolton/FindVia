@@ -6621,9 +6621,24 @@ async function loadWorkerProfileSummary() {
                 : "block";
     }
 
-    summaryBox.style.display = "block";
-}
+       const creditsElement =
+        document.getElementById(
+            "summaryWorkerCredits"
+        );
 
+    if (creditsElement) {
+
+        const credits =
+            await getWorkerCreditsFromSupabase();
+
+        creditsElement.textContent =
+            Number.isFinite(credits)
+                ? credits.toLocaleString("en-IN")
+                : "0";
+    }
+
+    summaryBox.style.display = "block";
+} 
 
 function showMyJobs() {
 hideWorkerTransactionScreen();
